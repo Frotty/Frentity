@@ -1,0 +1,47 @@
+package PhysicsEntity
+import public Entity
+
+public constant MAX_MASS = 250
+//Module for Physical Simulation
+public module PhysicsModule
+	/** Affected by gravity */
+	boolean affectedByGravity = true
+	
+	real terrainZ = 0.
+	
+	// Physical factors
+	
+	// The higher the more slide. Should be < 1.
+	real surfaceFriction = 0.9
+	// Defines the bounciness
+	real restitution = 0.9
+	// The density of the object
+
+	function onGroundHit()
+
+	function onEscapeGround()
+		
+	// This function should be called every ANIMATION_PERIOD tick if the Entity is active
+	function physicsUpdate(Entity e)
+		let pos = e.getPos()
+		if DYNAMIC_Z
+			terrainZ = getTerrainZ(pos.x, pos.y)
+		if pos.z <= terrainZ + .45
+			onGround(e)
+		else
+			inAir(e)
+				
+	// When the Entity is on or near the ground	
+	function onGround(Entity e)
+		if e.flying
+			e.flying = false
+			onGroundHit()
+		// If the Entity is moving towards
+		e.scaleVel(surfaceFriction)
+		
+	function inAir(Entity e)
+		if not e.flying
+			e.flying = true
+			onEscapeGround()
+		if affectedByGravity
+			e.addVel(gravity)

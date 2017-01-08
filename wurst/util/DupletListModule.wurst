@@ -1,0 +1,113 @@
+package DupletListModule
+import Wurstunit
+import LinkedListModule
+import Printing
+/** Turns a class into a linked list where each instance knows it's previous
+	and next member in the list */
+public module DupletListModule
+	static thistype firstActive = null
+	static thistype lastActive = null
+	static thistype firstInactive = null
+	static thistype lastInactive = null
+	static int activeSize = 0
+	static int inactiveSize = 0
+	thistype prev
+	thistype next
+	boolean active = true
+
+	construct()
+		addToActive()
+
+	function deactivate()
+		if active
+			active = false
+			removeFromActive()
+			addToInactive()
+
+	function activate()
+		if not active
+			active = true
+			removeFromInactive()
+			addToActive()
+
+	function remove()
+		if active
+			active = false
+			removeFromActive()
+		else
+			removeFromInactive()
+
+	function removeFromActive()
+		activeSize--
+		if this != firstActive
+			prev.next = next
+		else
+			firstActive = next
+		if this != lastActive
+			next.prev = prev	
+		else
+			lastActive = prev
+		prev = null
+		next = null
+
+	function removeFromInactive()
+		inactiveSize--
+		if this != firstInactive
+			prev.next = next
+		else
+			firstInactive = next
+		if this != lastInactive
+			next.prev = prev	
+		else
+			lastInactive = prev
+		prev = null
+		next = null
+	
+	function addToActive()
+		activeSize++
+		if activeSize == 1
+			firstActive = this
+			prev = null	
+		else
+			prev = lastActive
+			lastActive.next = this
+			firstActive.prev = this
+		next = null
+		lastActive = this
+
+	function addToInactive()
+		inactiveSize++
+		if inactiveSize == 1
+			firstInactive = this
+			prev = null	
+		else
+			prev = lastInactive
+			lastInactive.next = this
+			firstInactive.prev = this
+		next = null
+		lastInactive = this
+
+			
+	ondestroy
+		remove()
+	
+	/** an iterator which iterates over all instances of this class */
+	static function iterator() returns Iterator
+		return new Iterator()
+		
+	static class Iterator
+		DupletListModule.thistype current = firstActive
+
+		function hasNext() returns boolean
+			return current != null
+	
+		function next() returns DupletListModule.thistype
+			let res = current
+			current = current.next
+			return res
+	 		
+		function close() 
+			destroy this
+
+		function reset()
+			current = firstActive

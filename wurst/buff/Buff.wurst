@@ -1,0 +1,144 @@
+package Buff
+import public Entity
+import LinkedListModule
+import Squares
+import TextTagEntity
+import OnUnitEnterLeave
+import BuffObjEditing
+import ObjectIds
+import AbilityObjEditing
+import ObjectIdGenerator
+
+@configurable public constant falsifyTeamattacks = false
+@configurable public constant showSquares = false
+
+public constant BUFF_ANIM_PERIOD = 0.25
+LinkedList<Buff> array currentBuffs
+
+public function UnitEntity.hasBuffs() returns boolean
+	return currentBuffs[this castTo int] != null
+
+public function UnitEntity.getBuffs() returns LinkedList<Buff>
+	return currentBuffs[this castTo int]
+
+public function UnitEntity.clearBuffs()
+	let buffs = currentBuffs[this castTo int]
+	if buffs != null
+		for bff in buffs
+			bff.done = true
+		destroy buffs
+	currentBuffs[this castTo int] = null
+
+public function UnitEntity.newBuffs() returns LinkedList<Buff>
+	currentBuffs[this castTo int] = new LinkedList<Buff>()
+	return currentBuffs[this castTo int]
+
+public abstract class Buff
+	use LinkedListModule
+
+	UnitEntity target
+	real duration
+	int abilId
+	boolean done = false
+
+	construct(real duration, int abilId)
+		this.duration = duration
+		this.abilId = abilId
+
+	abstract function apply(UnitEntity target)
+
+	function attackModifier()
+	
+	function defenseModifier()
+
+	function onEnd()
+		
+	function update()
+		if duration <= 0.
+			done = true
+			onEnd()
+		else
+			duration -= BUFF_ANIM_PERIOD
+		
+	function refresh() 
+		if not target.actor.hasAbility(abilId)
+			target.actor.addAbility(abilId)
+			
+	ondestroy
+		onEnd()
+		if target != null and not target.done and target.hasBuffs()
+			target.getBuffs().remove(this)
+			boolean isLast = true
+			for bff in target.getBuffs()
+				if bff.typeId == this.typeId
+					isLast = false
+					break
+			if isLast
+				target.actor.removeAbility(abilId)
+
+/** Creates an ability based on Tornado aura that allows to display a buff without side effects */
+public function createBuffObject(string name, string tooltip, string iconpath) returns int
+	let abilId = ABIL_ID_GEN.next()
+	let buffId = BUFF_ID_GEN.next()
+
+	if compiletime
+		new BuffDefinition(buffId, 'Basl')
+			..setName(1, name)
+			..setTooltipNormal(1, name)
+			..setTooltipNormalExtended(1, tooltip)
+			..setIcon(iconpath)
+
+		new AbilityDefinitionAuraSlow(abilId)
+			..setName("Aura Dummy: " + name)
+			..setMovementSpeedFactor(1, 0)
+			..setBuffs(1, int2fourchar(buffId))
+			..presetIcon(iconpath)
+			..setArtTarget("")
+			..setTargetsAllowed(1, "self")
+		
+	return abilId
+
+
+init
+	// Call attack and defense modifiers of buffs
+	EventListener.add(EVENT_UNIT_DAMAGED, () -> begin
+		let def = GetTriggerUnit()
+		let att = GetEventDamageSource()
+		UnitEntity defData = null
+		UnitEntity attData = null
+		if att.getEntity() != null and att.isAlive()
+			//Attacker is alive, apply his attack modifiers
+			attData = att.getEntity() castTo UnitEntity
+			if attData.hasBuffs()
+				for bff in attData.getBuffs()
+					if not bff.done
+						bff.attackModifier()
+		
+		if def.getEntity() != null and def.isAlive()
+			//Defender is alive, apply his defense modifiers
+			defData = def.getEntity() castTo UnitEntity
+			if defData.hasBuffs()
+				for bff in defData.getBuffs()
+					if not bff.done
+						bff.defenseModifier()
+						
+		if falsifyTeamattacks and defData != null and attData != null
+			if defData.owner.isAllyOf(attData.owner) or defData.owner == attData.owner
+				// Falsify teamattacks
+				if getDamage() > 0.5
+					modifyDamage(0)
+					if showSquares
+						new TextTagEntity(defData.getPos(), vec3(GetRandomReal(-2,2),GetRandomReal(-2,2),GetRandomReal(8,10)), getSquare(), 10, .8
+							,colorA(GetRandomInt(150,250),GetRandomInt(125,150),GetRandomInt(125,150), 255))
+	end)		
+	// Update the buff display on unit upgrade					
+	EventListener.add(EVENT_PLAYER_UNIT_UPGRADE_FINISH, () -> begin
+		let v = GetTriggerUnit()
+		if v.getUserData() > 0
+			let victimData = v.getUserData() castTo UnitEntity
+			if victimData != null and not victimData.done and victimData.hasBuffs()
+				for bff in victimData.getBuffs()
+					bff.refresh()
+	end)
+
+

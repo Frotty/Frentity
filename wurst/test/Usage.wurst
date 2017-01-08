@@ -1,0 +1,21 @@
+package Usage
+import Buff
+import Fx
+
+class TestUnitEntity extends UnitEntity
+
+	construct()
+		super(createUnit(players[0], 'hfoo', vec2(0,0), angle(0)))
+
+class Testos
+	real r = 0
+
+	construct(real r)
+		this.r = r
+		createUnit(players[0], 'hfoo', vec2(r,r), angle(0))
+
+init
+	print("yo mama")
+	for i = 0 to 10
+		for j = 0 to 12
+			new Fx(players[j].getColor(), vec3(i* 64., j * 64., 16), angle(0), "TC_EnergyBolt.mdx")

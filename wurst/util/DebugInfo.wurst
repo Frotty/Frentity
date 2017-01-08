@@ -1,0 +1,50 @@
+package DebugInfo
+import Multiboard
+import Entity
+multiboard mb
+constant rows = 3
+constant columns = 3
+
+
+function createMultiboard()
+	mb = CreateMultiboard()
+	mb.setColumnCount(columns)
+	mb.setRowCount(rows)
+	mb.setItemsStyle(true, false)
+	mb.setItemsWidth(0.04)
+	mb.setTitle("Debug Info")
+
+	var mbi = mb.getItem(0, 0)
+	mbi..setValue("Allocations")..setWidth(0.10)
+	mbi = mb.getItem(1, 0)
+	mbi..setValue("Callbacks")..setWidth(0.10)
+	mbi = mb.getItem(2, 0)
+	mbi..setValue("Entites")..setWidth(0.10)
+
+public int seconds = 0
+public int eventCallbacksPerSecond = 0
+public int totalEventCallbacks = 0
+public int allocationsPerSecond = 0
+public int totalAllocations = 0
+
+init
+	for i = 0 to 11
+		CreateTrigger()..registerPlayerChatEvent(players[i], "-debug", true)..addAction(() -> begin
+			if GetLocalPlayer() == GetTriggerPlayer()
+				mb.display(not mb.isDisplayed())
+		end)
+	CreateTimer().startPeriodic(1, () -> begin
+		if mb == null
+			createMultiboard()
+		seconds++
+		totalEventCallbacks += eventCallbacksPerSecond
+		totalAllocations += allocationsPerSecond
+		mb.getItem(0, 1).setValue(allocationsPerSecond.toString())
+		mb.getItem(0, 2).setValue((totalAllocations/seconds).toString())
+		mb.getItem(1, 1).setValue(eventCallbacksPerSecond.toString())
+		mb.getItem(1, 2).setValue((totalEventCallbacks/seconds).toString())
+		mb.getItem(2, 1).setValue(Entity.activeSize.toString())
+		mb.getItem(2, 2).setValue(Entity.inactiveSize.toString())
+		eventCallbacksPerSecond = 0
+		allocationsPerSecond = 0
+	end)

@@ -1,0 +1,108 @@
+package Event
+import public EventHelper
+import RegisterEvents
+import OnUnitEnterLeave
+import ClosureTimers
+import ErrorHandling
+import initlater DebugInfo
+//Listens to all PLAYER_UNIT_EVENTS plus EVENT_PLAYER_LEAVE and EVENT_UNIT_DAMAGED
+
+// The amount of events listened for
+constant EVENT_COUNTER = 56
+
+public abstract class EventListener
+	static EventListener array generalListenersFirsts
+	static EventListener array unitListenersFirsts
+
+	int eventId = 0
+	EventListener next = null
+
+	abstract function onEvent()
+	
+	static function add(eventid eventId, EventListener listener)
+		listener.eventId = eventId.toIntId()
+		if generalListenersFirsts[listener.eventId] != null
+			listener.next = generalListenersFirsts[listener.eventId]
+
+		generalListenersFirsts[listener.eventId] = listener
+		
+	static function add(unit u, eventid eventId, EventListener listener)
+		let uid = u.getUserData()
+		listener.eventId = eventId.toIntId()
+		if unitListenersFirsts[uid] != null
+			listener.next = unitListenersFirsts[uid]
+		unitListenersFirsts[uid] = listener
+			
+	static function generalEventCallback()
+		let trigUnit = GetTriggerUnit()
+		let id = GetTriggerEventId().toIntId()
+		eventCallbacksPerSecond++
+		// Unit Listeners
+		if trigUnit != null and unitListenersFirsts[trigUnit.getUserData()] != null
+			var listener = unitListenersFirsts[trigUnit.getUserData()]
+			while listener != null
+				if listener.eventId == id
+					listener.onEvent()
+				listener = listener.next
+		// General Listeners		
+		if generalListenersFirsts[id] != null
+			var listener = generalListenersFirsts[id]
+			while listener != null
+				listener.onEvent()
+				listener = listener.next
+		
+	ondestroy
+		next = null
+	
+trigger unitTrig = CreateTrigger()
+trigger leaveTrig = CreateTrigger()
+
+public function eventid.toIntId() returns int
+	var id = eventidToIndex[this.getHandleId()]
+	if id == 0
+		id = registerEventId(this)
+	return id
+			
+int array eventidToIndex
+int eventTypeCounter = 0
+
+function registerEventId(eventid evnt) returns int
+	let eventId = evnt.getHandleId()
+	eventTypeCounter++
+	eventidToIndex[eventId] = eventTypeCounter
+	if evnt.isPlayerunitEvent()
+		printLog(Loglevel.DEBUG, "reg handleid: " + eventId.toString() + " -> eventId: " + eventTypeCounter.toString())
+		registerPlayerUnitEvent(ConvertPlayerUnitEvent(eventId), function EventListener.generalEventCallback)
+	else if evnt != EVENT_UNIT_DAMAGED and evnt != EVENT_PLAYER_LEAVE
+		printLog(Loglevel.ERROR, "registering non-playerunitevent. Except EVENT_UNIT_DAMAGED and EVENT_PLAYER_LEAVE these are not supported right now.")
+	return eventTypeCounter
+	
+function registerEventsForUnit(unit u)
+	unitTrig.registerUnitEvent(u, EVENT_UNIT_DAMAGED)
+
+public function unregisterEventsForUnit(unit u)
+	unregisterEvents(u.getUserData())
+
+public function unregisterEvents(int id)
+	if EventListener.unitListenersFirsts[id] != null
+		printLog(Loglevel.TRACE, "unregister unit has listeners. startid: " + id.toString())
+		var listener = EventListener.unitListenersFirsts[id]
+		EventListener.unitListenersFirsts[id] = null
+		while listener != null
+			destroy listener
+			listener = listener.next
+
+init
+	doAfter(0.0, () -> begin
+		// Register Events when unit enters map
+		onEnter(() -> registerEventsForUnit(getEnterLeaveUnit()))
+		// Delete 
+		onLeave(() -> unregisterEventsForUnit(getEnterLeaveUnit()))
+		
+		// Register Actions
+		unitTrig.addAction(function EventListener.generalEventCallback)	
+		leaveTrig.addAction(function EventListener.generalEventCallback)
+
+		for i = 0 to bj_MAX_PLAYERS-1
+			leaveTrig.registerPlayerEvent(players[i], EVENT_PLAYER_LEAVE)
+	end)

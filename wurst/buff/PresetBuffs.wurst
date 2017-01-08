@@ -1,0 +1,71 @@
+package PresetBuffs
+import public Buff
+
+public abstract class NormalBuff extends Buff
+
+	construct(real dur, int abilId)
+		super(dur, abilId)
+
+	override function apply(UnitEntity target)
+		this.target = target
+		if not target.hasBuffs()
+			target.newBuffs()
+		for bff in target.getBuffs()
+			if bff.typeId == this.typeId
+				bff.duration = duration
+				done = true
+				return
+		target.getBuffs().add(this)
+		refresh()
+		
+public abstract class StackingBuff extends Buff
+
+	construct(real dur, int abilId)
+		super(dur, abilId)
+			
+	override function apply(UnitEntity target)			
+		this.target = target
+		if not target.hasBuffs()
+			target.newBuffs()
+		target.getBuffs().add(this)
+		refresh()
+
+public class ShieldBuff extends NormalBuff
+	real blockAmount
+	
+	construct(real dur, int abilId, real amount)
+		super(dur, abilId)
+		blockAmount = amount
+		
+	override function update()
+		super.update()
+		if blockAmount <= 0
+			done = true
+		
+	override function apply(UnitEntity target)
+		this.target = target
+		if not target.hasBuffs()
+			target.newBuffs()
+		for bff in target.getBuffs()
+			if bff.typeId == this.typeId
+				let sd = bff castTo thistype
+				sd.duration = duration
+				sd.blockAmount += blockAmount
+				done = true
+				return
+		target.getBuffs().add(this)
+		refresh()
+		
+
+	override function defenseModifier()
+		let dmg = getDamage()
+		if dmg >= blockAmount
+			modifyDamageBy(-blockAmount)
+			blockAmount = 0
+			done = true
+		else
+			modifyDamage(0)
+			blockAmount = blockAmount - dmg
+			
+			
+	override function attackModifier()

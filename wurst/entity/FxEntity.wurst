@@ -1,0 +1,51 @@
+package FxEntity
+import public Entity
+import public Fx
+import Assets
+
+public constant DEFAULT_FX = Other.arrowmissile
+
+abstract public class FxEntity extends Entity
+	protected Fx fx
+	boolean silent = false
+	
+	construct(player owner, vec3 pos, real radius, angle xyAngle, string sfxpath)
+		super(owner, pos, radius)
+		setupFx(xyAngle, sfxpath)
+		
+	construct(player owner, vec3 pos, angle xyAngle, string sfxpath)
+		super(owner, pos, radius)
+		setupFx(xyAngle, sfxpath)
+	
+	construct(vec3 pos, player owner)
+		super(owner, pos, 0.)
+		setupFx(angle(0), DEFAULT_FX)
+
+	private function setupFx(angle xyAngle, string sfxpath)
+		fx = new Fx(owner.getColor(), pos, xyAngle, sfxpath)
+		
+	override function update()
+		if pos.inPlayable()
+			fx.setXYZ(pos)
+		else 
+			done = true
+		
+	function setFx(string sfxpath)
+		fx.setFx(sfxpath)
+		
+	function getDummy() returns unit
+		return fx.getDummy()
+		
+	override function setPos(vec3 tpos)
+		pos = tpos
+		fx.setXYZ(tpos)
+		
+	override function setXY(vec3 tpos)
+		pos = tpos
+		fx.setXYZ(tpos)
+
+	ondestroy
+		if silent
+			fx.hiddenDestroy()
+		else
+			destroy fx

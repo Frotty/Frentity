@@ -1,0 +1,29 @@
+package Squares
+
+string array squares
+
+public function getSquare() returns string
+	return squares[GetRandomInt(0, 20)]
+
+init
+	squares[0] = "Asshat!"
+	squares[1] = "gtfo"
+	squares[2] = "wtf?"
+	squares[3] = "really?"
+	squares[4] = "Dumbass!"
+	squares[5] = "STOP"
+	squares[6] = "Are you serious?"
+	squares[7] = "u wot m8"
+	squares[8] = "*poke*"
+	squares[9] = "wake up!"
+	squares[10] = "Heyyyy"
+	squares[11] = ":^)"
+	squares[12] = "^)^"
+	squares[13] = "Juicebag"
+	squares[14] = "whoopsie"
+	squares[15] = "monkey!"
+	squares[16] = "get shrekt"
+	squares[17] = "nou"
+	squares[18] = "reported!"
+	squares[19] = "Bengel.."
+	squares[20] = "calm down"

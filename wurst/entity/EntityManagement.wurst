@@ -1,0 +1,39 @@
+package EntityManagement
+import public Entity
+import Buff
+import OnUnitEnterLeave
+public constant activeItr = Entity.iterator()
+
+function updateActiveEntities()
+	activeItr.reset()
+	for e from activeItr
+		if not e.done
+			e.update()
+
+function updateInactiveEntities()
+	var e = Entity.firstInactive
+	while e != null
+		e.slowUpdate()
+		e = e.next
+
+function updateBuffs()
+	for b in Buff
+		if b.done or b.target.done
+			destroy b
+		else
+			b.update()
+			
+public function startEntityLoop() returns boolean
+	getTimer().startPeriodic(ANIMATION_PERIOD, function updateActiveEntities)
+	getTimer().startPeriodic(BUFF_ANIM_PERIOD, function updateBuffs)
+	getTimer().startPeriodic(1.0, function updateInactiveEntities)
+	// Remove buffs when unit leaves the map
+	onLeave(() -> begin
+		let e = getEnterLeaveUnit().getEntity()
+		if e != null and e instanceof UnitEntity
+			let ue = (e castTo UnitEntity)
+			if ue.hasBuffs()
+				ue.clearBuffs()
+			e.terminate()
+	end)
+	return true

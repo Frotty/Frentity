@@ -1,0 +1,7 @@
+*.w3x
+*.w3m
+
+wurst.dependencies
+objectEditingOutput/
+.vscode/settings.json
+compiled.j.txt
