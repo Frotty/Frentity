@@ -3,7 +3,6 @@ import public EventHelper
 import RegisterEvents
 import OnUnitEnterLeave
 import ClosureTimers
-import ErrorHandling
 import initlater DebugInfo
 //Listens to all PLAYER_UNIT_EVENTS plus EVENT_PLAYER_LEAVE and EVENT_UNIT_DAMAGED
 

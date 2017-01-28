@@ -1,7 +1,4 @@
 package DupletListModule
-import Wurstunit
-import LinkedListModule
-import Printing
 /** Turns a class into a linked list where each instance knows it's previous
 	and next member in the list */
 public module DupletListModule

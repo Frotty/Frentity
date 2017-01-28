@@ -10,10 +10,13 @@ import public MapBounds
 import ErrorHandling
 import initlater DebugInfo
 import initlater Buff
+import initlater Json
 
 // If the map's height is completely flat (EBR), things can be simplified
-@configurable public constant DYNAMIC_Z = true
+@configurable public constant DYNAMIC_Z = false
 @configurable public constant KILL_ACTORS = false
+
+public vec3 serializeOrigin = ZERO3
 
 public function unit.getEntity() returns Entity
 	return this.getUserData() castTo Entity
@@ -26,9 +29,13 @@ public function unit.setEntity(Entity e)
 
 public function item.setEntity(Entity e)
 	this.setUserData(e castTo int)
-		
+
+public interface Serializable
+	function serialize() returns Json
+	function deserialize(Json json)
+
 /** Base Entity Class  */
-public abstract class Entity
+public abstract class Entity implements Serializable
 	use DupletListModule
 	/** 3d vector position */
 	protected vec3 pos
@@ -129,14 +136,29 @@ public abstract class Entity
 			done = true
 			destroy this
 
+	override function serialize() returns Json
+		let json = new Json()
+		json.addProperty(new Property("posx", (pos.x-serializeOrigin.x).toInt().toString()))
+		json.addProperty(new Property("posy", (pos.y-serializeOrigin.y).toInt().toString()))
+		json.addProperty(new Property("posz", (pos.z-serializeOrigin.z).toInt().toString()))
+		return json
+
+	override function deserialize(Json json)
+		pos = vec3(json.getReal("posx"), json.getReal("posy"), json.getReal("posz"))
+
 	ondestroy 
 		unregisterEvents(this castTo int)
+
+function unit.getDynamicPos() returns vec3
+	if DYNAMIC_Z
+		return this.getPos3Real()
+	return this.getPos().withZ(0)
 	
 abstract public class UnitEntity extends Entity
 	unit actor = null
 	
 	construct(unit actor)
-		super(actor.getOwner(), actor.getPos3Real(), 0)
+		super(actor.getOwner(), actor.getDynamicPos(), 0)
 		setupUnitEntity(actor)
 	
 	construct(unit actor, vec3 pos)
@@ -186,7 +208,7 @@ abstract public class UnitEntity extends Entity
 		if DYNAMIC_Z
 			actor.setPosReal(pos)
 		else
-			actor.setPosFly(pos)
+			actor.setPos(pos.toVec2())
 			
 	override function getPos() returns vec3
 		if not active

@@ -1,5 +1,4 @@
 package DebugInfo
-import Multiboard
 import Entity
 multiboard mb
 constant rows = 3
@@ -21,6 +20,7 @@ function createMultiboard()
 	mbi = mb.getItem(2, 0)
 	mbi..setValue("Entites")..setWidth(0.10)
 
+	
 public int seconds = 0
 public int eventCallbacksPerSecond = 0
 public int totalEventCallbacks = 0
