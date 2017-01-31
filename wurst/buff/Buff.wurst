@@ -32,17 +32,19 @@ public function UnitEntity.newBuffs() returns LinkedList<Buff>
 	currentBuffs[this castTo int] = new LinkedList<Buff>()
 	return currentBuffs[this castTo int]
 
+public tuple buffTuple(int abilId, int buffId)
+
 public abstract class Buff
 	use LinkedListModule
 
 	UnitEntity target
 	real duration
-	int abilId
+	buffTuple buffData
 	boolean done = false
 
-	construct(real duration, int abilId)
+	construct(real duration, buffTuple buffData)
 		this.duration = duration
-		this.abilId = abilId
+		this.buffData = buffData
 
 	abstract function apply(UnitEntity target)
 
@@ -55,13 +57,12 @@ public abstract class Buff
 	function update()
 		if duration <= 0.
 			done = true
-			onEnd()
 		else
 			duration -= BUFF_ANIM_PERIOD
 		
 	function refresh() 
-		if not target.actor.hasAbility(abilId)
-			target.actor.addAbility(abilId)
+		if not target.actor.hasAbility(buffData.abilId)
+			target.actor.addAbility(buffData.abilId)
 			
 	ondestroy
 		onEnd()
@@ -73,10 +74,11 @@ public abstract class Buff
 					isLast = false
 					break
 			if isLast
-				target.actor.removeAbility(abilId)
+				target.actor.removeAbility(buffData.abilId)
+				target.actor.removeAbility(buffData.buffId)
 
 /** Creates an ability based on Tornado aura that allows to display a buff without side effects */
-public function createBuffObject(string name, string tooltip, string iconpath) returns int
+public function createBuffObject(string name, string tooltip, string iconpath) returns buffTuple
 	let abilId = ABIL_ID_GEN.next()
 	let buffId = BUFF_ID_GEN.next()
 
@@ -95,7 +97,7 @@ public function createBuffObject(string name, string tooltip, string iconpath) r
 			..setArtTarget("")
 			..setTargetsAllowed(1, "self")
 		
-	return abilId
+	return buffTuple(abilId, buffId)
 
 
 init

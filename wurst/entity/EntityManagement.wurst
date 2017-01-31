@@ -3,6 +3,7 @@ import public Entity
 import Buff
 import OnUnitEnterLeave
 public constant activeItr = Entity.iterator()
+public constant buffItr = Buff.iterator()
 
 function updateActiveEntities()
 	activeItr.reset()
@@ -17,7 +18,8 @@ function updateInactiveEntities()
 		e = e.next
 
 function updateBuffs()
-	for b in Buff
+	buffItr.reset()
+	for b from buffItr
 		if b.done or b.target.done
 			destroy b
 		else

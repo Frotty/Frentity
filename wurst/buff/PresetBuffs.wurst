@@ -3,8 +3,8 @@ import public Buff
 
 public abstract class NormalBuff extends Buff
 
-	construct(real dur, int abilId)
-		super(dur, abilId)
+	construct(real dur, buffTuple buffData)
+		super(dur, buffData)
 
 	override function apply(UnitEntity target)
 		this.target = target
@@ -20,8 +20,8 @@ public abstract class NormalBuff extends Buff
 		
 public abstract class StackingBuff extends Buff
 
-	construct(real dur, int abilId)
-		super(dur, abilId)
+	construct(real dur, buffTuple buffData)
+		super(dur, buffData)
 			
 	override function apply(UnitEntity target)			
 		this.target = target
@@ -33,8 +33,8 @@ public abstract class StackingBuff extends Buff
 public class ShieldBuff extends NormalBuff
 	real blockAmount
 	
-	construct(real dur, int abilId, real amount)
-		super(dur, abilId)
+	construct(real dur, buffTuple buffData, real amount)
+		super(dur, buffData)
 		blockAmount = amount
 		
 	override function update()
