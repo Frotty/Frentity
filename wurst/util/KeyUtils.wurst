@@ -1,0 +1,46 @@
+package KeyUtils
+import Event
+
+public tuple keyTuple(boolean up, boolean down, boolean left, boolean right)
+
+keyTuple array keyStatuses
+
+public function player.getDownKeys() returns keyTuple
+	return keyStatuses[this.getId()]
+
+function onKeyEvent()
+	var keyStatus = keyStatuses[GetTriggerPlayer().getId()]
+	let id = GetTriggerEventId()
+	print("key event" + (id != null).toString())
+
+	if id == EVENT_PLAYER_ARROW_DOWN_DOWN
+		print("down down")
+		keyStatus.down = true
+	else if id == EVENT_PLAYER_ARROW_DOWN_UP
+		keyStatus.down = false
+	else if id == EVENT_PLAYER_ARROW_UP_DOWN
+		keyStatus.up = true
+	else if id == EVENT_PLAYER_ARROW_UP_UP
+		keyStatus.up = false
+	else if id == EVENT_PLAYER_ARROW_LEFT_DOWN
+		keyStatus.left = true
+	else if id == EVENT_PLAYER_ARROW_LEFT_UP
+		keyStatus.left = false
+	else if id == EVENT_PLAYER_ARROW_RIGHT_DOWN
+		keyStatus.right = true
+	else if id == EVENT_PLAYER_ARROW_RIGHT_UP
+		keyStatus.right = false
+
+	keyStatuses[GetTriggerPlayer().getId()] = keyStatus
+
+init
+	for i = 0 to 11
+		keyStatuses[i] = keyTuple(false, false, false, false)
+	EventListener.add(EVENT_PLAYER_ARROW_DOWN_DOWN, () -> onKeyEvent())
+	EventListener.add(EVENT_PLAYER_ARROW_DOWN_UP, () -> onKeyEvent())
+	EventListener.add(EVENT_PLAYER_ARROW_UP_DOWN, () -> onKeyEvent())
+	EventListener.add(EVENT_PLAYER_ARROW_UP_UP, () -> onKeyEvent())
+	EventListener.add(EVENT_PLAYER_ARROW_LEFT_DOWN, () -> onKeyEvent())
+	EventListener.add(EVENT_PLAYER_ARROW_LEFT_UP, () -> onKeyEvent())
+	EventListener.add(EVENT_PLAYER_ARROW_RIGHT_DOWN, () -> onKeyEvent())
+	EventListener.add(EVENT_PLAYER_ARROW_RIGHT_UP, () -> onKeyEvent())

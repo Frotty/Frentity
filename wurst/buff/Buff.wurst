@@ -17,6 +17,12 @@ LinkedList<Buff> array currentBuffs
 public function UnitEntity.hasBuffs() returns boolean
 	return currentBuffs[this castTo int] != null
 
+public function UnitEntity.getBuff(int typeId) returns Buff
+	for b from currentBuffs[this castTo int].staticItr()
+		if b.typeId == typeId
+			return b
+	return null
+
 public function UnitEntity.getBuffs() returns LinkedList<Buff>
 	return currentBuffs[this castTo int]
 

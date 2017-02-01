@@ -55,6 +55,7 @@ public abstract class EventListener
 	
 trigger unitTrig = CreateTrigger()
 trigger leaveTrig = CreateTrigger()
+trigger keyTrig = CreateTrigger()
 
 public function eventid.toIntId() returns int
 	var id = eventidToIndex[this.getHandleId()]
@@ -72,7 +73,7 @@ function registerEventId(eventid evnt) returns int
 	if evnt.isPlayerunitEvent()
 		printLog(Loglevel.DEBUG, "reg handleid: " + eventId.toString() + " -> eventId: " + eventTypeCounter.toString())
 		registerPlayerUnitEvent(ConvertPlayerUnitEvent(eventId), function EventListener.generalEventCallback)
-	else if evnt != EVENT_UNIT_DAMAGED and evnt != EVENT_PLAYER_LEAVE
+	else if evnt != EVENT_UNIT_DAMAGED and evnt != EVENT_PLAYER_LEAVE and not evnt.isKeyboardEvent()
 		printLog(Loglevel.ERROR, "registering non-playerunitevent. Except EVENT_UNIT_DAMAGED and EVENT_PLAYER_LEAVE these are not supported right now.")
 	return eventTypeCounter
 	
@@ -99,9 +100,18 @@ init
 		onLeave(() -> unregisterEventsForUnit(getEnterLeaveUnit()))
 		
 		// Register Actions
-		unitTrig.addAction(function EventListener.generalEventCallback)	
+		unitTrig.addAction(() -> EventListener.generalEventCallback())	
 		leaveTrig.addAction(function EventListener.generalEventCallback)
+		keyTrig.addAction(function EventListener.generalEventCallback)
 
 		for i = 0 to bj_MAX_PLAYERS-1
 			leaveTrig.registerPlayerEvent(players[i], EVENT_PLAYER_LEAVE)
+			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_DOWN_DOWN)
+			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_DOWN_UP)
+			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_UP_DOWN)
+			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_UP_UP)
+			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_LEFT_DOWN)
+			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_LEFT_UP)
+			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_RIGHT_DOWN)
+			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_RIGHT_UP)
 	end)
