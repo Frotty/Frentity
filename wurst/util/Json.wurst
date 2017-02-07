@@ -26,12 +26,10 @@ public class Json
 	function addProperty(Property p)
 		plist.add(p)
 		properties.put(p.name.getHash(), p)
-		print("added prop: " + p.name + "=" + p.value)
 
 	function fromString(string json)
 		let sc = new Scanner(json, SIGN_COMMA, SIGN_EQUAL)
 		let header = sc.next()
-		print("header: " + header)
 		if header == JSON_HEADER
 			while sc.hasNext()
 				addProperty(new Property(sc.next(), sc.next()))
@@ -52,10 +50,8 @@ public class Json
 		return properties.get(key.getHash()).value
 
 	function toString() returns string
-		print("to String " + plist.getSize().toString())
 		var s = JSON_HEADER + SIGN_COMMA
 		for p in plist
-			print("entry <" + p.toString() + ">")
 			let ps = p.toString()
 			if ps.length() > 0
 				s += ps + SIGN_COMMA

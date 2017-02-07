@@ -11,10 +11,8 @@ public function player.getDownKeys() returns keyTuple
 function onKeyEvent()
 	var keyStatus = keyStatuses[GetTriggerPlayer().getId()]
 	let id = GetTriggerEventId()
-	print("key event" + (id != null).toString())
 
 	if id == EVENT_PLAYER_ARROW_DOWN_DOWN
-		print("down down")
 		keyStatus.down = true
 	else if id == EVENT_PLAYER_ARROW_DOWN_UP
 		keyStatus.down = false

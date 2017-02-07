@@ -34,7 +34,7 @@ public class Scanner
 		else
 			remainingInput = remainingInput.substring(tokenLength+1, remainingInput.length())
 		tokenLength = 0
-		return token
+		return token.replace(delimiter1, "")
 
 	function close()
 		destroy this

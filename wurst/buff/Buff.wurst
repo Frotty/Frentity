@@ -18,10 +18,18 @@ public function UnitEntity.hasBuffs() returns boolean
 	return currentBuffs[this castTo int] != null
 
 public function UnitEntity.getBuff(int typeId) returns Buff
-	for b from currentBuffs[this castTo int].staticItr()
-		if b.typeId == typeId
-			return b
+	if this.hasBuffs()
+		for b from currentBuffs[this castTo int].staticItr()
+			if b.typeId == typeId
+				return b
 	return null
+
+public function UnitEntity.removeBuff(int typeId)
+	if this.hasBuffs()
+		let itr = currentBuffs[this castTo int].staticItr()
+		for b from itr
+			if b.typeId == typeId
+				itr.remove()
 
 public function UnitEntity.getBuffs() returns LinkedList<Buff>
 	return currentBuffs[this castTo int]
@@ -29,8 +37,8 @@ public function UnitEntity.getBuffs() returns LinkedList<Buff>
 public function UnitEntity.clearBuffs()
 	let buffs = currentBuffs[this castTo int]
 	if buffs != null
-		for bff in buffs
-			bff.done = true
+		for bff from buffs.staticItr()
+			destroy bff
 		destroy buffs
 	currentBuffs[this castTo int] = null
 
@@ -62,26 +70,25 @@ public abstract class Buff
 		
 	function update()
 		if duration <= 0.
-			done = true
+			terminate()
 		else
 			duration -= BUFF_ANIM_PERIOD
 		
 	function refresh() 
 		if not target.actor.hasAbility(buffData.abilId)
 			target.actor.addAbility(buffData.abilId)
+
+	function terminate()
+		if not done
+			done = true
+			destroy this
 			
 	ondestroy
 		onEnd()
 		if target != null and not target.done and target.hasBuffs()
-			target.getBuffs().remove(this)
-			boolean isLast = true
-			for bff in target.getBuffs()
-				if bff.typeId == this.typeId
-					isLast = false
-					break
-			if isLast
-				target.actor.removeAbility(buffData.abilId)
-				target.actor.removeAbility(buffData.buffId)
+			target.removeBuff(this.typeId)
+			target.actor.removeAbility(buffData.abilId)
+			target.actor.removeAbility(buffData.buffId)
 
 /** Creates an ability based on Tornado aura that allows to display a buff without side effects */
 public function createBuffObject(string name, string tooltip, string iconpath) returns buffTuple
@@ -117,7 +124,7 @@ init
 			//Attacker is alive, apply his attack modifiers
 			attData = att.getEntity() castTo UnitEntity
 			if attData.hasBuffs()
-				for bff in attData.getBuffs()
+				for bff from attData.getBuffs().staticItr()
 					if not bff.done
 						bff.attackModifier()
 		
@@ -125,7 +132,7 @@ init
 			//Defender is alive, apply his defense modifiers
 			defData = def.getEntity() castTo UnitEntity
 			if defData.hasBuffs()
-				for bff in defData.getBuffs()
+				for bff from defData.getBuffs().staticItr()
 					if not bff.done
 						bff.defenseModifier()
 						
@@ -144,7 +151,7 @@ init
 		if v.getUserData() > 0
 			let victimData = v.getUserData() castTo UnitEntity
 			if victimData != null and not victimData.done and victimData.hasBuffs()
-				for bff in victimData.getBuffs()
+				for bff from victimData.getBuffs().staticItr()
 					bff.refresh()
 	end)
 

@@ -13,7 +13,7 @@ public abstract class NormalBuff extends Buff
 		for bff in target.getBuffs()
 			if bff.typeId == this.typeId
 				bff.duration = duration
-				done = true
+				destroy this
 				return
 		target.getBuffs().add(this)
 		refresh()
@@ -40,7 +40,7 @@ public class ShieldBuff extends NormalBuff
 	override function update()
 		super.update()
 		if blockAmount <= 0
-			done = true
+			destroy this
 		
 	override function apply(UnitEntity target)
 		this.target = target
@@ -51,7 +51,7 @@ public class ShieldBuff extends NormalBuff
 				let sd = bff castTo thistype
 				sd.duration = duration
 				sd.blockAmount += blockAmount
-				done = true
+				destroy this
 				return
 		target.getBuffs().add(this)
 		refresh()
@@ -62,7 +62,7 @@ public class ShieldBuff extends NormalBuff
 		if dmg >= blockAmount
 			modifyDamageBy(-blockAmount)
 			blockAmount = 0
-			done = true
+			destroy this
 		else
 			modifyDamage(0)
 			blockAmount = blockAmount - dmg

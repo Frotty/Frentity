@@ -20,9 +20,7 @@ function updateInactiveEntities()
 function updateBuffs()
 	buffItr.reset()
 	for b from buffItr
-		if b.done or b.target.done
-			destroy b
-		else
+		if not b.done
 			b.update()
 			
 public function startEntityLoop() returns boolean
@@ -34,8 +32,7 @@ public function startEntityLoop() returns boolean
 		let e = getEnterLeaveUnit().getEntity()
 		if e != null and e instanceof UnitEntity
 			let ue = (e castTo UnitEntity)
-			if ue.hasBuffs()
-				ue.clearBuffs()
+			ue.clearBuffs()
 			e.terminate()
 	end)
 	return true
