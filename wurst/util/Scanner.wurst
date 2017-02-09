@@ -1,43 +1,99 @@
 package Scanner
 
 /*
-*	Scans the input string for tokens based on delimiters
+*	Seuqentially returns substrings of an input string based on delimiters.
+*  (Regex not supported)
 */
+public enum ReturnMode
+	TOKEN_ONLY
+	TOKEN_PLUS_DELIM
+	TOKEN_AND_DELIM
+
 public class Scanner
-	string remainingInput
-	string delimiter1
-	string delimiter2
+	string remainingInput = null
+	Delimiter lastDelimiter = null
 	int tokenLength = 0
+	ReturnMode returnMode = ReturnMode.TOKEN_ONLY
 
+	function setActiveDelimiter(Delimiter delim)
+		delim.prev = null
+		lastDelimiter = delim
 
-	construct(string input, string delim1, string delim2)
+	function setInput(string input)
 		remainingInput = input
-		this.delimiter1 = delim1
-		this.delimiter2 = delim2
+
+	function addDelimiter(string delim)
+		addDelimiter(new Delimiter(delim))
+
+	function addDelimiter(Delimiter delim)
+		delim.prev = lastDelimiter
+		lastDelimiter = delim
 
 	function hasNext() returns boolean
-		return remainingInput.length() > 0
+		if remainingInput.length() > 0
+			if returnMode == ReturnMode.TOKEN_ONLY
+				var delim = lastDelimiter
+				while delim != null
+					if remainingInput == delim.token
+						return false
+					delim = delim.prev
+			return true
+		return false
 
 	function next() returns string
-		string char = remainingInput.charAt(tokenLength)
 		string token = ""
-		while tokenLength < remainingInput.length()-1
-			if char == delimiter1 or char == delimiter2
-				token = remainingInput.substring(0, tokenLength)
+		tokenLength = 0
+		while tokenLength <= remainingInput.length()
+			// Length doesn't exceed input string, check all delimiters
+			var delim = lastDelimiter
+			while delim != null
+				if remainingInput.length() >= tokenLength+delim.length and remainingInput.substring(tokenLength, tokenLength+delim.length) == delim.token
+					// Found delimiter
+					if tokenLength == 0
+						// Token is only delimiter, return depending on mode
+						switch returnMode
+							case TOKEN_ONLY
+								token = ""
+								tokenLength--
+								remainingInput = remainingInput.substring(delim.length, remainingInput.length())
+							case TOKEN_PLUS_DELIM
+							case TOKEN_AND_DELIM
+								token = remainingInput.substring(0, delim.length)
+								remainingInput = remainingInput.substring(delim.length, remainingInput.length())
+					else
+						switch returnMode
+							case TOKEN_ONLY
+								token = remainingInput.substring(0, tokenLength)
+								remainingInput = remainingInput.substring(token.length()+delim.length, remainingInput.length())
+							case TOKEN_PLUS_DELIM
+								token = remainingInput.substring(0, tokenLength+delim.length)
+								remainingInput = remainingInput.substring(token.length()+delim.length, remainingInput.length())
+							case TOKEN_AND_DELIM
+								token = remainingInput.substring(0, tokenLength)
+								remainingInput = remainingInput.substring(token.length(), remainingInput.length())
+						
+					break
+				delim = delim.prev
+			if token.length() > 0
 				break
-			else
-				tokenLength ++
-				char = remainingInput.charAt(tokenLength)
+			tokenLength ++
 		if token.length() < 1
 			token = remainingInput
 			remainingInput = ""
-		else
-			remainingInput = remainingInput.substring(tokenLength+1, remainingInput.length())
-		tokenLength = 0
-		return token.replace(delimiter1, "")
+		
+		return token
 
 	function close()
 		destroy this
 
 	function iterator() returns Scanner
 		return this
+
+public class Delimiter
+	string token
+	int length
+	Delimiter prev = null
+
+	construct(string token)
+		this.token = token
+		length = token.length()
