@@ -1,0 +1,173 @@
+package BigString
+import ErrorHandling
+
+public constant BIG_SUBSTRING_LEN = 400
+// Lazily evaluated substring
+public class BigSubString
+	private BigString parent = null
+	private BigSubString next = null
+	private int start = 0
+	private int length
+	private string preinit = null
+
+	construct(string preInit)
+		this.preinit = preInit
+		this.length = preinit.length()
+
+	construct(BigString parent, int start, int length)
+		this.parent = parent
+		this.start = start
+		this.length = length
+
+	function getSingleLength() returns int
+		return length
+
+	function getCombinedLength() returns int
+		if next != null and next != this
+			return length + next.getCombinedLength()
+		return length
+
+	function getStart() returns int
+		return start
+
+	function substring(int offset, int length) returns BigSubString
+		return new BigSubString(parent, start+offset, length)
+
+	function split(int offset) returns BigSubString
+		length = offset
+		return new BigSubString(parent, offset, length-offset)
+
+	function getSingle() returns string
+		if getSingleLength() > BIG_SUBSTRING_LEN
+			error("cannot use get on oversized SubStrings. You need to iterate through the chunks")
+		if parent == null and preinit == null
+			error("cannot generate new cache without parent")
+		if preinit != null
+			return preinit
+		else
+			return parent.getSubStringData(this)
+
+	function getCombined() returns string
+		if getCombinedLength() > BIG_SUBSTRING_LEN
+			error("cannot use get on oversized SubStrings. You need to iterate through the chunks")
+		if parent == null and preinit == null
+			error("cannot generate new cache without parent")
+		var s = ""
+		if preinit != null
+			s += preinit
+		else
+			s += parent.getSubStringData(this)
+		if next != null
+			s += next.getCombined()
+		
+		return s
+
+	function concat(BigSubString next) returns BigSubString
+		if next == null
+			error("null")
+		var t = this
+		while t.next != null
+			t = t.next
+		t.next = next
+		return this
+
+	function addToBigString(BigString target)
+		if preinit != null
+			target.addString(preinit)
+		else
+			var len = 0
+			while len+BIG_SUBSTRING_LEN < length
+				print("very big")
+				target.addString(parent.getString(start + len, BIG_SUBSTRING_LEN))
+				len += BIG_SUBSTRING_LEN
+				length -= BIG_SUBSTRING_LEN
+			target.addString(parent.getString(start + len, length-len))
+		if next != null
+			next.addToBigString(target)
+
+public class BigString
+	private string array[10] substrings
+	private int length = 0
+	int startoffset = 0
+
+	construct()
+		reset()
+
+	function reset()
+		for i = 0 to 9
+			substrings[i] = ""
+		length = 0
+		startoffset = 0
+
+	function getLength() returns int
+		return length-startoffset
+
+	function asSubstring() returns BigSubString
+		return new BigSubString(this, 0, length)
+
+	function addSubString(BigSubString substring)
+		substring.addToBigString(this)
+
+	function substring(int offset, int length) returns BigSubString
+		return new BigSubString(this, offset, length)
+
+	function charAt(int offset) returns BigSubString
+		return new BigSubString(this, offset, 1)
+
+	function addString(string sp)
+		print("adding string <" + sp + ">")
+		if sp.length() > BIG_SUBSTRING_LEN
+			error("adding too long string")
+		var s = sp
+		var idx = (getLength() / BIG_SUBSTRING_LEN).toInt()
+		if substrings[idx].length() + sp.length() > BIG_SUBSTRING_LEN
+			print("data doesnt fit in current array")
+			let off = BIG_SUBSTRING_LEN-substrings[idx].length()
+			substrings[idx] += sp.substring(0, off)
+			idx++
+			substrings[idx] += sp.substring(off)
+		else
+			substrings[idx] += sp
+		length += sp.length()
+
+	function getSubStringData(BigSubString substring) returns string
+		if substring.getStart()+substring.getSingleLength() > length 
+			error("string out of bounds: length: " + length.toString() + " s.length: " + substring.getSingleLength().toString() + " s.start: " + substring.getStart().toString())
+		if substring.getSingleLength() > BIG_SUBSTRING_LEN
+			error("substring is longer than maxsize")
+		let idx = (substring.getStart() / BIG_SUBSTRING_LEN).toInt()
+		let offsetstart = substring.getStart() mod BIG_SUBSTRING_LEN
+		let offsetend = offsetstart + substring.getSingleLength()
+		if offsetend > BIG_SUBSTRING_LEN
+			return substrings[idx].substring(offsetstart, BIG_SUBSTRING_LEN) + substrings[idx].substring(0, offsetend-BIG_SUBSTRING_LEN)
+		return substrings[idx].substring(offsetstart, offsetend)
+
+	function getString(int startpos) returns string
+		if startpos > getLength() or getLength() > BIG_SUBSTRING_LEN
+			error("Trying to get string out of bounds")
+		let modpos = startpos + startoffset
+		let idx = (modpos / BIG_SUBSTRING_LEN).toInt()
+		let offsetstart = (modpos mod BIG_SUBSTRING_LEN)
+		return substrings[idx].substring(offsetstart, length)
+
+	function getString(int startpos, int plength) returns string
+		// print("getString: start: " + startpos.toString() + " plength: " + plength.toString() )
+		if startpos+plength > getLength() 
+			error("Trying to get string out of bounds")
+		if plength > BIG_SUBSTRING_LEN
+			error("Trying to get oversized string")
+		let idx = (startpos / BIG_SUBSTRING_LEN).toInt()
+		let offsetstart = (startpos mod BIG_SUBSTRING_LEN) 
+		let offsetend = offsetstart + plength 
+		if offsetend > BIG_SUBSTRING_LEN
+			return substrings[idx].substring(offsetstart, substrings[idx].length()) + substrings[idx].substring(0, offsetend-BIG_SUBSTRING_LEN)
+		return substrings[idx].substring(offsetstart, offsetend)
+
+	function debugPrint()
+		var s = "BigString length: " + getLength().toString() + "lines: "
+		for i = 0 to 10
+			if substrings[i].length() > 0
+				s += "\nLine " + i.toString() + " : " + substrings[i]
+			else
+				break
+		printLog(Loglevel.DEBUG, s)

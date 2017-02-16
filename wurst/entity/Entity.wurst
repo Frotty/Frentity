@@ -34,6 +34,15 @@ public interface Serializable
 	function serialize() returns Json
 	function deserialize(Json json)
 
+	function debugPrint() returns string
+		let s = new BigString()
+		let json = serialize()
+		json.addToBigString(s)
+		destroy json
+		let st =  s.getString(0, BIG_SUBSTRING_LEN)
+		destroy s
+		return st
+
 /** Base Entity Class  */
 public abstract class Entity implements Serializable
 	use DupletListModule
