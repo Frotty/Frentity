@@ -1,23 +1,38 @@
 package Json
 import HashMap
 import LinkedList
-import Scanner
+import public Scanner
 import ErrorHandling
+import public BigString
+import TypeCasting
+import LZW
+import SeqWorker
+import initlater JsonParser
 
-constant SIGN_EQUAL = "."
-constant SIGN_COMMA = "_"
-constant JSON_HEADER = "JSON"
+public constant JSON_SIGN_EQUAL = new Delimiter("=")
+public constant JSON_SIGN_COMMA = new Delimiter("_")
+public constant JSON_OPEN_BRACKET = new Delimiter("(")
+public constant JSON_CLOSE_BRACKET = new Delimiter(")")
+public constant JSON_OPEN_ARRAY = new Delimiter("[")
+public constant JSON_CLOSE_ARRAY = new Delimiter("]")
+public constant JSON_HEADER = new Delimiter("J")
 
 public class Property
-	string name
-	string value
+	BigSubString name
+	BigSubString value
 
-	construct(string name, string value)
+	construct(BigSubString name, BigSubString value)
 		this.name = name
 		this.value = value
+		name.concat(value)
 
-	function toString() returns string
-		return name + SIGN_EQUAL + value
+	construct(string name, string value)
+		this.name = new BigSubString(name)
+		this.value = new BigSubString(value)
+		this.name.concat(this.value)
+
+	function toSubString() returns BigSubString
+		return name
 
 public class Json
 	HashMap<int, Property> properties = new HashMap<int, Property>()
@@ -25,17 +40,8 @@ public class Json
 
 	function addProperty(Property p)
 		plist.add(p)
-		properties.put(p.name.getHash(), p)
-
-	function fromString(string json)
-		let sc = new Scanner(json, SIGN_COMMA, SIGN_EQUAL)
-		let header = sc.next()
-		if header == JSON_HEADER
-			while sc.hasNext()
-				addProperty(new Property(sc.next(), sc.next()))
-		else
-			error("trying to load non-json file (missing header)")
-		destroy sc
+		properties.put(p.name.getSingle().getHash(), p)
+		// print("add prop: " + p.name.getCombined() + " start: " + p.name.getStart().toString())
 
 	function getProperty(string key) returns Property
 		return properties.get(key.getHash())
@@ -44,22 +50,44 @@ public class Json
 		return getInt(key).toReal()
 
 	function getInt(string key) returns int
-		return getString(key).toInt()
+		let s = getString(key)
+		if s == null or s.getSingleLength() == 0
+			return 0
+		print("get int for: s.start: " + s.getStart().toString() + " s.length: " + s.getSingleLength().toString())
+		let ss = s.getSingle()
+		print("s: " + ss)
+		return ss.toInt()
 
-	function getString(string key) returns string
+	function getString(string key) returns BigSubString
 		return properties.get(key.getHash()).value
 
-	function toString() returns string
-		var s = JSON_HEADER + SIGN_COMMA
-		for p in plist
-			let ps = p.toString()
-			if ps.length() > 0
-				s += ps + SIGN_COMMA
-		s.substring(0, s.length()-1)
-		return s
+	function getStringList(string key, JsonParser parser, SeqCallback finalCallback)
+		print("get list for key: " + key)
+		let str = getString(key)
+		print("str == null: " + (str == null).toString())
+		finalCallback.customData = parser castTo int
+		parser.setInput(new BigString()..addSubString(str))
+		parser.parseList(finalCallback)
+	
 
+	function addToBigString(BigString big) returns BigString
+		print("adding to bigString: listsize : " + plist.getSize().toString())
+		for p from plist.staticItr()
+			let ps = p.toSubString()
+			if ps.getSingleLength() > 0
+				big.addSubString(ps)
+		print("adding to bigString done")
+		return big
+
+	function reset()
+		properties.flush()
+		let itr = plist.staticItr()
+		for p from itr
+			destroy itr.remove()
+				
 	ondestroy
 		destroy properties
 		for p from plist.staticItr()
 			destroy p
 		destroy plist
+

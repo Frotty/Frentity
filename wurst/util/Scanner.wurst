@@ -1,4 +1,5 @@
 package Scanner
+import BigString
 
 /*
 *	Seuqentially returns substrings of an input string based on delimiters.
@@ -9,8 +10,17 @@ public enum ReturnMode
 	TOKEN_PLUS_DELIM
 	TOKEN_AND_DELIM
 
+public class Delimiter
+	string token
+	int length
+	Delimiter prev = null
+
+	construct(string token)
+		this.token = token
+		length = token.length()
+
 public class Scanner
-	string remainingInput = null
+	BigString bigInput = null
 	Delimiter lastDelimiter = null
 	int tokenLength = 0
 	ReturnMode returnMode = ReturnMode.TOKEN_ONLY
@@ -19,8 +29,9 @@ public class Scanner
 		delim.prev = null
 		lastDelimiter = delim
 
-	function setInput(string input)
-		remainingInput = input
+	function setInput(BigString bigString)
+		bigInput = bigString
+		tokenLength = 0
 
 	function addDelimiter(string delim)
 		addDelimiter(new Delimiter(delim))
@@ -30,24 +41,26 @@ public class Scanner
 		lastDelimiter = delim
 
 	function hasNext() returns boolean
-		if remainingInput.length() > 0
+		if bigInput.getLength() > 0
 			if returnMode == ReturnMode.TOKEN_ONLY
 				var delim = lastDelimiter
 				while delim != null
-					if remainingInput == delim.token
+					if bigInput.getLength() == delim.length and bigInput.getString(0, delim.length) == delim.token
 						return false
 					delim = delim.prev
 			return true
+		print("no next")
 		return false
 
 	function next() returns string
+		print("next: bigInput.length: " + bigInput.getLength().toString())
 		string token = ""
 		tokenLength = 0
-		while tokenLength <= remainingInput.length()
+		while tokenLength <= bigInput.getLength()
 			// Length doesn't exceed input string, check all delimiters
 			var delim = lastDelimiter
 			while delim != null
-				if remainingInput.length() >= tokenLength+delim.length and remainingInput.substring(tokenLength, tokenLength+delim.length) == delim.token
+				if bigInput.getLength() >= tokenLength+delim.length and bigInput.getString(tokenLength, delim.length) == delim.token
 					// Found delimiter
 					if tokenLength == 0
 						// Token is only delimiter, return depending on mode
@@ -55,22 +68,22 @@ public class Scanner
 							case TOKEN_ONLY
 								token = ""
 								tokenLength--
-								remainingInput = remainingInput.substring(delim.length, remainingInput.length())
+								bigInput.startoffset += delim.length
 							case TOKEN_PLUS_DELIM
 							case TOKEN_AND_DELIM
-								token = remainingInput.substring(0, delim.length)
-								remainingInput = remainingInput.substring(delim.length, remainingInput.length())
+								token = bigInput.getString(0, delim.length)
+								bigInput.startoffset += delim.length
 					else
 						switch returnMode
 							case TOKEN_ONLY
-								token = remainingInput.substring(0, tokenLength)
-								remainingInput = remainingInput.substring(token.length()+delim.length, remainingInput.length())
+								token = bigInput.getString(0, tokenLength)
+								bigInput.startoffset += token.length()+delim.length
 							case TOKEN_PLUS_DELIM
-								token = remainingInput.substring(0, tokenLength+delim.length)
-								remainingInput = remainingInput.substring(token.length()+delim.length, remainingInput.length())
+								token = bigInput.getString(0, tokenLength+delim.length)
+								bigInput.startoffset += token.length()+delim.length
 							case TOKEN_AND_DELIM
-								token = remainingInput.substring(0, tokenLength)
-								remainingInput = remainingInput.substring(token.length(), remainingInput.length())
+								token = bigInput.getString(0, tokenLength)
+								bigInput.startoffset += token.length()
 						
 					break
 				delim = delim.prev
@@ -78,8 +91,8 @@ public class Scanner
 				break
 			tokenLength ++
 		if token.length() < 1
-			token = remainingInput
-			remainingInput = ""
+			token = bigInput.getString(0)
+			bigInput.startoffset += token.length()
 		
 		return token
 
@@ -89,11 +102,3 @@ public class Scanner
 	function iterator() returns Scanner
 		return this
 
-public class Delimiter
-	string token
-	int length
-	Delimiter prev = null
-
-	construct(string token)
-		this.token = token
-		length = token.length()
