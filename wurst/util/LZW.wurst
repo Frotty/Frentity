@@ -4,15 +4,22 @@ import LinkedList
 import ClosureTimers
 import BigString
 import SeqWorker
+import ErrorHandling
 import CodeGenerator
 
+/** Lempel Ziv Welch Compression */
+
+constant maxDictSize = 2048
 constant string ALPHABET                    = "_0123456789abcdefghijklmnopqrstuvwxyz[]"
 
-function encodePositions(LinkedList<int> intList)
+function encodePositions(LinkedList<int> intList, int dictSize)
+	if dictSize > maxDictSize
+		error("dictionary size exceeds max size")
 	let sc = new Savecode()
 	let max = intList.getSize()
+	sc.encode(dictSize, maxDictSize)
 	for i from intList.staticItr()
-		sc.encode(i, max)
+		sc.encode(i, dictSize)
 	let encoded = sc.save()
 	print("encoded: " + encoded + " length: " + encoded.length().toString())
 
@@ -20,16 +27,12 @@ function encodePositions(LinkedList<int> intList)
 	* @return boolean - True if compression is successful,
 	* false otherwise.
 	*/
-public function compress(BigString data) 
+public function compress(BigString data, SeqCallback onFinishCallback) 
 	LinkedList<int> intList = new LinkedList<int>()
 	LinkedList<string> dictionary = new LinkedList<string>()
 	for c in ALPHABET
 		dictionary.add(c)
 		
-	print("preinit dict " + dictionary.toString())
-
-
-	
 	int inc = 0
 	doSeq(5, (SeqCallback cb) -> begin
 		BigSubString A
@@ -66,8 +69,8 @@ public function compress(BigString data)
 				st+= s + ","
 			print("dict: " + st)
 			print("inputlength: " + data.getLength().toString() + " outputlength: " + intList.getSize().toString())
-			encodePositions(intList)
-	
+			encodePositions(intList, dictionary.getSize())
+			onFinishCallback.onExeute(onFinishCallback)
 	end)
 
 /**
