@@ -53,30 +53,24 @@ public class Json
 		let s = getString(key)
 		if s == null or s.getSingleLength() == 0
 			return 0
-		print("get int for: s.start: " + s.getStart().toString() + " s.length: " + s.getSingleLength().toString())
 		let ss = s.getSingle()
-		print("s: " + ss)
 		return ss.toInt()
 
 	function getString(string key) returns BigSubString
 		return properties.get(key.getHash()).value
 
 	function getStringList(string key, JsonParser parser, SeqCallback finalCallback)
-		print("get list for key: " + key)
 		let str = getString(key)
-		print("str == null: " + (str == null).toString())
 		finalCallback.customData = parser castTo int
 		parser.setInput(new BigString()..addSubString(str))
 		parser.parseList(finalCallback)
 	
 
 	function addToBigString(BigString big) returns BigString
-		print("adding to bigString: listsize : " + plist.getSize().toString())
 		for p from plist.staticItr()
 			let ps = p.toSubString()
 			if ps.getSingleLength() > 0
 				big.addSubString(ps)
-		print("adding to bigString done")
 		return big
 
 	function reset()

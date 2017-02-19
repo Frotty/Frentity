@@ -77,7 +77,6 @@ public class BigSubString
 		else
 			var len = 0
 			while len+BIG_SUBSTRING_LEN < length
-				print("very big")
 				target.addString(parent.getString(start + len, BIG_SUBSTRING_LEN))
 				len += BIG_SUBSTRING_LEN
 				length -= BIG_SUBSTRING_LEN
@@ -115,13 +114,11 @@ public class BigString
 		return new BigSubString(this, offset, 1)
 
 	function addString(string sp)
-		print("adding string <" + sp + ">")
 		if sp.length() > BIG_SUBSTRING_LEN
 			error("adding too long string")
 		var s = sp
 		var idx = (getLength() / BIG_SUBSTRING_LEN).toInt()
 		if substrings[idx].length() + sp.length() > BIG_SUBSTRING_LEN
-			print("data doesnt fit in current array")
 			let off = BIG_SUBSTRING_LEN-substrings[idx].length()
 			substrings[idx] += sp.substring(0, off)
 			idx++

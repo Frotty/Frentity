@@ -67,7 +67,6 @@ public class JsonParser
 
 	private function parseListSeq()
 		currentToken = bigInput.getString(currentPosition, 1)
-		print("currToken: " + currentToken)
 		switch currentToken
 			case JSON_OPEN_ARRAY.token
 				squareBracketLvl++
@@ -78,13 +77,11 @@ public class JsonParser
 				if squareBracketLvl == 0
 					let bss = new BigSubString(bigInput, propStartPosition, currentPosition-propStartPosition)
 					outputList.add(bss)
-					print("addedL: " + bss.getSingle())
 					propStartPosition = currentPosition+1
 			case JSON_SIGN_COMMA.token
 				if squareBracketLvl == 1
 					let bss = new BigSubString(bigInput, propStartPosition, currentPosition-propStartPosition)
 					outputList.add(bss)
-					print("added: " + bss.getSingle())
 					propStartPosition = currentPosition+1
 			default
 		
@@ -109,7 +106,6 @@ public class JsonParser
 
 	private function parseSeq()
 		currentToken = bigInput.getString(currentPosition, 1)
-		print("currToken: " + currentToken)
 		switch currentToken
 			case JSON_OPEN_ARRAY.token
 				squareBracketLvl++
