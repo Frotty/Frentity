@@ -5,17 +5,18 @@ import ClosureTimers
 import BigString
 import SeqWorker
 import ErrorHandling
-import CodeGenerator
+import Encoder
 
 /** Lempel Ziv Welch Compression */
 
 constant maxDictSize = 2048
-constant string ALPHABET                    = "_0123456789abcdefghijklmnopqrstuvwxyz[]"
+constant string DICT_INIT                   = "_0123456789abcdefghijklmnopqrstuvwxyz[]"
+constant string ALLOWED_PLAYER_CHARS 		= "0aUb1GLwR2kHvP3CQIM4npFs5iSW6tzAr7TNxo8JXVjy9OcdEfBKgqeuYDhmlZ"
 
 function encodePositions(LinkedList<int> intList, int dictSize)
 	if dictSize > maxDictSize
 		error("dictionary size exceeds max size")
-	let sc = new Savecode()
+	let sc = new Encoder(ALLOWED_PLAYER_CHARS)
 	let max = intList.getSize()
 	sc.encode(dictSize, maxDictSize)
 	for i from intList.staticItr()
@@ -30,7 +31,7 @@ function encodePositions(LinkedList<int> intList, int dictSize)
 public function compress(BigString data, SeqCallback onFinishCallback) 
 	LinkedList<int> intList = new LinkedList<int>()
 	LinkedList<string> dictionary = new LinkedList<string>()
-	for c in ALPHABET
+	for c in DICT_INIT
 		dictionary.add(c)
 		
 	int inc = 0
@@ -80,7 +81,7 @@ public function decompress(LinkedList<int> ints) returns boolean
 	string output = ""
 
 	LinkedList<string> dictionary = new LinkedList<string>()
-	for c in ALPHABET
+	for c in DICT_INIT
 		dictionary.add(c)
 
 	string curr
