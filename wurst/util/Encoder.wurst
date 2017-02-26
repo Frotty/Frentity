@@ -1,5 +1,7 @@
 package Encoder
+import BigString
 import BigNum
+import SeqWorker
 // Encodes numbers into ones with higher bases and represents them in the shortest possible way
 // Credits: Pipedream
 public constant maxInt = 2147483647
@@ -9,11 +11,12 @@ public class Encoder
 	string charset
 	int base
 	real digits	= 0.	//logarithmic approximation
-	BigNum bignum = new BigNum(base)
+	BigNum bignum 
 
 	construct(string charset)
 		this.charset = charset
 		this.base = charset.length()
+		this.bignum = new BigNum(base)
 	
 	ondestroy
 		destroy bignum
@@ -51,25 +54,29 @@ public class Encoder
 			maxlen--
 	
 	
-	function toString() returns string
+	function toString(BigString big) returns BigString
 		BigNum_l cur = bignum.list
 		string s = ""
 		while cur != null
 			s = itochar(cur.leaf) + s
 			cur = cur.next
-		return s
+		big.addString(s)
+		return big
 	
-	function fromString( string s )
-		int i = s.length()-1
+	function fromString(BigString bs, PayloadCallback onFinish)
+		int i = bs.getLength()-1
 		BigNum_l cur = new BigNum_l()
 		bignum.list = cur
-		while true
-			cur.leaf = chartoi(SubString(s,i,i+1))
-			if i <= 0
-				break		
-			cur.next = new BigNum_l()
-			cur = cur.next
-			i--
+		doSeq(5, (SeqCallback cb) -> begin
+			if i > 0
+				cur.leaf = chartoi(bs.getString(i, 1))
+				cur.next = new BigNum_l()
+				cur = cur.next
+				i--
+			else
+				cb.terminate()
+				onFinish.doStep()
+		end)
 	
 	function hash() returns int
 		int hash = 0
@@ -81,22 +88,24 @@ public class Encoder
 			cur = cur.next
 		return hash
 
-	function save() returns string
+	function save(BigString bs) returns BigString
 		int hash
 		clean()
 		hash = hash()
 		encode(hash,maxHash)
 		clean()
 		pad()
-		return toString()
+		return toString(bs)
 	
-	function load(string s) returns boolean
-		int inputhash
-		fromString(s)
-		inputhash = decode(maxHash)
-		clean()
-		let h = hash()
-		return inputhash == h
+	function load(BigString bs, PayloadCallback onFinish)
+		fromString(bs, (PayloadCallback cb) -> begin
+			let inputhash = decode(maxHash)
+			clean()
+			let h = hash()
+			onFinish.customData = (inputhash == h).toInt()
+			onFinish.doStep()
+		end)
+		
 
 	function chartoi( string c ) returns int
 		int i = 0

@@ -8,6 +8,13 @@ public function doSeq(int timesPerCycle, SeqCallback cb)
 	cb.executionsPerCycle = timesPerCycle
 	nullTimer(() -> cb.execute())
 
+public abstract class PayloadCallback
+	int customData = 0
+
+	function doStep()
+		onExecute(this)
+
+	abstract function onExecute(PayloadCallback cb)
 
 public abstract class SeqCallback
 	int executions = 0

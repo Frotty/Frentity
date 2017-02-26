@@ -59,7 +59,7 @@ public class Json
 	function getString(string key) returns BigSubString
 		return properties.get(key.getHash()).value
 
-	function getStringList(string key, JsonParser parser, SeqCallback finalCallback)
+	function getStringList(string key, JsonParser parser, PayloadCallback finalCallback)
 		let str = getString(key)
 		finalCallback.customData = parser castTo int
 		parser.setInput(new BigString()..addSubString(str))
