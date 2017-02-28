@@ -11,54 +11,61 @@ import Encoder
 
 constant maxDictSize = 4000
 constant string DICT_INIT                   = "_0123456789abcdefghijklmnopqrstuvwxyz-[]"
-constant string ALLOWED_PLAYER_CHARS 		= "0aUb1GLwR2kHvP3CQIM4npFs5iSW6tzAr7TNxo8JXVjy9OcdEfBKgqeuYDhmlZ[]."
+constant string ALLOWED_PLAYER_CHARS 		= "0aUb1GLwR2kHvP3CQIM4npFs5iSW6tzAr7TNxo8JXVjy9OcdEfBKgqeuYDhmlZ"
 
 function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback onFinish)
 	if dictSize > maxDictSize
 		error("dictionary size exceeds max size")
 
-	var st = ""
-	for s in intList
-		st+= s.toString() + ","
-	print("encoding positions: " + st)
+	if DEBUG_LEVEL == Loglevel.TRACE
+		var st = ""
+		for s in intList
+			st+= s.toString() + ","
+		printLog(Loglevel.TRACE, "encoding positions: " + st)
 	let encoder = new Encoder(ALLOWED_PLAYER_CHARS)
 	// let max = intList.getSize()
 	let itr = intList.staticItr()
-	doSeq(10, (SeqCallback cb) -> begin
+	doSeq(2, (SeqCallback cb) -> begin
 		if itr.hasNext()
+			print("encode step")
 			encoder.encode(itr.next(), dictSize)
 		else
+			print("encode done")
 			cb.terminate()
 			encoder.encode(dictSize, maxDictSize)
-			onFinish.customData = encoder.save(new BigString()) castTo int
-			destroy encoder
-			onFinish.doStep()
+			encoder.save(new BigString(), (PayloadCallback pc) -> begin
+				onFinish.customData = pc.customData
+				destroy encoder
+				onFinish.doStep()
+			end) 
+			
 	end)
 		
 	
 
 function decodePositions(BigString input, PayloadCallback onFinish)
 	let encoder = new Encoder(ALLOWED_PLAYER_CHARS)
+	print("load from")
+	input.debugPrint()
 	encoder.load(input, (PayloadCallback cb) -> begin
 		if cb.customData == 1
-			print("File is valid")
 			let dictSize = encoder.decode(maxDictSize)
+			print("File is valid dictsize : " + dictSize.toString())
 			let positions = new LinkedList<int>
-			doSeq(5, (SeqCallback cb) -> begin
+			doSeq(2, (SeqCallback cb) -> begin
 				if not encoder.bignum.isZero()
 					let dec = encoder.decode(dictSize)
 					positions.addtoStart(dec)
 				else
 					cb.terminate()
-					var st = ""
-					for s in positions
-						st+= s.toString() + ","
-					print("decoded positions: " + st)
+					if DEBUG_LEVEL == Loglevel.TRACE
+						var st = ""
+						for s in positions
+							st+= s.toString() + ","
+						printLog(Loglevel.TRACE,"decoded positions: " + st)
 					onFinish.customData = positions castTo int
 					onFinish.doStep()
 			end)
-			
-			
 		else
 			error("loaded input is invalid")
 	end)
@@ -79,18 +86,26 @@ public function compress(BigString data, PayloadCallback onFinish)
 	int inc = 0
 	BigSubString A = null
 	BigSubString B = null
-	doSeq(5, (SeqCallback cb) -> begin
+	doSeq(3, (SeqCallback cb) -> begin
 		if (inc < data.getLength() - 1)
+			if A != null
+				destroy A
 			A = data.charAt(inc)  
 			inc++
+			if B != null
+				destroy B
 			B = data.charAt(inc)     //Z is next character
 			A.concat(B)
 			while true     //Loop until the sequence of
 				if not dictionary.contains(A.getCombined())
 					break
+				if A != null
+					destroy A
 				A = new BigSubString(A.getSingle() + B.getSingle())
 				inc++
 				if (inc < data.getLength())
+					if B != null
+						destroy B
 					B = data.charAt(inc)
 					A.concat(B)
 				else
@@ -106,16 +121,20 @@ public function compress(BigString data, PayloadCallback onFinish)
 			if B != null and A.getSingle().charAt(A.getSingleLength()-1) != B.getSingle()
 				intList.add(dictionary.indexOf(B.getSingle()))
 			cb.terminate()
-			var st = ""
-			for s in dictionary
-				st+= s + ","
-			print("dict: " + st)
+			if DEBUG_LEVEL == Loglevel.TRACE
+				var st = ""
+				for s in dictionary
+					st+= s + ","
+				print("dict: " + st)
+			print("encode start")
 			encodePositions(intList, dictionary.getSize(), (PayloadCallback cb2) -> begin
+				print("callback")
 				let encoded = cb2.customData castTo BigString
 				print("inputlength: " + data.getLength().toString() + " outputlength: " + encoded.getLength().toString())
 				encoded.debugPrint()
 				onFinish.customData = encoded castTo int
 				onFinish.doStep()
+				nullTimer(() -> destroy dictionary)
 			end)
 			
 	end)
@@ -131,7 +150,7 @@ public function decompress(BigString input, PayloadCallback onFinish)
 		dictionary.add(c)
 	
 	decodePositions(input, (PayloadCallback cb1) -> begin
-		let positions = cb1.customData castTo LinkedList<int>
+		let positions = cb1.customData castTo LinkedList<int> 
 		let itr = positions.staticItr()
 		string A = ""
 		string B = ""
@@ -147,12 +166,13 @@ public function decompress(BigString input, PayloadCallback onFinish)
 					B = null
 				else                                //Dictionary does not have next index
 					B = A.charAt(0)        //must be first letter of current String
-				if (B != null)
+				if (B != null and B.length() > 0)
 					dictionary.add(A + B)
 
 				output.addString(A)
 			else
 				cb2.terminate()
+				destroy dictionary
 				print("decompressed: ")
 				output.debugPrint()
 				onFinish.customData = output castTo int

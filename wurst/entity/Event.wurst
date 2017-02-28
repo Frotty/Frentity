@@ -3,6 +3,7 @@ import public EventHelper
 import RegisterEvents
 import OnUnitEnterLeave
 import ClosureTimers
+import AbilityObjEditing
 import initlater DebugInfo
 //Listens to all PLAYER_UNIT_EVENTS plus EVENT_PLAYER_LEAVE and EVENT_UNIT_DAMAGED
 
@@ -27,8 +28,12 @@ public abstract class EventListener
 		
 	static function add(unit u, eventid eventId, EventListener listener)
 		let uid = u.getUserData()
+		if uid <= 0
+			return
 		listener.eventId = eventId.toIntId()
+		// print("adding eventlistener to entityid: " + uid.toString() + " eventid: " + listener.eventId.toString())
 		if unitListenersFirsts[uid] != null
+			// print("unit alrdy has listeners")
 			listener.next = unitListenersFirsts[uid]
 		unitListenersFirsts[uid] = listener
 			
@@ -37,12 +42,16 @@ public abstract class EventListener
 		let id = GetTriggerEventId().toIntId()
 		eventCallbacksPerSecond++
 		// Unit Listeners
-		if trigUnit != null and unitListenersFirsts[trigUnit.getUserData()] != null
-			var listener = unitListenersFirsts[trigUnit.getUserData()]
-			while listener != null
-				if listener.eventId == id
-					listener.onEvent()
-				listener = listener.next
+		if trigUnit != null
+			if trigUnit.hasAbility(DONT_FIRE_EVENTS_ID)
+				return
+			else if unitListenersFirsts[trigUnit.getUserData()] != null
+				var listener = unitListenersFirsts[trigUnit.getUserData()]
+				while listener != null
+					if listener.eventId == id
+						// print("Execute Listener")
+						listener.onEvent()
+					listener = listener.next
 		// General Listeners		
 		if generalListenersFirsts[id] != null
 			var listener = generalListenersFirsts[id]
@@ -74,7 +83,7 @@ function registerEventId(eventid evnt) returns int
 		printLog(Loglevel.DEBUG, "reg handleid: " + eventId.toString() + " -> eventId: " + eventTypeCounter.toString())
 		registerPlayerUnitEvent(ConvertPlayerUnitEvent(eventId), function EventListener.generalEventCallback)
 	else if evnt != EVENT_UNIT_DAMAGED and evnt != EVENT_PLAYER_LEAVE and not evnt.isKeyboardEvent()
-		printLog(Loglevel.ERROR, "registering non-playerunitevent. Except EVENT_UNIT_DAMAGED and EVENT_PLAYER_LEAVE these are not supported right now.")
+		printLog(Loglevel.ERROR, "registering handleid: " + eventId.toString() + " non-playerunitevent. Except EVENT_UNIT_DAMAGED and EVENT_PLAYER_LEAVE these are not supported right now.")
 	return eventTypeCounter
 	
 function registerEventsForUnit(unit u)
@@ -84,13 +93,14 @@ public function unregisterEventsForUnit(unit u)
 	unregisterEvents(u.getUserData())
 
 public function unregisterEvents(int id)
-	if EventListener.unitListenersFirsts[id] != null
+	if id > 0 and EventListener.unitListenersFirsts[id] != null
 		printLog(Loglevel.TRACE, "unregister unit has listeners. startid: " + id.toString())
 		var listener = EventListener.unitListenersFirsts[id]
 		EventListener.unitListenersFirsts[id] = null
 		while listener != null
-			destroy listener
+			let t = listener
 			listener = listener.next
+			destroy t
 
 init
 	doAfter(0.0, () -> begin
@@ -115,3 +125,9 @@ init
 			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_RIGHT_DOWN)
 			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_RIGHT_UP)
 	end)
+
+public constant DONT_FIRE_EVENTS_ID = 'dont'
+@compiletime function genObj()
+	new AbilityDefinitionDefenseBonusPlus1(DONT_FIRE_EVENTS_ID)
+	..setDefenseBonus(1, 0)
+	..setName("Dummy Event Ability")

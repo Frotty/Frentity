@@ -24,15 +24,11 @@ public class Property
 	construct(BigSubString name, BigSubString value)
 		this.name = name
 		this.value = value
-		name.concat(value)
 
 	construct(string name, string value)
 		this.name = new BigSubString(name)
 		this.value = new BigSubString(value)
-		this.name.concat(this.value)
 
-	function toSubString() returns BigSubString
-		return name
 
 public class Json
 	HashMap<int, Property> properties = new HashMap<int, Property>()
@@ -68,9 +64,8 @@ public class Json
 
 	function addToBigString(BigString big) returns BigString
 		for p from plist.staticItr()
-			let ps = p.toSubString()
-			if ps.getSingleLength() > 0
-				big.addSubString(ps)
+			big.addString(p.name.getSingle())
+			p.value.addToBigString(big)
 		return big
 
 	function reset()

@@ -54,25 +54,30 @@ public class Encoder
 			maxlen--
 	
 	
-	function toString(BigString big) returns BigString
+	function toString(BigString big, PayloadCallback onFinish) 
 		BigNum_l cur = bignum.list
-		string s = ""
-		while cur != null
-			s = itochar(cur.leaf) + s
-			cur = cur.next
-		big.addString(s)
-		return big
+		print("toString")
+		doSeq(2, (SeqCallback cb) -> begin
+			if cur != null
+				big.addString(itochar(cur.leaf))
+				cur = cur.next
+			else
+				print("toString done")
+				cb.terminate()
+				onFinish.customData = big castTo int
+				onFinish.doStep()
+		end)
 	
 	function fromString(BigString bs, PayloadCallback onFinish)
-		int i = bs.getLength()-1
+		int i = 0
 		BigNum_l cur = new BigNum_l()
 		bignum.list = cur
 		doSeq(5, (SeqCallback cb) -> begin
-			if i > 0
-				cur.leaf = chartoi(bs.getString(i, 1))
+			cur.leaf = chartoi(bs.getString(i, 1))
+			if i < bs.getLength()-1
 				cur.next = new BigNum_l()
 				cur = cur.next
-				i--
+				i++
 			else
 				cb.terminate()
 				onFinish.doStep()
@@ -88,20 +93,24 @@ public class Encoder
 			cur = cur.next
 		return hash
 
-	function save(BigString bs) returns BigString
+	function save(BigString bs, PayloadCallback onFinish)
 		int hash
 		clean()
 		hash = hash()
-		encode(hash,maxHash)
-		clean()
-		pad()
-		return toString(bs)
-	
+		print("encodehash: " + hash.toString())
+		nullTimer(() -> begin
+			encode(hash,maxHash)
+			clean()
+			pad()
+			toString(bs, onFinish)
+		end)
+		
 	function load(BigString bs, PayloadCallback onFinish)
 		fromString(bs, (PayloadCallback cb) -> begin
 			let inputhash = decode(maxHash)
 			clean()
 			let h = hash()
+			print("inputhash: " + inputhash.toString() + " h: " + h.toString())
 			onFinish.customData = (inputhash == h).toInt()
 			onFinish.doStep()
 		end)

@@ -49,11 +49,9 @@ public class Scanner
 						return false
 					delim = delim.prev
 			return true
-		print("no next")
 		return false
 
 	function next() returns string
-		print("next: bigInput.length: " + bigInput.getLength().toString())
 		string token = ""
 		tokenLength = 0
 		while tokenLength <= bigInput.getLength()
