@@ -6,12 +6,29 @@ import public SeqWorker
 import TypeCasting
 import ErrorHandling
 import Encoder
+import LastOrder
+import HashMap
 
 /** Lempel Ziv Welch Compression */
 
 constant maxDictSize = 4000
 constant string DICT_INIT                   = "_0123456789abcdefghijklmnopqrstuvwxyz-[]"
 constant string ALLOWED_PLAYER_CHARS 		= "0aUb1GLwR2kHvP3CQIM4npFs5iSW6tzAr7TNxo8JXVjy9OcdEfBKgqeuYDhmlZ"
+
+
+constant HashMap<string, int> dictionary 	= new HashMap<string, int>()
+int dictSize 						= 0
+
+function putDict(string s)
+	dictionary.put(s, dictSize)
+	dictionary.saveString(dictSize, s)
+	dictSize++
+
+function initDict()
+	dictSize = 0
+	dictionary.flush()
+	for c in DICT_INIT
+		putDict(c)
 
 function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback onFinish)
 	if dictSize > maxDictSize
@@ -27,7 +44,6 @@ function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback 
 	let itr = intList.staticItr()
 	doSeq(2, (SeqCallback cb) -> begin
 		if itr.hasNext()
-			print("encode step")
 			encoder.encode(itr.next(), dictSize)
 		else
 			print("encode done")
@@ -41,11 +57,9 @@ function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback 
 			
 	end)
 		
-	
 
 function decodePositions(BigString input, PayloadCallback onFinish)
 	let encoder = new Encoder(ALLOWED_PLAYER_CHARS)
-	print("load from")
 	input.debugPrint()
 	encoder.load(input, (PayloadCallback cb) -> begin
 		if cb.customData == 1
@@ -76,12 +90,14 @@ function decodePositions(BigString input, PayloadCallback onFinish)
 	* false otherwise.
 	*/
 public function compress(BigString data, PayloadCallback onFinish) 
-	print("compress:")
-	data.debugPrint()
+	if DEBUG_LEVEL == Loglevel.DEBUG
+		print("Compressing:")
+		data.debugPrint()
+	
+	// List 
 	LinkedList<int> intList = new LinkedList<int>()
-	LinkedList<string> dictionary = new LinkedList<string>()
-	for c in DICT_INIT
-		dictionary.add(c)
+
+	initDict()
 		
 	int inc = 0
 	BigSubString A = null
@@ -97,7 +113,7 @@ public function compress(BigString data, PayloadCallback onFinish)
 			B = data.charAt(inc)     //Z is next character
 			A.concat(B)
 			while true     //Loop until the sequence of
-				if not dictionary.contains(A.getCombined())
+				if not dictionary.has(A.getCombined())
 					break
 				if A != null
 					destroy A
@@ -112,29 +128,23 @@ public function compress(BigString data, PayloadCallback onFinish)
 					break
 			
 			//Write index to output
-			intList.add(dictionary.indexOf(A.getSingle()))
+			intList.add(dictionary.get(A.getSingle()))
 
-			dictionary.add(A.getCombined())
+			putDict(A.getCombined())
 
 		//        output += (dictionary.indexOf(Z) + " ");
 		else
 			if B != null and A.getSingle().charAt(A.getSingleLength()-1) != B.getSingle()
-				intList.add(dictionary.indexOf(B.getSingle()))
+				intList.add(dictionary.get(B.getSingle()))
 			cb.terminate()
-			if DEBUG_LEVEL == Loglevel.TRACE
-				var st = ""
-				for s in dictionary
-					st+= s + ","
-				print("dict: " + st)
 			print("encode start")
-			encodePositions(intList, dictionary.getSize(), (PayloadCallback cb2) -> begin
+			encodePositions(intList, dictSize, (PayloadCallback cb2) -> begin
 				print("callback")
 				let encoded = cb2.customData castTo BigString
 				print("inputlength: " + data.getLength().toString() + " outputlength: " + encoded.getLength().toString())
 				encoded.debugPrint()
 				onFinish.customData = encoded castTo int
 				onFinish.doStep()
-				nullTimer(() -> destroy dictionary)
 			end)
 			
 	end)
@@ -145,10 +155,8 @@ public function compress(BigString data, PayloadCallback onFinish)
 public function decompress(BigString input, PayloadCallback onFinish)
 	print("Decompress")
 	let output = new BigString()
-	LinkedList<string> dictionary = new LinkedList<string>()
-	for c in DICT_INIT
-		dictionary.add(c)
-	
+	initDict()
+
 	decodePositions(input, (PayloadCallback cb1) -> begin
 		let positions = cb1.customData castTo LinkedList<int> 
 		let itr = positions.staticItr()
@@ -158,21 +166,20 @@ public function decompress(BigString input, PayloadCallback onFinish)
 		doSeq(5, (SeqCallback cb2) -> begin
 			if itr.hasNext()
 				let idx = itr.next()
-				A = dictionary.get(idx)
-				if (itr.hasNext() and itr.lookahead() < dictionary.getSize())
-					B = dictionary.get(itr.lookahead())
+				A = dictionary.loadString(idx)
+				if (itr.hasNext() and itr.lookahead() < dictSize)
+					B = dictionary.loadString(itr.lookahead())
 					B = B.charAt(0)       //Add first letter of next String
 				else if (not itr.hasNext())       //Reached end of input
 					B = null
 				else                                //Dictionary does not have next index
 					B = A.charAt(0)        //must be first letter of current String
 				if (B != null and B.length() > 0)
-					dictionary.add(A + B)
+					putDict(A + B)
 
 				output.addString(A)
 			else
 				cb2.terminate()
-				destroy dictionary
 				print("decompressed: ")
 				output.debugPrint()
 				onFinish.customData = output castTo int

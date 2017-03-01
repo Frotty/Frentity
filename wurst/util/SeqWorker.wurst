@@ -1,45 +1,38 @@
 package SeqWorker
+import public TimerUtils
 import public ClosureTimers
-import ErrorHandling
 
 public function doSeq(int timesPerCycle, SeqCallback cb)
-	if cb == null or cb.done
-		error("wtf")
-	cb.executionsPerCycle = timesPerCycle
-	nullTimer(() -> cb.execute())
+	getTimer()..setData(cb castTo int)..startPeriodic(0.02, () -> begin
+		let time = GetExpiredTimer()
+		let rcb = (time.getData() castTo SeqCallback)
+		if rcb.done 
+			GetExpiredTimer().release()
+		else
+			rcb.doStep()
+	end)
 
 public abstract class PayloadCallback
 	int customData = 0
-
+	
 	function doStep()
 		onExecute(this)
 
 	abstract function onExecute(PayloadCallback cb)
 
 public abstract class SeqCallback
-	int executions = 0
-	int executionsPerCycle = 1
-	boolean done = false
 	int customData = 0
-
-	function execute()
-		executions++
-		while not done and executions <= executionsPerCycle
-			onExeute(this)
-			executions++
-		if not done
-			executions = 0
-			nullTimer(() -> execute())
-
-	function doStep()
-		onExeute(this)
+	boolean done = false
 
 	function terminate()
 		if not done
 			done = true
 			destroy this
 
-	abstract function onExeute(SeqCallback cb)
+	function doStep()
+		onExecute(this)
+
+	abstract function onExecute(SeqCallback cb)
 
 	
 

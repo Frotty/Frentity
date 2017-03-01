@@ -3,7 +3,6 @@ import public Json
 import SeqWorker
 import LinkedList
 import TypeCasting
-import ErrorHandling
 
 /**
 	Provides functionality to parse JSON (JasSObjectNotation).
@@ -57,13 +56,16 @@ public class JsonParser
 		if outputList != null
 			destroy outputList
 		outputList = new LinkedList<BigSubString>()
-		doSeq(10, (SeqCallback cb) -> begin
-			if currentPosition < bigInput.getLength()
-				parseListSeq()
-			else
-				cb.terminate()
-				finalCallback.doStep()
-		end)
+		if bigInput.getLength() <= 2
+			finalCallback.doStep()
+		else
+			doSeq(10, (SeqCallback cb) -> begin
+				if currentPosition < bigInput.getLength()
+					parseListSeq()
+				else
+					cb.terminate()
+					finalCallback.doStep()
+			end)
 
 	private function parseListSeq()
 		currentToken = bigInput.getString(currentPosition, 1)
@@ -91,7 +93,7 @@ public class JsonParser
 		Example: a1b2c[a1b2] -> parsed: a = 1, b = 2, c = [a1b2]	*/
 	function parse(PayloadCallback callback)
 		if bigInput == null or bigInput.getLength() <= 0
-			error("no valid input set")
+			nullTimer(() -> callback.doStep())
 		output.reset()
 		doSeq(10, (SeqCallback cb) -> begin
 			if currentPosition < bigInput.getLength()

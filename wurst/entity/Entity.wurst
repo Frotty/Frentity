@@ -17,6 +17,11 @@ import initlater Json
 @configurable public constant DYNAMIC_Z = false
 @configurable public constant KILL_ACTORS = false
 
+public constant KEY_X = "x"
+public constant KEY_Y = "y"
+public constant KEY_Z = "z"
+public constant KEY_TYPE = "t"
+
 public vec3 serializeOrigin = ZERO3
 
 public function unit.getEntity() returns Entity
@@ -148,13 +153,13 @@ public abstract class Entity implements Serializable
 
 	override function serialize() returns Json
 		let json = new Json()
-		json.addProperty(new Property("posx", (pos.x-serializeOrigin.x).toInt().toString()))
-		json.addProperty(new Property("posy", (pos.y-serializeOrigin.y).toInt().toString()))
-		json.addProperty(new Property("posz", (pos.z-serializeOrigin.z).toInt().toString()))
+		json.addProperty(new Property(KEY_X, (pos.x-serializeOrigin.x).toInt().toString()))
+		json.addProperty(new Property(KEY_Y, (pos.y-serializeOrigin.y).toInt().toString()))
+		json.addProperty(new Property(KEY_Z, (pos.z-serializeOrigin.z).toInt().toString()))
 		return json
 
 	override function deserialize(Json json)
-		pos = vec3(json.getReal("posx"), json.getReal("posy"), json.getReal("posz"))
+		// pos = vec3(json.getReal(KEY_X)+serializeOrigin.x, json.getReal(KEY_Y)+serializeOrigin.y, json.getReal(KEY_Z)+serializeOrigin.z)
 
 	ondestroy 
 		unregisterEvents(this castTo int)
