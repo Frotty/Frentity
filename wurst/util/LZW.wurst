@@ -46,7 +46,6 @@ function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback 
 		if itr.hasNext()
 			encoder.encode(itr.next(), dictSize)
 		else
-			print("encode done")
 			cb.terminate()
 			encoder.encode(dictSize, maxDictSize)
 			encoder.save(new BigString(), (PayloadCallback pc) -> begin
@@ -64,7 +63,6 @@ function decodePositions(BigString input, PayloadCallback onFinish)
 	encoder.load(input, (PayloadCallback cb) -> begin
 		if cb.customData == 1
 			let dictSize = encoder.decode(maxDictSize)
-			print("File is valid dictsize : " + dictSize.toString())
 			let positions = new LinkedList<int>
 			doSeq(2, (SeqCallback cb) -> begin
 				if not encoder.bignum.isZero()
@@ -90,9 +88,8 @@ function decodePositions(BigString input, PayloadCallback onFinish)
 	* false otherwise.
 	*/
 public function compress(BigString data, PayloadCallback onFinish) 
-	if DEBUG_LEVEL == Loglevel.DEBUG
-		print("Compressing:")
-		data.debugPrint()
+	printLog(Loglevel.DEBUG, "Compressing:")
+	data.debugPrint()
 	
 	// List 
 	LinkedList<int> intList = new LinkedList<int>()
@@ -137,11 +134,8 @@ public function compress(BigString data, PayloadCallback onFinish)
 			if B != null and A.getSingle().charAt(A.getSingleLength()-1) != B.getSingle()
 				intList.add(dictionary.get(B.getSingle()))
 			cb.terminate()
-			print("encode start")
 			encodePositions(intList, dictSize, (PayloadCallback cb2) -> begin
-				print("callback")
 				let encoded = cb2.customData castTo BigString
-				print("inputlength: " + data.getLength().toString() + " outputlength: " + encoded.getLength().toString())
 				encoded.debugPrint()
 				onFinish.customData = encoded castTo int
 				onFinish.doStep()
@@ -153,7 +147,6 @@ public function compress(BigString data, PayloadCallback onFinish)
 	* @return boolean - true if successful, false otherwise.
 	*/
 public function decompress(BigString input, PayloadCallback onFinish)
-	print("Decompress")
 	let output = new BigString()
 	initDict()
 
@@ -180,7 +173,6 @@ public function decompress(BigString input, PayloadCallback onFinish)
 				output.addString(A)
 			else
 				cb2.terminate()
-				print("decompressed: ")
 				output.debugPrint()
 				onFinish.customData = output castTo int
 				onFinish.doStep()

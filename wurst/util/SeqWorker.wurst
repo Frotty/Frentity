@@ -3,7 +3,7 @@ import public TimerUtils
 import public ClosureTimers
 
 public function doSeq(int timesPerCycle, SeqCallback cb)
-	getTimer()..setData(cb castTo int)..startPeriodic(0.02, () -> begin
+	getTimer()..setData(cb castTo int)..startPeriodic(0, () -> begin
 		let time = GetExpiredTimer()
 		let rcb = (time.getData() castTo SeqCallback)
 		if rcb.done 

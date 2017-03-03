@@ -56,13 +56,11 @@ public class Encoder
 	
 	function toString(BigString big, PayloadCallback onFinish) 
 		BigNum_l cur = bignum.list
-		print("toString")
 		doSeq(2, (SeqCallback cb) -> begin
 			if cur != null
 				big.addString(itochar(cur.leaf))
 				cur = cur.next
 			else
-				print("toString done")
 				cb.terminate()
 				onFinish.customData = big castTo int
 				onFinish.doStep()
@@ -97,7 +95,6 @@ public class Encoder
 		int hash
 		clean()
 		hash = hash()
-		print("encodehash: " + hash.toString())
 		nullTimer(() -> begin
 			encode(hash,maxHash)
 			clean()
@@ -110,7 +107,6 @@ public class Encoder
 			let inputhash = decode(maxHash)
 			clean()
 			let h = hash()
-			print("inputhash: " + inputhash.toString() + " h: " + h.toString())
 			onFinish.customData = (inputhash == h).toInt()
 			onFinish.doStep()
 		end)
