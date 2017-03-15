@@ -33,8 +33,9 @@ public class Json
 
 	function addProperty(Property p)
 		plist.add(p)
+		p.name.next = null
+		p.value.next = null
 		properties.put(p.name.getSingle().getHash(), p)
-		// print("add prop: " + p.name.getCombined() + " start: " + p.name.getStart().toString())
 
 	function getProperty(string key) returns Property
 		return properties.get(key.getHash())
@@ -54,8 +55,10 @@ public class Json
 
 	function getStringList(string key, JsonParser parser, PayloadCallback finalCallback)
 		let str = getString(key)
+		str.next = null
 		finalCallback.customData = parser castTo int
 		parser.setInput(new BigString()..addSubString(str))
+		parser.bigInput.debugPrint()
 		parser.parseList(finalCallback)
 	
 

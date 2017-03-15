@@ -57,13 +57,15 @@ public class JsonParser
 			destroy outputList
 		outputList = new LinkedList<BigSubString>()
 		if bigInput.getLength() <= 2
+			printLog(Loglevel.DEBUG, "skip empty list")
 			finalCallback.doStep()
 		else
-			doSeq(10, (SeqCallback cb) -> begin
+			doSeq((SeqCallback cb) -> begin
 				if currentPosition < bigInput.getLength()
 					parseListSeq()
 				else
 					cb.terminate()
+					printLog(Loglevel.DEBUG, "parsed list")
 					finalCallback.doStep()
 			end)
 
@@ -93,9 +95,12 @@ public class JsonParser
 		Example: a1b2c[a1b2] -> parsed: a = 1, b = 2, c = [a1b2]	*/
 	function parse(PayloadCallback callback)
 		if bigInput == null or bigInput.getLength() <= 0
-			nullTimer(() -> callback.doStep())
+			printLog(Loglevel.DEBUG, "skip empty input")
+			callback.doStep()
+			return
+		bigInput.debugPrint()
 		output.reset()
-		doSeq(10, (SeqCallback cb) -> begin
+		doSeq((SeqCallback cb) -> begin
 			if currentPosition < bigInput.getLength()
 				parseSeq()
 			else
@@ -103,7 +108,7 @@ public class JsonParser
 					propVal = new BigSubString(bigInput, propStartPosition, currentPosition-propStartPosition)
 					output.addProperty(new Property(propName, propVal))
 				cb.terminate()
-				nullTimer(() -> callback.doStep())
+				callback.doStep()
 		end)
 
 	private function parseSeq()

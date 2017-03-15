@@ -5,7 +5,7 @@ public constant BIG_SUBSTRING_LEN = 400
 // Lazily evaluated substring
 public class BigSubString
 	private BigString parent = null
-	private BigSubString next = null
+	BigSubString next = null
 	private int start = 0
 	private int length
 	private string preinit = null
@@ -39,7 +39,7 @@ public class BigSubString
 
 	function getSingle() returns string
 		if getSingleLength() > BIG_SUBSTRING_LEN
-			error("cannot use get on oversized SubStrings. You need to iterate through the chunks")
+			error("cannot use getSingle on oversized SubStrings. You need to iterate through the chunks")
 		if parent == null and preinit == null
 			error("cannot generate new cache without parent")
 		if preinit != null
@@ -49,7 +49,7 @@ public class BigSubString
 
 	function getCombined() returns string
 		if getCombinedLength() > BIG_SUBSTRING_LEN
-			error("cannot use get on oversized SubStrings. You need to iterate through the chunks")
+			error("cannot use getCombined on oversized SubStrings. You need to iterate through the chunks")
 		if parent == null and preinit == null
 			error("cannot generate new cache without parent")
 		var s = ""
@@ -75,13 +75,23 @@ public class BigSubString
 		if preinit != null
 			target.addString(preinit)
 		else
-			var len = 0
-			while len+BIG_SUBSTRING_LEN < length
-				target.addString(parent.getString(start + len, BIG_SUBSTRING_LEN))
-				len += BIG_SUBSTRING_LEN
-			target.addString(parent.getString(start + len, length-len))
+			int off = 0
+			while length-off > BIG_SUBSTRING_LEN
+				target.addString(parent.getString(start + off, BIG_SUBSTRING_LEN))
+				off += BIG_SUBSTRING_LEN
+			target.addString(parent.getString(start + off, length-off))
 		if next != null
 			next.addToBigString(target)
+
+	function hash() returns int
+		int hash = 0
+		var len = getCombinedLength()
+		var off = start
+		while off+BIG_SUBSTRING_LEN < len
+			hash += parent.getString(off, BIG_SUBSTRING_LEN).getHash()
+			off += BIG_SUBSTRING_LEN
+		hash += parent.getString(off, len-off).getHash()
+		return hash
 
 public class BigString
 	private string array[10] substrings
@@ -149,16 +159,15 @@ public class BigString
 
 	function getString(int startpos) returns string
 		if startpos > getLength() or getLength() > BIG_SUBSTRING_LEN
-			error("Trying to get string out of bounds")
+			error("1Trying to get string out of bounds")
 		let modpos = startpos + startoffset
 		let idx = (modpos / BIG_SUBSTRING_LEN).toInt()
 		let offsetstart = (modpos mod BIG_SUBSTRING_LEN)
 		return substrings[idx].substring(offsetstart, length)
 
 	function getString(int startpos, int plength) returns string
-		// print("getString: start: " + startpos.toString() + " plength: " + plength.toString() )
 		if startpos+plength > getLength() 
-			error("Trying to get string out of bounds")
+			error("2Trying to get string out of bounds")
 		if plength > BIG_SUBSTRING_LEN
 			error("Trying to get oversized string")
 		let modpos = startpos + startoffset
@@ -170,7 +179,7 @@ public class BigString
 		return substrings[idx].substring(offsetstart, offsetend)
 
 	function debugPrint()
-		if DEBUG_LEVEL == Loglevel.DEBUG
+		if DEBUG_LEVEL castTo int <= Loglevel.DEBUG castTo int
 			printLog(Loglevel.DEBUG, "BigString length: " + getLength().toString() + " lines: ")
 			for i = 0 to 10
 				if substrings[i].length() > 0

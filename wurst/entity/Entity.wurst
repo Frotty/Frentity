@@ -153,6 +153,7 @@ public abstract class Entity implements Serializable
 
 	override function serialize() returns Json
 		let json = new Json()
+		getPos()
 		json.addProperty(new Property(KEY_X, (pos.x-serializeOrigin.x).toInt().toString()))
 		json.addProperty(new Property(KEY_Y, (pos.y-serializeOrigin.y).toInt().toString()))
 		json.addProperty(new Property(KEY_Z, (pos.z-serializeOrigin.z).toInt().toString()))

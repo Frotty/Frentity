@@ -2,15 +2,16 @@ package SeqWorker
 import public TimerUtils
 import public ClosureTimers
 
-public function doSeq(int timesPerCycle, SeqCallback cb)
-	getTimer()..setData(cb castTo int)..startPeriodic(0, () -> begin
-		let time = GetExpiredTimer()
-		let rcb = (time.getData() castTo SeqCallback)
-		if rcb.done 
-			GetExpiredTimer().release()
-		else
-			rcb.doStep()
-	end)
+public function doSeq(SeqCallback cb)
+	cb.ref = getTimer()..setData(cb castTo int)
+	cb.ref..start(0.0, () -> onSeq())
+
+function onSeq() 
+	let time = GetExpiredTimer()
+	let rcb = (time.getData() castTo SeqCallback)
+	if not rcb.done and rcb.ref != null
+		rcb.doStep()
+		time.start(0.0, () -> onSeq())
 
 public abstract class PayloadCallback
 	int customData = 0
@@ -23,9 +24,12 @@ public abstract class PayloadCallback
 public abstract class SeqCallback
 	int customData = 0
 	boolean done = false
+	timer ref = null
+
+	construct()
 
 	function terminate()
-		if not done
+		if not done or ref != null
 			done = true
 			destroy this
 
@@ -33,6 +37,11 @@ public abstract class SeqCallback
 		onExecute(this)
 
 	abstract function onExecute(SeqCallback cb)
+
+	ondestroy
+		if ref != null
+			ref.release()
+			ref = null
 
 	
 
