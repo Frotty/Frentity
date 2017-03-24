@@ -50,6 +50,7 @@ function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback 
 			cb.terminate()
 			encoder.encode(dictSize, maxDictSize)
 			printLog(Loglevel.DEBUG, "positions encoded2")
+			destroy intList
 			encoder.save(new BigString(), (PayloadCallback pc) -> begin
 				onFinish.customData = pc.customData
 				destroy encoder

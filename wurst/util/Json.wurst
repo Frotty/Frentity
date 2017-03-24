@@ -26,6 +26,10 @@ public class Property
 		this.name = new BigSubString(name)
 		this.value = new BigSubString(value)
 
+	ondestroy
+		destroy name
+		destroy value
+
 
 public class Json
 	HashMap<int, Property> properties = new HashMap<int, Property>()

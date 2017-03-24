@@ -83,6 +83,7 @@ public class Encoder
 				i++
 			else
 				cb.terminate()
+				destroy bs
 				onFinishString.doStep()
 		end)
 	

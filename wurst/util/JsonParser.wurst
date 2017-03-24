@@ -159,5 +159,11 @@ public class JsonParser
 		lastType = TokenType.LETTER
 
 
-
-	
+	ondestroy
+		destroy bigInput
+		destroy output
+		for bss from outputList.staticItr()
+			destroy bss
+		destroy outputList
+		destroy propName
+		destroy propVal
