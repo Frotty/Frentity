@@ -4,14 +4,14 @@ import public ClosureTimers
 
 public function doSeq(SeqCallback cb)
 	cb.ref = getTimer()..setData(cb castTo int)
-	cb.ref..start(0.0, () -> onSeq())
+	cb.ref..start(0.001, () -> onSeq())
 
 function onSeq() 
 	let time = GetExpiredTimer()
 	let rcb = (time.getData() castTo SeqCallback)
 	if not rcb.done and rcb.ref != null
 		rcb.doStep()
-		time.start(0.0, () -> onSeq())
+		time.start(0.001, () -> onSeq())
 
 public abstract class PayloadCallback
 	int customData = 0

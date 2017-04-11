@@ -160,10 +160,11 @@ public class JsonParser
 
 
 	ondestroy
-		destroy bigInput
-		destroy output
-		for bss from outputList.staticItr()
-			destroy bss
-		destroy outputList
-		destroy propName
-		destroy propVal
+		if bigInput != null
+			destroy bigInput
+		if output != null
+			destroy output
+		if outputList != null
+			for bss from outputList.staticItr()
+				destroy bss
+			destroy outputList
