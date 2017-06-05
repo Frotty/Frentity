@@ -1,0 +1,98 @@
+package FText
+import Texttag
+import LinkedList
+import LinkedListModule
+import GameTimer
+import ClosureTimers
+import ErrorHandling
+import StringUtils
+
+/** Creates a permanent centered FText at the target position */
+public function createCenterFText(vec3 pos, string text, real size) returns FText
+	let ft = createFText(pos, text, size, 0, ZERO2)
+	ft.tt..center(pos, text, size)
+	return ft
+
+/** Creates a permanent FText at the target position */
+public function createFText(vec3 pos, string text, real size) returns FText
+	return createFText(pos, text, size, 0, ZERO2)
+
+/** Creates a dynamic FText at the target position */
+public function createFText(vec3 pos,string text, real size, real lifespan, vec2 vel) returns FText
+	return createFText(pos, text, size, lifespan, vel, COLOR_WHITE)
+
+/** Creates a dynamic FText at the target position */
+public function createFText(vec3 pos, vec2 vel, string text, real size, real lifespan, colorA col, player p) returns FText
+	return createFText(pos, text, size, lifespan, vel, col, p)
+
+/** Creates a dynamic FText at the target position */
+public function createFText(vec3 pos,string text, real size, real lifespan, vec2 vel, colorA col, player p) returns FText
+	let ft = createFText(pos, text, size, lifespan, vel, col)
+	ft.tt.setVisibility(GetLocalPlayer() == p)
+	return ft
+
+/** Creates a dynamic FText at the target position */
+public function createFText(vec3 pos, string text, real size, real lifespan, vec2 vel, colorA col) returns FText
+	let permanent = lifespan <= 0
+	// Get FText instance
+	FText ftext = null
+	if FText.size < 100
+		if recylcer.peek() != null
+			ftext = recylcer.pop()
+		else
+			// Recycler was empty
+			ftext = new FText()
+	else
+		// find oldest, dynamic tag
+		for etext in FText
+			if not etext.permanent
+				ftext = etext
+		if ftext == null
+			error("You have reached the maximum possible permanent texttags")
+	ftext..setup(text, pos, size)
+	ftext.tt.setColor(col)
+	if permanent
+		ftext..setPermanent()
+	else
+		ftext..setDynamic(vel, lifespan)
+	return ftext
+
+LinkedList<FText> recylcer = new LinkedList<FText>()
+
+public class FText
+	use LinkedListModule
+	texttag tt = CreateTextTag()
+	boolean permanent = false
+	real timestamp = 0
+
+	construct()
+		tt..setPermanent(true)
+
+	ondestroy
+		tt.destr()
+
+	function recycle()
+		if permanent
+			destroy this
+		else
+			tt.setVisibility(false)
+			tt.setColor(COLOR_WHITE)
+			recylcer.add(this)
+
+	function setup(string text, vec3 pos, real size)
+		tt..setText(text, size)
+		..setPos(pos)
+		..setAge(0)
+		..setVisibility(true)
+		..setVelocity(ZERO2.x, ZERO2.y)
+		..setFadepoint(1)
+		..setLifespan(0)
+	
+	function setPermanent()
+		permanent = true
+
+	function setDynamic(vec2 vel, real lifespan)
+		tt..setVelocity(vel.x, vel.y)
+		..setLifespan(lifespan)
+		timestamp = getElapsedGameTime() + lifespan
+		doAfter(lifespan-0.01, () -> this.recycle())

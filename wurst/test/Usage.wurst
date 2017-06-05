@@ -1,6 +1,8 @@
 package Usage
 import Buff
 import Fx
+import FText
+import ClosureTimers
 
 class TestUnitEntity extends UnitEntity
 
@@ -16,5 +18,9 @@ class Testos
 
 init
 	for i = 0 to 10
-		for j = 0 to 12
-			new Fx(players[j].getColor(), vec3(i* 64., j * 64., 16), angle(0), "TC_EnergyBolt.mdx")
+		createFText("Fuck", GetRandomReal(2,12), 4, vec3(i * 32., 0, 0), vec2(0,2))
+
+	doPeriodically(2, () -> begin
+		for i = 0 to 5
+			createFText("Fuck", GetRandomReal(2,12), GetRandomReal(1,5), vec3(i * 32., 0, 0), vec2(GetRandomReal(-1,1),GetRandomReal(1,2)))
+	end)
