@@ -36,19 +36,21 @@ public function createFText(vec3 pos, string text, real size, real lifespan, vec
 	let permanent = lifespan <= 0
 	// Get FText instance
 	FText ftext = null
-	if FText.size < 100
-		if recylcer.peek() != null
-			ftext = recylcer.pop()
-		else
+	if recylcer.peek() != null
+		ftext = recylcer.pop()
+	else
+		if FText.size < 100
 			// Recycler was empty
 			ftext = new FText()
-	else
-		// find oldest, dynamic tag
-		for etext in FText
-			if not etext.permanent
-				ftext = etext
-		if ftext == null
-			error("You have reached the maximum possible permanent texttags")
+		else
+			// find oldest, dynamic tag
+			for etext in FText
+				if not etext.permanent
+					etext.recycle()
+					ftext = recylcer.pop()
+					break
+			if ftext == null
+				error("You have reached the maximum possible permanent texttags")
 	ftext..setup(text, pos, size)
 	ftext.tt.setColor(col)
 	if permanent

@@ -3,6 +3,7 @@ import Buff
 import Fx
 import FText
 import ClosureTimers
+import ArrayList
 
 class TestUnitEntity extends UnitEntity
 
@@ -17,10 +18,16 @@ class Testos
 		createUnit(players[0], 'hfoo', vec2(r,r), angle(0))
 
 init
-	for i = 0 to 10
-		createFText("Fuck", GetRandomReal(2,12), 4, vec3(i * 32., 0, 0), vec2(0,2))
-
-	doPeriodically(2, () -> begin
-		for i = 0 to 5
-			createFText("Fuck", GetRandomReal(2,12), GetRandomReal(1,5), vec3(i * 32., 0, 0), vec2(GetRandomReal(-1,1),GetRandomReal(1,2)))
-	end)
+	ArrayList<int> someInts = new ArrayList<int>()
+	someInts.add(1)
+	someInts.add(2)
+	someInts.add(3)
+	someInts.add(4)
+	someInts.add(5)
+	someInts.add(6)
+	print(someInts.toString())
+	someInts.remove(2)
+	someInts.remove(4)
+	print(someInts.toString())
+	someInts.add(0, 0)
+	print(someInts.toString())
