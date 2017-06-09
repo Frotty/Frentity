@@ -3,7 +3,6 @@ import Buff
 import Fx
 import FText
 import ClosureTimers
-import ArrayList
 
 class TestUnitEntity extends UnitEntity
 
@@ -16,18 +15,3 @@ class Testos
 	construct(real r)
 		this.r = r
 		createUnit(players[0], 'hfoo', vec2(r,r), angle(0))
-
-init
-	ArrayList<int> someInts = new ArrayList<int>()
-	someInts.add(1)
-	someInts.add(2)
-	someInts.add(3)
-	someInts.add(4)
-	someInts.add(5)
-	someInts.add(6)
-	print(someInts.toString())
-	someInts.remove(2)
-	someInts.remove(4)
-	print(someInts.toString())
-	someInts.add(0, 0)
-	print(someInts.toString())
