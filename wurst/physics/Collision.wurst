@@ -2,13 +2,13 @@ package Collision
 import Rect
 import LinkedList
 
-public tuple rectangle(real minx, real miny, real maxx, real maxy)
+public tuple rectangle(vec2 min, vec2 max)
 
 public function rectangle.intersect(rectangle other) returns boolean
-	return not (other.minx > this.maxx or other.maxx < this.minx or other.maxy > this.miny or other.miny < this.maxy)
+	return not (other.min.x > this.max.x or other.max.x < this.min.x or other.max.y > this.min.y or other.min.y < this.max.y)
 
 public function rectangle.contains(vec2 point) returns boolean 
-	return point.x > this.minx and point.x < this.maxx and point.y > this.miny and point.y < this.maxy
+	return point.x > this.min.x and point.x < this.max.x and point.y > this.min.y and point.y < this.max.y
 
 // There are 2 types of bodies
 // Collidables provide collision for dynamic bodies, but do not collide themselves
@@ -27,7 +27,7 @@ public class CollisionWorld
 	LinkedList<Collidable> collidables = new LinkedList<Collidable>()
 
 	construct(rect re)
-		worldBounds = rectangle(re.getMinX(), re.getMinY(), re.getMaxX(), re.getMaxY())
+		worldBounds = rectangle(vec2(re.getMinX(), re.getMinY()), vec2(re.getMaxX(), re.getMaxY()))
 
 	function addCollidable(Collidable colliadable)
 		collidables.add(colliadable)
