@@ -1,8 +1,4 @@
 package UnitRecycler
-import HashMap
-import Event
-import MapBounds
-import DummyRecycler
 import initlater Entity
 constant MAX_RECYCLE_PER_UNIT = 100
 

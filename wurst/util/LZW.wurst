@@ -1,6 +1,5 @@
 package LZW
 import LinkedList
-import ClosureTimers
 import public BigString
 import public SeqWorker
 import TypeCasting

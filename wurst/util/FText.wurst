@@ -1,5 +1,4 @@
 package FText
-import Texttag
 import LinkedList
 import LinkedListModule
 import GameTimer

@@ -1,5 +1,4 @@
 package Collision
-import Rect
 import LinkedList
 
 public tuple rectangle(vec2 min, vec2 max)

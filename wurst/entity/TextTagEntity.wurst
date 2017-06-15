@@ -1,6 +1,5 @@
 package TextTagEntity
 import Entity
-import FText
 import public Colors
 
 public class TextTagEntity extends Entity
