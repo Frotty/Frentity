@@ -27,8 +27,12 @@ public class Property
 		this.value = new BigSubString(value)
 
 	ondestroy
-		destroy name
-		destroy value
+		if name.length >= 0
+			destroy name
+			name = null
+		if value.length >= 0
+			destroy value
+			value = null
 
 
 public class Json
@@ -36,10 +40,11 @@ public class Json
 	LinkedList<Property> plist = new LinkedList<Property>()
 
 	function addProperty(Property p)
-		plist.add(p)
-		p.name.next = null
-		p.value.next = null
-		properties.put(p.name.getSingle().getHash(), p)
+		if p.name != null and p.name.length >= 0
+			plist.add(p)
+			p.name.next = null
+			p.value.next = null
+			properties.put(p.name.getSingle().getHash(), p)
 
 	function getProperty(string key) returns Property
 		return properties.get(key.getHash())

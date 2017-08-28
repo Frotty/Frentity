@@ -99,10 +99,6 @@ function decodePositions(BigString input, PayloadCallback onFinish)
 	end)
 		
 
-/**
-	* @return boolean - True if compression is successful,
-	* false otherwise.
-	*/
 public function compress(BigString data, PayloadCallback onFinish) 
 	printLog(Loglevel.DEBUG, "Compressing:")
 	data.debugPrint()
@@ -129,9 +125,10 @@ public function compress(BigString data, PayloadCallback onFinish)
 			while true     //Loop until the sequence of
 				if not dictionary.has(A.getCombined())
 					break
+				let sng = A.getSingle()
 				if A != null
 					destroy A
-				A = new BigSubString(A.getSingle() + B.getSingle())
+				A = new BigSubString(sng + B.getSingle())
 				inc++
 				if (inc < data.getLength())
 					if B != null

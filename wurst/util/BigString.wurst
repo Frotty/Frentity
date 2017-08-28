@@ -7,7 +7,7 @@ public class BigSubString
 	private BigString parent = null
 	BigSubString next = null
 	private int start = 0
-	private int length
+	int length = 0
 	private string preinit = null
 
 	construct(string preInit)
@@ -94,7 +94,7 @@ public class BigSubString
 		return hash
 
 	ondestroy
-		length = 0
+		length = -1
 
 public class BigString
 	private string array[10] substrings
@@ -189,4 +189,5 @@ public class BigString
 					printLog(Loglevel.DEBUG, "\n\tLine " + i.toString() + " : " + substrings[i])
 				else
 					break
-		
+	ondestroy
+		length = -1
