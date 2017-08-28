@@ -42,11 +42,12 @@ function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback 
 	// let max = intList.getSize()
 	let itr = intList.staticItr()
 	doSeq((SeqCallback cb) -> begin
+		var continue = true
 		if itr.hasNext()
 			encoder.encode(itr.next(), dictSize)
 		else
 			printLog(Loglevel.DEBUG, "positions encoded1")
-			cb.terminate()
+			continue = false
 			encoder.encode(dictSize, maxDictSize)
 			printLog(Loglevel.DEBUG, "positions encoded2")
 			destroy intList
@@ -55,6 +56,7 @@ function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback 
 				destroy encoder
 				onFinish.doStep()
 			end)
+		return continue
 	end)
 	
 		
@@ -75,11 +77,12 @@ function decodePositions(BigString input, PayloadCallback onFinish)
 				let positions = new LinkedList<int>()
 				printLog(Loglevel.DEBUG, "start decoding pos")
 				doSeq((SeqCallback cb1) -> begin
+					var continue = true
 					if not encoder.bignum.isZero()
 						let dec = encoder.decode(dictSize)
 						positions.addtoStart(dec)
 					else
-						cb1.terminate()
+						continue = false
 						if DEBUG_LEVEL == Loglevel.TRACE
 							var st = ""
 							for s in positions
@@ -87,6 +90,7 @@ function decodePositions(BigString input, PayloadCallback onFinish)
 							printLog(Loglevel.TRACE,"decoded positions: " + st)
 						onFinish.customData = positions castTo int
 						onFinish.doStep()
+					return continue
 				end)
 			end)
 		else
@@ -112,6 +116,7 @@ public function compress(BigString data, PayloadCallback onFinish)
 	BigSubString A = null
 	BigSubString B = null
 	doSeq((SeqCallback cb) -> begin
+		var continue = true
 		if (inc < data.getLength() - 1)
 			if A != null
 				destroy A
@@ -144,7 +149,7 @@ public function compress(BigString data, PayloadCallback onFinish)
 		//        output += (dictionary.indexOf(Z) + " ");
 		else
 			printLog(Loglevel.DEBUG, "Compressed")
-			cb.terminate()
+			continue = false
 			if B != null and A.getSingle().charAt(A.getSingleLength()-1) != B.getSingle()
 				intList.add(dictionary.get(B.getSingle()))
 			encodePositions(intList, dictSize, (PayloadCallback cb2) -> begin
@@ -153,7 +158,7 @@ public function compress(BigString data, PayloadCallback onFinish)
 				onFinish.customData = encoded castTo int
 				onFinish.doStep()
 			end)
-			
+		return continue
 	end)
 
 /**
@@ -171,6 +176,7 @@ public function decompress(BigString input, PayloadCallback onFinish)
 		string B = ""
 		
 		doSeq((SeqCallback cb2) -> begin
+			var continue = true
 			if itr.hasNext()
 				let idx = itr.next()
 				A = dictionary.loadString(idx)
@@ -186,11 +192,12 @@ public function decompress(BigString input, PayloadCallback onFinish)
 
 				output.addString(A)
 			else
-				cb2.terminate()
+				continue = false
 				printLog(Loglevel.DEBUG, "decompressed")
 				output.debugPrint()
 				onFinish.customData = output castTo int
 				onFinish.doStep()
+			return continue
 		end)
 	end)
 	

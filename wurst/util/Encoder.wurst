@@ -61,13 +61,15 @@ public class Encoder
 	function toString(BigString big, PayloadCallback onFinish) 
 		BigNum_l cur = bignum.list
 		doSeq((SeqCallback cb) -> begin
+			var continue = true
 			if cur != null
 				big.addString(itochar(cur.leaf))
 				cur = cur.next
 			else
-				cb.terminate()
+				continue = false
 				onFinish.customData = big castTo int
 				onFinish.doStep()
+			return continue
 		end)
 	
 	function fromString(BigString bs, PayloadCallback onFinishString)
@@ -76,15 +78,17 @@ public class Encoder
 		bignum.list = cur
 		printLog(Loglevel.DEBUG, "from String")
 		doSeq((SeqCallback cb) -> begin
+			var continue = true
 			cur.leaf = chartoi(bs.getString(i, 1))
 			if i < bs.getLength()-1
 				cur.next = new BigNum_l()
 				cur = cur.next
 				i++
 			else
-				cb.terminate()
+				continue = false
 				destroy bs
 				onFinishString.doStep()
+			return continue
 		end)
 	
 	function hash() returns int
