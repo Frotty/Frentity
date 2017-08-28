@@ -7,9 +7,6 @@ import AbilityObjEditing
 import initlater DebugInfo
 //Listens to all PLAYER_UNIT_EVENTS plus EVENT_PLAYER_LEAVE and EVENT_UNIT_DAMAGED
 
-// The amount of events listened for
-constant EVENT_COUNTER = 56
-
 public abstract class EventListener
 	static EventListener array generalListenersFirsts
 	static EventListener array unitListenersFirsts

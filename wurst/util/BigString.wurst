@@ -93,6 +93,9 @@ public class BigSubString
 		hash += parent.getString(off, len-off).getHash()
 		return hash
 
+	ondestroy
+		length = 0
+
 public class BigString
 	private string array[10] substrings
 	private int length = 0

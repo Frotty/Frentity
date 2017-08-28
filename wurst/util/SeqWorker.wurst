@@ -2,6 +2,13 @@ package SeqWorker
 import public TimerUtils
 import public ClosureTimers
 
+/**
+Sequentially executes the given closure, as long as the 
+	abstract function onExecute(PayloadCallback cb) returns boolean
+-closure returns true. 
+On returning false the callback ends and the closure is destroyed.
+*/
+
 public function doSeq(SeqCallback cb)
 	cb.ref = getTimer()..setData(cb castTo int)
 	cb.ref..start(0.001, () -> onSeq())
@@ -10,16 +17,18 @@ function onSeq()
 	let time = GetExpiredTimer()
 	let rcb = (time.getData() castTo SeqCallback)
 	if not rcb.done and rcb.ref != null
-		rcb.doStep()
-		time.start(0.001, () -> onSeq())
+		if rcb.doStep()
+			time.start(0.001, () -> onSeq())
+		else
+			rcb.terminate()
 
 public abstract class PayloadCallback
 	int customData = 0
 	
-	function doStep()
-		onExecute(this)
+	function doStep() returns boolean
+		return onExecute(this)
 
-	abstract function onExecute(PayloadCallback cb)
+	abstract function onExecute(PayloadCallback cb) returns boolean
 
 public abstract class SeqCallback
 	int customData = 0
@@ -33,10 +42,13 @@ public abstract class SeqCallback
 			done = true
 			destroy this
 
-	function doStep()
-		onExecute(this)
+	function doStep() returns boolean
+		if not done
+			printLog(Loglevel.DEBUG, "SeqCallback doStep")
+			return onExecute(this)
+		return false
 
-	abstract function onExecute(SeqCallback cb)
+	abstract function onExecute(SeqCallback cb) returns boolean
 
 	ondestroy
 		if ref != null
