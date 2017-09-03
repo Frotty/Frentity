@@ -112,6 +112,8 @@ public function createBuffObject(string name, string tooltip, string iconpath) r
 		
 	return buffTuple(abilId, buffId)
 
+public function compiletime(buffTuple buffT) returns buffTuple
+	return buffT
 
 init
 	// Call attack and defense modifiers of buffs

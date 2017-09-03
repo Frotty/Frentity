@@ -70,7 +70,9 @@ public class FText
 		tt..setPermanent(true)
 
 	ondestroy
-		tt.destr()
+		if tt != null
+			tt.destr()
+			tt = null
 
 	function recycle()
 		if permanent
@@ -86,7 +88,7 @@ public class FText
 		..setAge(0)
 		..setVisibility(true)
 		..setVelocity(ZERO2.x, ZERO2.y)
-		..setFadepoint(1)
+		..setFadepoint(.45)
 		..setLifespan(0)
 	
 	function setPermanent()
@@ -96,4 +98,4 @@ public class FText
 		tt..setVelocity(vel.x, vel.y)
 		..setLifespan(lifespan)
 		timestamp = getElapsedGameTime() + lifespan
-		doAfter(lifespan-0.01, () -> this.recycle())
+		doAfter(lifespan-0.025, () -> this.recycle())
