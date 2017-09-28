@@ -32,7 +32,6 @@ public function startEntityLoop() returns boolean
 		let e = getEnterLeaveUnit().getEntity()
 		if e != null and e instanceof UnitEntity
 			let ue = (e castTo UnitEntity)
-			ue.clearBuffs()
 			e.terminate()
 	end)
 	return true

@@ -1,0 +1,4 @@
+!!file.WurstProjectConfig
+dependencies: ['https://github.com/wurstscript/wurstStdlib2']
+projectName: Frentity
+releaseName: myRelease.w3x

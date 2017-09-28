@@ -7,9 +7,7 @@ import BuffObjEditing
 import ObjectIds
 import AbilityObjEditing
 import ObjectIdGenerator
-
-@configurable public constant falsifyTeamattacks = false
-@configurable public constant showSquares = false
+import Frentity
 
 public constant BUFF_ANIM_PERIOD = 0.25
 LinkedList<Buff> array currentBuffs
@@ -138,12 +136,12 @@ init
 					if not bff.done
 						bff.defenseModifier()
 						
-		if falsifyTeamattacks and defData != null and attData != null
+		if DISABLE_TEAMATTACK and defData != null and attData != null
 			if defData.owner.isAllyOf(attData.owner) or defData.owner == attData.owner
 				// Falsify teamattacks
 				if getDamage() > 0.5
 					modifyDamage(0)
-					if showSquares
+					if SHOW_SQUARE
 						new TextTagEntity(defData.getPos(), vec3(GetRandomReal(-2,2),GetRandomReal(-2,2),GetRandomReal(8,10)), getSquare(), 10, .8
 							,colorA(GetRandomInt(150,250),GetRandomInt(125,150),GetRandomInt(125,150), 255))
 	end)		
