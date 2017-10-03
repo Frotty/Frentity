@@ -1,8 +1,0 @@
-package ObjectGen
-import ClosureTimers
-
-@compiletime function compileGen()
-	callFunctionsWithAnnotation("@objgen")
-
-init
-	nullTimer(() -> callFunctionsWithAnnotation("@objgen"))

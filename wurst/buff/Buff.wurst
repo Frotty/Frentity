@@ -8,12 +8,19 @@ import ObjectIds
 import AbilityObjEditing
 import ObjectIdGenerator
 import Frentity
+import ErrorHandling
+import ClosureTimers
 
 public constant BUFF_ANIM_PERIOD = 0.25
 LinkedList<Buff> array currentBuffs
 
 public function UnitEntity.hasBuffs() returns boolean
 	return currentBuffs[this castTo int] != null
+
+public function UnitEntity.addBuff(Buff buffObj)
+	if buffObj == null
+		error("Cannot add null buff")
+	currentBuffs[this castTo int].add(buffObj)
 
 public function UnitEntity.getBuff(int typeId) returns Buff
 	if this.hasBuffs()
@@ -24,7 +31,7 @@ public function UnitEntity.getBuff(int typeId) returns Buff
 
 public function UnitEntity.removeBuff(int typeId)
 	if this.hasBuffs()
-		let itr = currentBuffs[this castTo int].staticItr()
+		let itr = this.getBuffs().staticItr()
 		for b from itr
 			if b.typeId == typeId
 				itr.remove()
@@ -38,7 +45,21 @@ public function UnitEntity.clearBuffs()
 		for bff from buffs.staticItr()
 			bff.terminate()
 		destroy buffs
-	currentBuffs[this castTo int] = null
+		currentBuffs[this castTo int] = null
+
+
+public function UnitEntity.transferBuffs(UnitEntity otherEntity)
+	let buffs = currentBuffs[this castTo int]
+	if not otherEntity.hasBuffs()
+		otherEntity.newBuffs()
+	if buffs != null
+		let itr = buffs.staticItr()
+		while itr.hasNext()
+			let bff = itr.remove()
+			if not bff.done
+				bff.apply(otherEntity)
+		destroy buffs
+		currentBuffs[this castTo int] = null
 
 public function UnitEntity.newBuffs() returns LinkedList<Buff>
 	currentBuffs[this castTo int] = new LinkedList<Buff>()
@@ -72,10 +93,13 @@ public abstract class Buff
 		else
 			duration -= BUFF_ANIM_PERIOD
 		
-	function refresh() 
-		if not target.actor.hasAbility(buffData.abilId)
+
+	function refresh()
+		refresh(false)
+
+	function refresh(boolean forceRefresh) 
+		if not target.actor.hasAbility(buffData.buffId) or forceRefresh
 			target.actor.addAbility(buffData.abilId)
-			target.actor.addAbility(buffData.buffId)
 
 	function terminate()
 		if not done
@@ -87,11 +111,13 @@ public abstract class Buff
 		if target != null and not target.done and target.hasBuffs()
 			target.removeBuff(this.typeId)
 			target.actor.removeAbility(buffData.abilId)
-			target.actor.removeAbility(buffData.buffId)
-			target = null
+		target = null
+
+public function createBuffObject(string name, string tooltip, string iconpath) returns buffTuple
+	return createBuffObject(name, tooltip, iconpath, "")
 
 /** Creates an ability based on Tornado aura that allows to display a buff without side effects */
-public function createBuffObject(string name, string tooltip, string iconpath) returns buffTuple
+public function createBuffObject(string name, string tooltip, string iconpath, string effectPath) returns buffTuple
 	let abilId = ABIL_ID_GEN.next()
 	let buffId = BUFF_ID_GEN.next()
 
@@ -109,6 +135,8 @@ public function createBuffObject(string name, string tooltip, string iconpath) r
 			..presetIcon(iconpath)
 			..setArtTarget("")
 			..setTargetsAllowed(1, "self")
+			..setArtTarget(effectPath)
+			..setTargetAttachmentPoint("origin")
 		
 	return buffTuple(abilId, buffId)
 
@@ -120,41 +148,38 @@ init
 	EventListener.add(EVENT_UNIT_DAMAGED, () -> begin
 		let def = GetTriggerUnit()
 		let att = GetEventDamageSource()
-		UnitEntity defData = null
-		UnitEntity attData = null
-		if att.getEntity() != null and att.isAlive()
-			//Attacker is alive, apply his attack modifiers
-			attData = att.getEntity() castTo UnitEntity
+		UnitEntity nul = null
+		UnitEntity attData = att.getEntity() != null and att.isAlive() ? att.getEntity() castTo UnitEntity : nul
+		UnitEntity defData = def.getEntity() != null and def.isAlive() ? def.getEntity() castTo UnitEntity : nul
+		if DISABLE_TEAMATTACK and defData != null and attData != null and (defData.owner.isAllyOf(attData.owner) or defData.owner == attData.owner)
+			// Falsify teamattacks
+			if getDamage() > 0.5
+				modifyDamage(0)
+				if SHOW_SQUARE
+					new TextTagEntity(defData.getPos(), vec3(GetRandomReal(-2,2),GetRandomReal(-2,2),GetRandomReal(8,10)), getSquare(), 10, .8
+						,colorA(GetRandomInt(150,250),GetRandomInt(125,150),GetRandomInt(125,150), 255))
+		else
 			if attData.hasBuffs()
 				for bff from attData.getBuffs().staticItr()
 					if not bff.done
 						bff.attackModifier()
 		
-		if def.getEntity() != null and def.isAlive()
-			//Defender is alive, apply his defense modifiers
-			defData = def.getEntity() castTo UnitEntity
 			if defData.hasBuffs()
 				for bff from defData.getBuffs().staticItr()
 					if not bff.done
 						bff.defenseModifier()
-						
-		if DISABLE_TEAMATTACK and defData != null and attData != null
-			if defData.owner.isAllyOf(attData.owner) or defData.owner == attData.owner
-				// Falsify teamattacks
-				if getDamage() > 0.5
-					modifyDamage(0)
-					if SHOW_SQUARE
-						new TextTagEntity(defData.getPos(), vec3(GetRandomReal(-2,2),GetRandomReal(-2,2),GetRandomReal(8,10)), getSquare(), 10, .8
-							,colorA(GetRandomInt(150,250),GetRandomInt(125,150),GetRandomInt(125,150), 255))
 	end)		
 	// Update the buff display on unit upgrade					
 	EventListener.add(EVENT_PLAYER_UNIT_UPGRADE_FINISH, () -> begin
 		let v = GetTriggerUnit()
 		if v.getUserData() > 0
-			let victimData = v.getUserData() castTo UnitEntity
-			if victimData != null and not victimData.done and victimData.hasBuffs()
-				for bff from victimData.getBuffs().staticItr()
-					bff.refresh()
+			let victimData = v.getEntity() castTo UnitEntity
+			doAfter(0.05, () -> begin
+				if victimData != null and not victimData.done and victimData.hasBuffs()
+					for bff from victimData.getBuffs().staticItr()
+						bff.refresh(true)
+			end)
+			
 	end)
 
 

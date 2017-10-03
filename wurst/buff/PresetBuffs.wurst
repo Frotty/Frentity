@@ -13,9 +13,10 @@ public abstract class NormalBuff extends Buff
 		for bff in target.getBuffs()
 			if bff.typeId == this.typeId
 				bff.duration = duration
+				this.target = null
 				terminate()
 				return
-		target.getBuffs().add(this)
+		target.addBuff(this)
 		refresh()
 		
 public abstract class StackingBuff extends Buff
@@ -27,7 +28,7 @@ public abstract class StackingBuff extends Buff
 		this.target = target
 		if not target.hasBuffs()
 			target.newBuffs()
-		target.getBuffs().add(this)
+		target.addBuff(this)
 		refresh()
 
 public class ShieldBuff extends NormalBuff
@@ -46,16 +47,17 @@ public class ShieldBuff extends NormalBuff
 		this.target = target
 		if not target.hasBuffs()
 			target.newBuffs()
-			target.getBuffs().add(this)
-			refresh()
-		else 
+		else
 			for bff in target.getBuffs()
-				if bff.typeId == this.typeId
+				if bff.typeId == this.typeId and bff != this
 					let sd = bff castTo thistype
 					sd.duration = duration
 					sd.blockAmount += blockAmount
 					this.target = null
 					terminate()
+					return
+		target.addBuff(this)
+		refresh()
 		
 
 	override function defenseModifier()
