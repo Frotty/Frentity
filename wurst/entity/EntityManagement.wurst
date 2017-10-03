@@ -31,7 +31,6 @@ public function startEntityLoop() returns boolean
 	onLeave(() -> begin
 		let e = getEnterLeaveUnit().getEntity()
 		if e != null and e instanceof UnitEntity
-			let ue = (e castTo UnitEntity)
 			e.terminate()
 	end)
 	return true

@@ -36,7 +36,7 @@ public function UnitEntity.clearBuffs()
 	let buffs = currentBuffs[this castTo int]
 	if buffs != null
 		for bff from buffs.staticItr()
-			destroy bff
+			bff.terminate()
 		destroy buffs
 	currentBuffs[this castTo int] = null
 
@@ -75,6 +75,7 @@ public abstract class Buff
 	function refresh() 
 		if not target.actor.hasAbility(buffData.abilId)
 			target.actor.addAbility(buffData.abilId)
+			target.actor.addAbility(buffData.buffId)
 
 	function terminate()
 		if not done
@@ -87,6 +88,7 @@ public abstract class Buff
 			target.removeBuff(this.typeId)
 			target.actor.removeAbility(buffData.abilId)
 			target.actor.removeAbility(buffData.buffId)
+			target = null
 
 /** Creates an ability based on Tornado aura that allows to display a buff without side effects */
 public function createBuffObject(string name, string tooltip, string iconpath) returns buffTuple
