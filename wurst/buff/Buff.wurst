@@ -20,6 +20,7 @@ public function UnitEntity.hasBuffs() returns boolean
 public function UnitEntity.addBuff(Buff buffObj)
 	if buffObj == null
 		error("Cannot add null buff")
+	Log.debug("Added buff")
 	currentBuffs[this castTo int].add(buffObj)
 
 public function UnitEntity.getBuff(int typeId) returns Buff
@@ -30,6 +31,7 @@ public function UnitEntity.getBuff(int typeId) returns Buff
 	return null
 
 public function UnitEntity.removeBuff(int typeId)
+	Log.debug("Removing Buff")
 	if this.hasBuffs()
 		let itr = this.getBuffs().staticItr()
 		for b from itr
@@ -41,15 +43,16 @@ public function UnitEntity.getBuffs() returns LinkedList<Buff>
 
 public function UnitEntity.clearBuffs()
 	let buffs = currentBuffs[this castTo int]
+	Log.debug("Cleaning Buffs " + (buffs != null).toString())
 	if buffs != null
 		for bff from buffs.staticItr()
 			bff.terminate()
 		destroy buffs
 		currentBuffs[this castTo int] = null
 
-
 public function UnitEntity.transferBuffs(UnitEntity otherEntity)
 	let buffs = currentBuffs[this castTo int]
+	Log.debug("Transfering Buffs")
 	if not otherEntity.hasBuffs()
 		otherEntity.newBuffs()
 	if buffs != null
@@ -70,7 +73,7 @@ public tuple buffTuple(int abilId, int buffId)
 public abstract class Buff
 	use LinkedListModule
 
-	UnitEntity target
+	UnitEntity target = null
 	real duration
 	buffTuple buffData
 	boolean done = false
@@ -89,11 +92,11 @@ public abstract class Buff
 		
 	function update()
 		if duration <= 0.
+			Log.debug("Terminating Buff: duration <= 0.")
 			terminate()
 		else
 			duration -= BUFF_ANIM_PERIOD
 		
-
 	function refresh()
 		refresh(false)
 
@@ -107,6 +110,7 @@ public abstract class Buff
 			destroy this
 			
 	ondestroy
+		Log.debug("Destroy Buff")
 		onEnd()
 		if target != null and not target.done and target.hasBuffs()
 			target.removeBuff(this.typeId)
@@ -178,6 +182,17 @@ init
 				if victimData != null and not victimData.done and victimData.hasBuffs()
 					for bff from victimData.getBuffs().staticItr()
 						bff.refresh(true)
+			end)
+			
+	end)
+	// Remove buffs when a unit dies
+	EventListener.add(EVENT_PLAYER_UNIT_DEATH, () -> begin
+		let v = GetTriggerUnit()
+		if v.getEntity() != null
+			let victimData = v.getEntity() castTo UnitEntity
+			doAfter(0.01, () -> begin
+				Log.debug("Clear Buffs on death")
+				victimData.clearBuffs()
 			end)
 			
 	end)

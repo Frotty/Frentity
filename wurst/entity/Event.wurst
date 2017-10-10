@@ -62,6 +62,7 @@ public abstract class EventListener
 trigger unitTrig = CreateTrigger()
 trigger leaveTrig = CreateTrigger()
 trigger keyTrig = CreateTrigger()
+trigger chatTrig = CreateTrigger()
 
 public function eventid.toIntId() returns int
 	var id = eventidToIndex[this.getHandleId()]
@@ -108,10 +109,12 @@ init
 		
 		// Register Actions
 		unitTrig.addAction(() -> EventListener.generalEventCallback())	
-		leaveTrig.addAction(function EventListener.generalEventCallback)
-		keyTrig.addAction(function EventListener.generalEventCallback)
+		leaveTrig.addAction(() -> EventListener.generalEventCallback())
+		chatTrig.addAction(() -> EventListener.generalEventCallback())
+		keyTrig.addAction(() -> EventListener.generalEventCallback())
 
 		for i = 0 to bj_MAX_PLAYERS-1
+			chatTrig.registerPlayerChatEvent(players[i], "", false)
 			leaveTrig.registerPlayerEvent(players[i], EVENT_PLAYER_LEAVE)
 			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_DOWN_DOWN)
 			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_DOWN_UP)

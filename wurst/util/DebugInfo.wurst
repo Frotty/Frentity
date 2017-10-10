@@ -1,5 +1,8 @@
 package DebugInfo
 import Entity
+import Event
+import Printing
+
 multiboard mb
 constant rows = 3
 constant columns = 3
@@ -47,4 +50,15 @@ init
 		mb.getItem(2, 2).setValue(Entity.inactiveSize.toString())
 		eventCallbacksPerSecond = 0
 		allocationsPerSecond = 0
+	end)
+
+	EventListener.add(EVENT_PLAYER_CHAT, () -> begin
+		let entered = GetEventPlayerChatString()
+		print("chat: " + entered)
+		if entered.startsWith("-d")
+			let level = entered.substring(3, 4).toInt()
+			if level >= 0 and level < 5
+				let loglvl = level castTo Loglevel
+				Log.setLevel(loglvl)
+				printTimedToPlayer("Loglevel adjusted to: " + loglvl.getTag(), 10, GetTriggerPlayer())
 	end)
