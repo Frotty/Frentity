@@ -31,8 +31,8 @@ public function UnitEntity.getBuff(int typeId) returns Buff
 	return null
 
 public function UnitEntity.removeBuff(int typeId)
-	Log.debug("Removing Buff")
 	if this.hasBuffs()
+		Log.debug("Removing Buff")
 		let itr = this.getBuffs().staticItr()
 		for b from itr
 			if b.typeId == typeId
@@ -43,8 +43,8 @@ public function UnitEntity.getBuffs() returns LinkedList<Buff>
 
 public function UnitEntity.clearBuffs()
 	let buffs = currentBuffs[this castTo int]
-	Log.debug("Cleaning Buffs " + (buffs != null).toString())
 	if buffs != null
+		Log.debug("Cleaning Buffs")
 		for bff from buffs.staticItr()
 			bff.terminate()
 		destroy buffs
@@ -101,7 +101,7 @@ public abstract class Buff
 		refresh(false)
 
 	function refresh(boolean forceRefresh) 
-		if not target.actor.hasAbility(buffData.buffId) or forceRefresh
+		if not target.actor.hasAbility(buffData.abilId) or forceRefresh
 			target.actor.addAbility(buffData.abilId)
 
 	function terminate()
@@ -191,10 +191,7 @@ init
 		if v.getEntity() != null
 			let victimData = v.getEntity() castTo UnitEntity
 			doAfter(0.01, () -> begin
-				Log.debug("Clear Buffs on death")
 				victimData.clearBuffs()
 			end)
 			
 	end)
-
-
