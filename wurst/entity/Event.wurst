@@ -118,14 +118,15 @@ init
 		for i = 0 to bj_MAX_PLAYERS-1
 			chatTrig.registerPlayerChatEvent(players[i], "", false)
 			leaveTrig.registerPlayerEvent(players[i], EVENT_PLAYER_LEAVE)
-			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_DOWN_DOWN)
-			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_DOWN_UP)
-			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_UP_DOWN)
-			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_UP_UP)
-			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_LEFT_DOWN)
-			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_LEFT_UP)
-			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_RIGHT_DOWN)
-			keyTrig.registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_RIGHT_UP)
+			keyTrig..registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_DOWN_DOWN)
+			..registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_DOWN_UP)
+			..registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_UP_DOWN)
+			..registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_UP_UP)
+			..registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_LEFT_DOWN)
+			..registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_LEFT_UP)
+			..registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_RIGHT_DOWN)
+			..registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_RIGHT_UP)
+			..registerPlayerEvent(players[i], EVENT_PLAYER_END_CINEMATIC)
 	end)
 
 public constant DONT_FIRE_EVENTS_ID = 'dont'
