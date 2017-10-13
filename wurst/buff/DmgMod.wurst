@@ -63,13 +63,12 @@ class Active
 	real newdmg
 	boolean setlifed
 	boolean setbonus
-	boolean done = false
 
 	construct()
 		// If this is the first Active DamageEvent we start the timer to apply this and all further
 		if this == first
 			inst_timer.start(0., () -> begin
-				while Active.first != null and not Active.first.done
+				while Active.first != null
 					var moddat = Active.first
 					var actlife = GetWidgetLife( moddat.target )
 					real resetlife
@@ -92,9 +91,6 @@ class Active
 
 					destroy moddat
 			end)
-
-	ondestroy
-		done = true
 
 /** The ID used for the health bonus Ability */
 constant DAMAGE_ABIL_ID = 'xdmo'
