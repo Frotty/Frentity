@@ -5,8 +5,8 @@ import OnUnitEnterLeave
 import ClosureTimers
 import AbilityObjEditing
 import initlater DebugInfo
-//Listens to all PLAYER_UNIT_EVENTS plus EVENT_PLAYER_LEAVE and EVENT_UNIT_DAMAGED and EVENT_PLAYER_CHAT
-
+//Listens to all PLAYER_UNIT_EVENTS plus EVENT_PLAYER_LEAVE and EVENT_UNIT_DAMAGED and EVENT_PLAYER_CHAT_FILTER
+public constant EVENT_PLAYER_CHAT_FILTER = ConvertPlayerEvent(96)
 
 public abstract class EventListener
 	static EventListener array generalListenersFirsts
@@ -81,7 +81,7 @@ function registerEventId(eventid evnt) returns int
 	if evnt.isPlayerunitEvent()
 		printLog(Loglevel.DEBUG, "reg handleid: " + eventId.toString() + " -> eventId: " + eventTypeCounter.toString())
 		registerPlayerUnitEvent(ConvertPlayerUnitEvent(eventId), function EventListener.generalEventCallback)
-	else if evnt != EVENT_UNIT_DAMAGED and evnt != EVENT_PLAYER_LEAVE and evnt != EVENT_PLAYER_CHAT and not evnt.isKeyboardEvent()
+	else if evnt != EVENT_UNIT_DAMAGED and evnt != EVENT_PLAYER_LEAVE and evnt != EVENT_PLAYER_CHAT_FILTER and not evnt.isKeyboardEvent()
 		printLog(Loglevel.ERROR, "registering handleid: " + eventId.toString() + " non-playerunitevent. Except EVENT_UNIT_DAMAGED and EVENT_PLAYER_LEAVE these are not supported right now.")
 	return eventTypeCounter
 	
@@ -125,7 +125,7 @@ init
 			..registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_RIGHT_DOWN)
 			..registerPlayerEvent(players[i], EVENT_PLAYER_ARROW_RIGHT_UP)
 			..registerPlayerEvent(players[i], EVENT_PLAYER_END_CINEMATIC)
-			..registerPlayerEvent(players[i], EVENT_PLAYER_CHAT)
+			..registerPlayerChatEvent(players[i], "", false)
 	end)
 
 public constant DONT_FIRE_EVENTS_ID = 'dont'
