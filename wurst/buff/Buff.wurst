@@ -158,9 +158,8 @@ init
 	EventListener.add(EVENT_UNIT_DAMAGED, () -> begin
 		let def = GetTriggerUnit()
 		let att = GetEventDamageSource()
-		UnitEntity nul = null
-		UnitEntity attData = att.getEntity() != null and att.isAlive() ? att.getEntity() castTo UnitEntity : nul
-		UnitEntity defData = def.getEntity() != null and def.isAlive() ? def.getEntity() castTo UnitEntity : nul
+		UnitEntity attData = att.getEntity() != null and att.isAlive() ? att.getEntity() castTo UnitEntity : null
+		UnitEntity defData = def.getEntity() != null and def.isAlive() ? def.getEntity() castTo UnitEntity : null
 		if DISABLE_TEAMATTACK and defData != null and attData != null and (defData.owner.isAllyOf(attData.owner) or defData.owner == attData.owner)
 			// Falsify teamattacks
 			if getDamage() > 0.5
@@ -184,14 +183,15 @@ init
 		let v = GetTriggerUnit()
 		if v.getUserData() > 0
 			let victimData = v.getEntity() castTo UnitEntity
-			doAfter(0.05, () -> begin
-				if victimData != null and not victimData.done and victimData.hasBuffs()
+			if victimData != null and not victimData.done
+			doAfter(0.01, () -> begin
+				if v.getEntity() == victimData and victimData.hasBuffs()
 					for bff from victimData.getBuffs().staticItr()
 						bff.refresh(true)
 			end)
 			
 	end)
-	// Remove buffs when a unit dies
+	// Remove buffs when a unit dies and all other triggers fired.
 	EventListener.add(EVENT_PLAYER_UNIT_DEATH, () -> begin
 		let v = GetTriggerUnit()
 		if v.getEntity() != null
@@ -199,5 +199,4 @@ init
 			doAfter(0.01, () -> begin
 				victimData.clearBuffs()
 			end)
-			
 	end)
