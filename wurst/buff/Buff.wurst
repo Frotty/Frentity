@@ -46,6 +46,7 @@ public function UnitEntity.clearBuffs()
 	if buffs != null
 		Log.debug("Cleaning Buffs")
 		for bff from buffs.staticItr()
+			Log.debug("Clear buffs: Terminate")
 			bff.terminate()
 		destroy buffs
 		currentBuffs[this castTo int] = null
@@ -60,12 +61,10 @@ public function UnitEntity.transferBuffs(UnitEntity otherEntity)
 	if buffs == null or buffs.getSize() == 0
 		return
 
-	Log.debug("Transfering Buffs")
 	if buffs != null
-		let itr = buffs.staticItr()
-		while itr.hasNext()
-			let bff = itr.remove()
+		for bff from buffs.staticItr()
 			if not bff.done
+				Log.debug("Apply Buff")
 				bff.apply(otherEntity)
 		destroy buffs
 		currentBuffs[this castTo int] = null
