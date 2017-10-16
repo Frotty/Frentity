@@ -51,10 +51,16 @@ public function UnitEntity.clearBuffs()
 		currentBuffs[this castTo int] = null
 
 public function UnitEntity.transferBuffs(UnitEntity otherEntity)
+	if otherEntity == null
+		error("Target Entity may not be null")
+	if this == null
+		error("Origin Entity may not be null")
 	let buffs = currentBuffs[this castTo int]
+
+	if buffs == null or buffs.getSize() == 0
+		return
+
 	Log.debug("Transfering Buffs")
-	if not otherEntity.hasBuffs()
-		otherEntity.newBuffs()
 	if buffs != null
 		let itr = buffs.staticItr()
 		while itr.hasNext()
