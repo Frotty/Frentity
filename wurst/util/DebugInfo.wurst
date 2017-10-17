@@ -52,7 +52,7 @@ init
 		allocationsPerSecond = 0
 	end)
 
-	EventListener.add(EVENT_PLAYER_CHAT, () -> begin
+	EventListener.add(EVENT_PLAYER_CHAT_FILTER, () -> begin
 		let entered = GetEventPlayerChatString()
 		print("chat: " + entered)
 		if entered.startsWith("-d")
