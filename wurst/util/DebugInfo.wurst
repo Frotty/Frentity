@@ -54,7 +54,6 @@ init
 
 	EventListener.add(EVENT_PLAYER_CHAT_FILTER, () -> begin
 		let entered = GetEventPlayerChatString()
-		print("chat: " + entered)
 		if entered.startsWith("-d")
 			let level = entered.substring(3, 4).toInt()
 			if level >= 0 and level < 5
