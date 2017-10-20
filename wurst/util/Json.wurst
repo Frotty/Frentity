@@ -81,8 +81,7 @@ public class Json
 		properties.flush()
 		let itr = plist.staticItr()
 		for p from itr
-			destroy itr.next()
-			itr.remove()
+			destroy itr.remove()
 				
 	ondestroy
 		destroy properties
