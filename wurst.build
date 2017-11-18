@@ -1,4 +1,5 @@
-!!file.WurstProjectConfig
-dependencies: ['https://github.com/wurstscript/wurstStdlib2']
 projectName: Frentity
-releaseName: myRelease.w3x
+dependencies: ['https://github.com/wurstscript/wurstStdlib2']
+buildMapName: FrentityTest
+buildMapFileName: FrentityTest
+buildMapAuthor: Frotty

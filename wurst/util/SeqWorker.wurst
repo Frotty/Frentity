@@ -8,7 +8,6 @@ Sequentially executes the given closure, as long as the
 -closure returns true. 
 On returning false the callback ends and the closure is destroyed.
 */
-
 public function doSeq(SeqCallback cb)
 	cb.ref = getTimer()..setData(cb castTo int)
 	cb.ref..start(0.001, () -> onSeq())

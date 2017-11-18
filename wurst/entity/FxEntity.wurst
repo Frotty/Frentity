@@ -3,7 +3,7 @@ import public Entity
 import public Fx
 import Assets
 
-public constant DEFAULT_FX = Other.arrowmissile
+public constant DEFAULT_FX = Abilities.arrowMissile1
 
 abstract public class FxEntity extends Entity
 	protected Fx fx
