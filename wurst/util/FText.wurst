@@ -30,6 +30,8 @@ public function createFText(vec3 pos,string text, real size, real lifespan, vec2
 	ft.tt.setVisibility(GetLocalPlayer() == p)
 	return ft
 
+LinkedList<FText> recylcer = new LinkedList<FText>()
+
 /** Creates a dynamic FText at the target position */
 public function createFText(vec3 pos, string text, real size, real lifespan, vec2 vel, colorA col) returns FText
 	let permanent = lifespan <= 0
@@ -57,8 +59,6 @@ public function createFText(vec3 pos, string text, real size, real lifespan, vec
 	else
 		ftext..setDynamic(vel, lifespan)
 	return ftext
-
-LinkedList<FText> recylcer = new LinkedList<FText>()
 
 public class FText
 	use LinkedListModule
