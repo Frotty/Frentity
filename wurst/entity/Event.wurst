@@ -8,6 +8,7 @@ import ObjectIdGenerator
 import initlater DebugInfo
 //Listens to all PLAYER_UNIT_EVENTS plus EVENT_PLAYER_LEAVE and EVENT_UNIT_DAMAGED and EVENT_PLAYER_CHAT_FILTER
 public constant EVENT_PLAYER_CHAT_FILTER = ConvertPlayerEvent(96)
+public constant DONT_FIRE_EVENTS_ID = compiletime(ABIL_ID_GEN.next())
 
 public abstract class EventListener
 	static EventListener array generalListenersFirsts
@@ -124,7 +125,6 @@ init
 			..registerPlayerChatEvent(players[i], "", false)
 	end)
 
-public constant DONT_FIRE_EVENTS_ID = compiletime(ABIL_ID_GEN.next())
 @compiletime function genObj()
 	new AbilityDefinitionDefenseBonusPlus1(DONT_FIRE_EVENTS_ID)
 	..setDefenseBonus(1, 0)

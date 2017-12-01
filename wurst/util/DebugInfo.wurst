@@ -1,7 +1,5 @@
 package DebugInfo
 import Entity
-import Event
-import Printing
 
 multiboard mb
 constant rows = 3
