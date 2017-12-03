@@ -89,6 +89,8 @@ public abstract class Buff
 
 	abstract function apply(UnitEntity target)
 
+	function onApply()
+
 	function attackModifier()
 	
 	function defenseModifier()
