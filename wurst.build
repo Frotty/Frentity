@@ -1,5 +1,8 @@
-projectName: Frentity
-dependencies: ['https://github.com/wurstscript/wurstStdlib2']
-buildMapName: FrentityTest
-buildMapFileName: FrentityTest
-buildMapAuthor: Frotty
+---
+projectName: "DefaultName"
+dependencies:
+- "https://github.com/wurstscript/wurstStdlib2"
+buildMapData:
+  name: "DefaultName"
+  fileName: "DefaultFileName"
+  author: "DefaultAuthor"

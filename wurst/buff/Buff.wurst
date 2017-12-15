@@ -129,6 +129,10 @@ public function createBuffObject(string name, string tooltip, string iconpath) r
 
 /** Creates an ability based on Tornado aura that allows to display a buff without side effects */
 public function createBuffObject(string name, string tooltip, string iconpath, string effectPath) returns buffTuple
+	return createBuffObject(name, tooltip, iconpath, effectPath, "origin")
+
+/** Creates an ability based on Tornado aura that allows to display a buff without side effects */
+public function createBuffObject(string name, string tooltip, string iconpath, string effectPath, string attachmentPoint) returns buffTuple
 	let abilId = ABIL_ID_GEN.next()
 	let buffId = BUFF_ID_GEN.next()
 
@@ -147,7 +151,7 @@ public function createBuffObject(string name, string tooltip, string iconpath, s
 			..setArtTarget("")
 			..setTargetsAllowed(1, "self")
 			..setArtTarget(effectPath)
-			..setTargetAttachmentPoint("origin")
+			..setTargetAttachmentPoint(attachmentPoint)
 		
 	return buffTuple(abilId, buffId)
 
