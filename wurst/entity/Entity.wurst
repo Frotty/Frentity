@@ -185,15 +185,18 @@ abstract public class UnitEntity extends Entity
 
 	function setupUnitEntity(unit actor)
 		this.actor = actor
-		if not actor.isAlive() or actor.getEntity() != null
-			error("Entity aissgnment error: name: " + actor.getName() + " actor.isAlive(): " + actor.isAlive().toString() + ", actor.getEntity() != null: " + (actor.getEntity() != null).toString())
+		if not actor.isAlive()
 			terminate()
+			error("Trying to assign entity to unit that is not alive")
+		if actor.getEntity() != null
+			terminate()
+			error("Trying to assign entity to unit that already has an entity")
+			
+		actor..setEntity(this)..addAbility(HEIGHT_ENABLER)..removeAbility(HEIGHT_ENABLER)
+		if DYNAMIC_Z
+			actor.setXYZReal(pos)
 		else
-			actor..setEntity(this)..addAbility(HEIGHT_ENABLER)..removeAbility(HEIGHT_ENABLER)
-			if DYNAMIC_Z
-				actor.setXYZReal(pos)
-			else
-				actor.setXYZ(pos)
+			actor.setXYZ(pos)
 				
 	override function update()
 		pos = actor.getPos3with(pos.z)

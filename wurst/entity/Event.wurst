@@ -42,8 +42,8 @@ public abstract class EventListener
 		let id = GetTriggerEventId().toIntId()
 		eventCallbacksPerSecond++
 		// Unit Listeners
-		if trigUnit != null
-			if unitListenersFirsts[trigUnit.getUserData()] != null and not trigUnit.hasAbility(DONT_FIRE_EVENTS_ID)
+		if trigUnit != null and not trigUnit.hasAbility(DONT_FIRE_EVENTS_ID)
+			if unitListenersFirsts[trigUnit.getUserData()] != null and 
 				var listener = unitListenersFirsts[trigUnit.getUserData()]
 				while listener != null
 					if listener.eventId == id
@@ -84,10 +84,12 @@ function registerEventId(eventid evnt) returns int
 	return eventTypeCounter
 	
 function registerEventsForUnit(unit u)
-	unitTrig.registerUnitEvent(u, EVENT_UNIT_DAMAGED)
+	if not u.hasAbility(DONT_FIRE_EVENTS_ID)
+		unitTrig.registerUnitEvent(u, EVENT_UNIT_DAMAGED)
 
 public function unregisterEventsForUnit(unit u)
-	unregisterEvents(u.getUserData())
+	if not u.hasAbility(DONT_FIRE_EVENTS_ID)
+		unregisterEvents(u.getUserData())
 
 public function unregisterEvents(int id)
 	if id > 0 and EventListener.unitListenersFirsts[id] != null
