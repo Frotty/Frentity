@@ -43,7 +43,7 @@ public abstract class EventListener
 		eventCallbacksPerSecond++
 		// Unit Listeners
 		if trigUnit != null and not trigUnit.hasAbility(DONT_FIRE_EVENTS_ID)
-			if unitListenersFirsts[trigUnit.getUserData()] != null and 
+			if unitListenersFirsts[trigUnit.getUserData()] != null 
 				var listener = unitListenersFirsts[trigUnit.getUserData()]
 				while listener != null
 					if listener.eventId == id
