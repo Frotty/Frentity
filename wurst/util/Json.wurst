@@ -49,9 +49,9 @@ public class Json
 	function getProperty(string key) returns Property
 		return properties.get(key.getHash())
 
-	function hashKey(string key) returns boolean
+	function hasKey(string key) returns boolean
 		let s = getString(key)
-		return s == null or s.getSingleLength() == 0
+		return not (s == null or s.getSingleLength() == 0)
 		 
 	function getReal(string key) returns real
 		return getInt(key).toReal()
