@@ -43,7 +43,6 @@ public abstract class SeqCallback
 
 	function doStep() returns boolean
 		if not done
-			printLog(Loglevel.DEBUG, "SeqCallback doStep")
 			return onExecute(this)
 		return false
 

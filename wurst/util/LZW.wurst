@@ -9,7 +9,7 @@ import HashMap
 
 /** Lempel Ziv Welch Compression */
 
-constant maxDictSize = 4000
+constant maxDictSize = 5000
 constant string DICT_INIT                   = "_0123456789abcdefghijklmnopqrstuvwxyz-[]"
 constant string ALLOWED_PLAYER_CHARS 		= "0aUb1GLwR2kHvP3CQIM4npFs5iSW6tzAr7TNxo8JXVjy9OcdEfBKgqeuYDhmlZ"
 
@@ -46,10 +46,8 @@ function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback 
 		if itr.hasNext()
 			encoder.encode(itr.next(), dictSize)
 		else
-			printLog(Loglevel.DEBUG, "positions encoded1")
 			continue = false
 			encoder.encode(dictSize, maxDictSize)
-			printLog(Loglevel.DEBUG, "positions encoded2")
 			destroy intList
 			encoder.save(new BigString(), (PayloadCallback pc) -> begin
 				onFinish.customData = pc.customData
@@ -62,20 +60,20 @@ function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback 
 		
 
 function decodePositions(BigString input, PayloadCallback onFinish)
-	printLog(Loglevel.DEBUG, "decode positions")
+	Log.debug("decode positions")
 	let encoder = new Encoder(ALLOWED_PLAYER_CHARS)
 	input.debugPrint()
 	encoder.load(input, (PayloadCallback cb) -> begin
 		if cb.customData == 1
-			printLog(Loglevel.DEBUG, "file valid")
+			Log.debug("file valid")
 			nullTimer(() -> begin
 			end)
 			nullTimer(() -> begin
-				printLog(Loglevel.DEBUG, "file valid2")
+				Log.debug("file valid2")
 				let dictSize = encoder.decode(maxDictSize)
-				printLog(Loglevel.DEBUG, "dictSize: " + dictSize.toString())
+				Log.debug("dictSize: " + dictSize.toString())
 				let positions = new LinkedList<int>()
-				printLog(Loglevel.DEBUG, "start decoding pos")
+				Log.debug("start decoding pos")
 				doSeq((SeqCallback cb1) -> begin
 					var continue = true
 					if not encoder.bignum.isZero()
@@ -100,7 +98,7 @@ function decodePositions(BigString input, PayloadCallback onFinish)
 		
 
 public function compress(BigString data, PayloadCallback onFinish) 
-	printLog(Loglevel.DEBUG, "Compressing:")
+	Log.debug("Compressing:")
 	data.debugPrint()
 	
 	// List 
@@ -145,11 +143,12 @@ public function compress(BigString data, PayloadCallback onFinish)
 
 		//        output += (dictionary.indexOf(Z) + " ");
 		else
-			printLog(Loglevel.DEBUG, "Compressed")
+			Log.debug("Compressed")
 			continue = false
 			if B != null and A.getSingle().charAt(A.getSingleLength()-1) != B.getSingle()
 				intList.add(dictionary.get(B.getSingle()))
 			encodePositions(intList, dictSize, (PayloadCallback cb2) -> begin
+				Log.debug("positions encoded")
 				let encoded = cb2.customData castTo BigString
 				encoded.debugPrint()
 				onFinish.customData = encoded castTo int
@@ -162,7 +161,7 @@ public function compress(BigString data, PayloadCallback onFinish)
 	* @return boolean - true if successful, false otherwise.
 	*/
 public function decompress(BigString input, PayloadCallback onFinish)
-	printLog(Loglevel.DEBUG, "Start decompress")
+	Log.debug("Start decompress")
 	let output = new BigString()
 	initDict()
 	
@@ -190,7 +189,7 @@ public function decompress(BigString input, PayloadCallback onFinish)
 				output.addString(A)
 			else
 				continue = false
-				printLog(Loglevel.DEBUG, "decompressed")
+				Log.debug("decompressed")
 				output.debugPrint()
 				onFinish.customData = output castTo int
 				onFinish.doStep()

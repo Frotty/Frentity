@@ -1,7 +1,8 @@
 package BigString
 import ErrorHandling
 
-public constant BIG_SUBSTRING_LEN = 400
+public constant BIG_SUBSTRING_LEN = 450
+public constant MAX_SUBSTRINGS = 25
 // Lazily evaluated substring
 public class BigSubString
 	private BigString parent = null
@@ -83,21 +84,22 @@ public class BigSubString
 		if next != null
 			next.addToBigString(target)
 
+	function equals(BigSubString other) returns boolean
+		return this.parent == other.parent and this.getCombinedLength() == other.getCombinedLength() and this.start == other.getStart()
+
 	function hash() returns int
-		int hash = 0
+		int hash = (parent castTo int) * 100000
 		var len = getCombinedLength()
 		var off = start
-		while off+BIG_SUBSTRING_LEN < len
-			hash += parent.getString(off, BIG_SUBSTRING_LEN).getHash()
-			off += BIG_SUBSTRING_LEN
-		hash += parent.getString(off, len-off).getHash()
+		hash += len * 17
+		hash += off * 11
 		return hash
 
 	ondestroy
 		length = -1
 
 public class BigString
-	private string array[10] substrings
+	private string array[MAX_SUBSTRINGS] substrings
 	private int length = 0
 	int startoffset = 0
 
@@ -109,7 +111,7 @@ public class BigString
 		addString(initial)
 
 	function reset()
-		for i = 0 to 9
+		for i = 0 to MAX_SUBSTRINGS-1
 			substrings[i] = ""
 		length = 0
 		startoffset = 0
@@ -121,7 +123,7 @@ public class BigString
 		return length-startoffset
 
 	function addBigString(BigString add)
-		for i = 0 to 9
+		for i = 0 to MAX_SUBSTRINGS-1
 			if add.substrings[i].length() <= 0
 				break
 			addString(add.substrings[i])
@@ -184,7 +186,7 @@ public class BigString
 	function debugPrint()
 		if DEBUG_LEVEL castTo int <= Loglevel.DEBUG castTo int
 			printLog(Loglevel.DEBUG, "BigString length: " + getLength().toString() + " lines: ")
-			for i = 0 to 10
+			for i = 0 to MAX_SUBSTRINGS-1
 				if substrings[i].length() > 0
 					printLog(Loglevel.DEBUG, "\n\tLine " + i.toString() + " : " + substrings[i])
 				else
