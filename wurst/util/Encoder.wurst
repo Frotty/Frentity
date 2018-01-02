@@ -58,12 +58,12 @@ public class Encoder
 	
 	function toString(BigString big, PayloadCallback onFinish)
 		Log.debug("toString digits: " + digits.toString())
-		BigNum_l cur = bignum.list
+		BigNum_l _cur = bignum.list
 		doSeq((SeqCallback cb) -> begin
 			var continue = true
-			if cur != null
-				big.addString(itochar(cur.leaf))
-				cur = cur.next
+			if _cur != null
+				big.addString(itochar(_cur.leaf))
+				_cur = _cur.next
 			else
 				continue = false
 				onFinish.customData = big castTo int

@@ -184,11 +184,11 @@ public class BigString
 		return substrings[idx].substring(offsetstart, offsetend)
 
 	function debugPrint()
-		if DEBUG_LEVEL castTo int <= Loglevel.DEBUG castTo int
-			printLog(Loglevel.DEBUG, "BigString length: " + getLength().toString() + " lines: ")
+		if DEBUG_LEVEL == Loglevel.TRACE
+			Log.debug("BigString length: " + getLength().toString() + " lines: ")
 			for i = 0 to MAX_SUBSTRINGS-1
 				if substrings[i].length() > 0
-					printLog(Loglevel.DEBUG, "\n\tLine " + i.toString() + " : " + substrings[i])
+					Log.debug("\n\tLine " + i.toString() + " : " + substrings[i])
 				else
 					break
 	ondestroy

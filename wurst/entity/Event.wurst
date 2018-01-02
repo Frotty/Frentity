@@ -77,7 +77,7 @@ function registerEventId(eventid evnt) returns int
 	eventTypeCounter++
 	eventidToIndex[eventId] = eventTypeCounter
 	if evnt.isPlayerunitEvent()
-		printLog(Loglevel.DEBUG, "reg handleid: " + eventId.toString() + " -> eventId: " + eventTypeCounter.toString())
+		Log.debug("reg handleid: " + eventId.toString() + " -> eventId: " + eventTypeCounter.toString())
 		registerPlayerUnitEvent(ConvertPlayerUnitEvent(eventId), function EventListener.generalEventCallback)
 	else if evnt != EVENT_UNIT_DAMAGED and evnt != EVENT_PLAYER_LEAVE and evnt != EVENT_PLAYER_CHAT_FILTER and not evnt.isKeyboardEvent()
 		printLog(Loglevel.ERROR, "registering handleid: " + eventId.toString() + " non-playerunitevent. Except EVENT_UNIT_DAMAGED and EVENT_PLAYER_LEAVE these are not supported right now.")
