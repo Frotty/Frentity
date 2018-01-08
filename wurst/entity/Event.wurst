@@ -57,6 +57,14 @@ public abstract class EventListener
 				listener = listener.next
 		
 	ondestroy
+		var listener = unitListenersFirsts[this.eventId]
+		var lastListener = listener
+		while listener != this
+			lastListener = listener
+			listener = listener.next
+		if lastListener == listener
+			unitListenersFirsts[this.eventId] = null
+		lastListener.next = next	
 		next = null
 	
 trigger unitTrig = CreateTrigger()
