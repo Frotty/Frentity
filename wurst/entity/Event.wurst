@@ -16,15 +16,18 @@ public abstract class EventListener
 
 	int eventId = 0
 	EventListener next = null
+	EventListener prev = null
 
 	abstract function onEvent()
 	
-	static function add(eventid eventId, EventListener listener)
+	static function add(eventid eventId, EventListener listener) returns EventListener
 		listener.eventId = eventId.toIntId()
 		if generalListenersFirsts[listener.eventId] != null
+			generalListenersFirsts[listener.eventId].prev = listener
 			listener.next = generalListenersFirsts[listener.eventId]
 
 		generalListenersFirsts[listener.eventId] = listener
+		return listener
 		
 	static function add(unit u, eventid eventId, EventListener listener)
 		let uid = u.getUserData()
@@ -33,7 +36,7 @@ public abstract class EventListener
 		listener.eventId = eventId.toIntId()
 		// print("adding eventlistener to entityid: " + uid.toString() + " eventid: " + listener.eventId.toString())
 		if unitListenersFirsts[uid] != null
-			// print("unit alrdy has listeners")
+			unitListenersFirsts[uid].prev = listener
 			listener.next = unitListenersFirsts[uid]
 		unitListenersFirsts[uid] = listener
 			
@@ -57,15 +60,24 @@ public abstract class EventListener
 				listener = listener.next
 		
 	ondestroy
-		var listener = unitListenersFirsts[this.eventId]
-		var lastListener = listener
-		while listener != this
-			lastListener = listener
-			listener = listener.next
-		if lastListener == listener
-			unitListenersFirsts[this.eventId] = null
-		lastListener.next = next	
+		var listener = generalListenersFirsts[this.eventId]
+		if listener == this
+			generalListenersFirsts[this.eventId] = next
+		else if prev != null
+			prev.next = next
+			
+		next.prev = prev
+
+		listener = unitListenersFirsts[this.eventId]
+		if listener == this
+			unitListenersFirsts[this.eventId] = next
+		else if prev != null
+			prev.next = next
+			
+		next.prev = prev
+
 		next = null
+		prev = null
 	
 trigger unitTrig = CreateTrigger()
 trigger leaveTrig = CreateTrigger()
