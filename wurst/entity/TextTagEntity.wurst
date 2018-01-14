@@ -18,7 +18,7 @@ public class TextTagEntity extends Entity
 		ftext.tt.setPos(pos)
 		dur -= ANIMATION_PERIOD
 		if dur <= 0
-			done = true
+			terminate()
 			
 	ondestroy
 		ftext.recycle()

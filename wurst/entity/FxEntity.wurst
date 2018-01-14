@@ -28,7 +28,7 @@ abstract public class FxEntity extends Entity
 		if pos.inPlayable()
 			fx.setXYZ(pos)
 		else 
-			done = true
+			terminate()
 		
 	function setFx(string sfxpath)
 		fx.setFx(sfxpath)
