@@ -43,7 +43,7 @@ public function getUnit(player owner, int utypeId, vec3 position, angle facing, 
 public function getUnit(player owner, int utypeId, vec2 position, angle facing, Entity index) returns unit
 	return getUnit(0, owner, utypeId, position, facing, index)
 
-public function getUnit(int stackId, player owner, int utypeId, vec2 position, angle facing, Entity entity) returns unit
+public function getUnit(int _stackId, player owner, int utypeId, vec2 position, angle facing, Entity _entity) returns unit
 	// let index = entity.typeId
 	// if stackId == 0
 	// 	if normalStacks[index] != null

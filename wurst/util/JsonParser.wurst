@@ -2,7 +2,6 @@ package JsonParser
 import public Json
 import SeqWorker
 import LinkedList
-import TypeCasting
 
 /**
 	Provides functionality to parse JSON (JasSObjectNotation).

@@ -84,7 +84,7 @@ public class Json
 	function reset()
 		properties.flush()
 		let itr = plist.staticItr()
-		for p from itr
+		for _p from itr
 			destroy itr.remove()
 				
 	ondestroy

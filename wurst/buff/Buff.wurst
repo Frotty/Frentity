@@ -58,7 +58,7 @@ public function UnitEntity.transferBuffs(UnitEntity otherEntity)
 		error("Origin Entity may not be null")
 	let buffs = currentBuffs[this castTo int]
 
-	if buffs == null or buffs.getSize() == 0
+	if buffs == null or buffs.size() == 0
 		return
 
 	if buffs != null

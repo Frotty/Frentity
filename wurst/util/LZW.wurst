@@ -2,7 +2,6 @@ package LZW
 import LinkedList
 import public BigString
 import public SeqWorker
-import TypeCasting
 import ErrorHandling
 import Encoder
 import HashMap
