@@ -17,7 +17,7 @@ public function createFText(vec3 pos, string text, real size) returns FText
 	return createFText(pos, text, size, 0, ZERO2)
 
 /** Creates a dynamic FText at the target position */
-public function createFText(vec3 pos,string text, real size, real lifespan, vec2 vel) returns FText
+public function createFText(vec3 pos, string text, real size, real lifespan, vec2 vel) returns FText
 	return createFText(pos, text, size, lifespan, vel, COLOR_WHITE)
 
 /** Creates a dynamic FText at the target position */
@@ -34,24 +34,25 @@ LinkedList<FText> recylcer = new LinkedList<FText>()
 
 /** Creates a dynamic FText at the target position */
 public function createFText(vec3 pos, string text, real size, real lifespan, vec2 vel, colorA col) returns FText
-	let permanent = lifespan <= 0
+	let permanent = lifespan <= 0.
 	// Get FText instance
 	FText ftext = null
-	if recylcer.peek() != null
-		ftext = recylcer.pop()
+	if recylcer.size() > 0
+		Log.debug("get recycled")
+		ftext = recylcer.dequeue()
 	else
 		if FText.size < 100
-			// Recycler was empty
+			// Recycler was empty and we still have space
 			ftext = new FText()
+			Log.debug("get new")
 		else
-			// find oldest, dynamic tag
+			// we maxed out and need to recycle the oldest, dynamic tag
 			for etext in FText
-				if not etext.permanent
-					etext.recycle()
-					ftext = recylcer.pop()
-					break
+				if not etext.permanent and (ftext == null or etext.timestamp < ftext.timestamp)
+					ftext = etext
 			if ftext == null
 				error("You have reached the maximum possible permanent texttags")
+			Log.debug("get force recycle")
 	ftext..setup(text, pos, size)
 	ftext.tt.setColor(col)
 	if permanent
@@ -65,6 +66,7 @@ public class FText
 	texttag tt = CreateTextTag()
 	boolean permanent = false
 	real timestamp = 0
+	CallbackSingle cb = null
 
 	construct()
 		tt..setPermanent(true)
@@ -75,11 +77,14 @@ public class FText
 			tt = null
 
 	function recycle()
+		cb = null
+		timestamp = 0
 		if permanent
 			destroy this
 		else
-			tt.setVisibility(false)
-			tt.setColor(COLOR_WHITE)
+			tt..setVisibility(false)
+			..setColor(COLOR_BLACK)
+			..setText("", 0)
 			recylcer.add(this)
 
 	function setup(string text, vec3 pos, real size)
@@ -89,13 +94,18 @@ public class FText
 		..setVisibility(true)
 		..setVelocity(ZERO2.x, ZERO2.y)
 		..setFadepoint(.45)
-		..setLifespan(0)
+		..setLifespan(REAL_MAX)
 	
 	function setPermanent()
 		permanent = true
+		if cb != null
+			destroy cb
+			cb = null
 
 	function setDynamic(vec2 vel, real lifespan)
 		tt..setVelocity(vel.x, vel.y)
 		..setLifespan(lifespan)
-		timestamp = getElapsedGameTime() + lifespan
-		doAfter(lifespan-0.025, () -> this.recycle())
+		timestamp = getElapsedGameTime()
+		if cb != null
+			destroy cb
+		cb = doAfter(lifespan-0.025, () -> this.recycle())

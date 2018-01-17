@@ -5,11 +5,13 @@ import public Colors
 public class TextTagEntity extends Entity
 	FText ftext
 	real dur
-	
+	colorA col
+
 	construct(vec3 pos, vec3 vel, string text, real size, real duration,  colorA col )
 		super(DUMMY_PLAYER, pos, 0)
 		dur = duration
 		this.vel = vel
+		this.col = col
 		ftext = createFText(pos, text, size, duration, ZERO2, col)
 		
 	override function update()
@@ -17,9 +19,7 @@ public class TextTagEntity extends Entity
 		pos += vel
 		ftext.tt.setPos(pos)
 		dur -= ANIMATION_PERIOD
+		ftext.tt.setColor(col)
 		if dur <= 0
 			terminate()
 			
-	ondestroy
-		ftext.recycle()
-	
