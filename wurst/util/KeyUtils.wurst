@@ -8,6 +8,21 @@ keyTuple array keyStatuses
 public function player.getDownKeys() returns keyTuple
 	return keyStatuses[this.getId()]
 
+EventListener firstKeyListener = null
+
+public function addKeyListener(EventListener listener) returns EventListener
+	if firstKeyListener != null
+		firstKeyListener.prev = listener
+		listener.next = firstKeyListener
+
+	firstKeyListener = listener
+	return listener
+
+public function removeKeyListener(EventListener listener)
+	if firstKeyListener == listener
+		firstKeyListener = null
+	destroy listener
+
 function onKeyEvent()
 	var keyStatus = keyStatuses[GetTriggerPlayer().getId()]
 	let id = GetTriggerEventId()
@@ -30,6 +45,11 @@ function onKeyEvent()
 		keyStatus.right = false
 
 	keyStatuses[GetTriggerPlayer().getId()] = keyStatus
+
+	var listener = firstKeyListener
+	while listener != null
+		listener.onEvent()
+		listener = listener.next
 
 init
 	for i = 0 to 11

@@ -18,8 +18,8 @@ public class TextTagEntity extends Entity
 		vel += gravity
 		pos += vel
 		ftext.tt.setPos(pos)
-		dur -= ANIMATION_PERIOD
 		ftext.tt.setColor(col)
+		dur -= ANIMATION_PERIOD
 		if dur <= 0
 			terminate()
 			
