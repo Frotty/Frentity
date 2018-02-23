@@ -29,16 +29,17 @@ public abstract class EventListener
 		generalListenersFirsts[listener.eventId] = listener
 		return listener
 		
-	static function add(unit u, eventid eventId, EventListener listener)
+	static function add(unit u, eventid eventId, EventListener listener) returns EventListener
 		let uid = u.getUserData()
 		if uid <= 0
-			return
+			return listener
 		listener.eventId = eventId.toIntId()
 		// print("adding eventlistener to entityid: " + uid.toString() + " eventid: " + listener.eventId.toString())
 		if unitListenersFirsts[uid] != null
 			unitListenersFirsts[uid].prev = listener
 			listener.next = unitListenersFirsts[uid]
 		unitListenersFirsts[uid] = listener
+		return listener
 			
 	static function generalEventCallback()
 		let trigUnit = GetTriggerUnit()
