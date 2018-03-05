@@ -122,40 +122,6 @@ public abstract class Buff
 			target.actor.removeAbility(buffData.abilId)
 		target = null
 
-public function createBuffObject(string name, string tooltip, string iconpath) returns buffTuple
-	return createBuffObject(name, tooltip, iconpath, "")
-
-/** Creates an ability based on Tornado aura that allows to display a buff without side effects */
-public function createBuffObject(string name, string tooltip, string iconpath, string effectPath) returns buffTuple
-	return createBuffObject(name, tooltip, iconpath, effectPath, "origin")
-
-/** Creates an ability based on Tornado aura that allows to display a buff without side effects */
-public function createBuffObject(string name, string tooltip, string iconpath, string effectPath, string attachmentPoint) returns buffTuple
-	let abilId = ABIL_ID_GEN.next()
-	let buffId = BUFF_ID_GEN.next()
-
-	if compiletime
-		new BuffDefinition(buffId, 'Basl')
-			..setName(1, name)
-			..setTooltipNormal(1, name)
-			..setTooltipNormalExtended(1, tooltip)
-			..setIcon(iconpath)
-
-		new AbilityDefinitionAuraSlow(abilId)
-			..setName("Aura Dummy: " + name)
-			..setMovementSpeedFactor(1, 0)
-			..setBuffs(1, int2fourchar(buffId))
-			..presetIcon(iconpath)
-			..setArtTarget("")
-			..setTargetsAllowed(1, "self")
-			..setArtTarget(effectPath)
-			..setTargetAttachmentPoint(attachmentPoint)
-		
-	return buffTuple(abilId, buffId)
-
-public function compiletime(buffTuple buffT) returns buffTuple
-	return buffT
-
 init
 	// Call attack and defense modifiers of buffs
 	EventListener.add(EVENT_UNIT_DAMAGED, () -> begin
