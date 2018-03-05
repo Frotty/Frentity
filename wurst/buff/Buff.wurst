@@ -1,9 +1,9 @@
 package Buff
 import public Entity
+import public BuffObjEditing
 import LinkedListModule
 import Squares
 import TextTagEntity
-import BuffObjEditing
 import ObjectIds
 import AbilityObjEditing
 import ObjectIdGenerator
@@ -72,8 +72,6 @@ public function UnitEntity.transferBuffs(UnitEntity otherEntity)
 public function UnitEntity.newBuffs() returns LinkedList<Buff>
 	currentBuffs[this castTo int] = new LinkedList<Buff>()
 	return currentBuffs[this castTo int]
-
-public tuple buffTuple(int abilId, int buffId)
 
 public abstract class Buff
 	use LinkedListModule
