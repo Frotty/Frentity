@@ -59,7 +59,7 @@ public class Encoder
 	function toString(BigString big, PayloadCallback onFinish)
 		Log.debug("toString digits: " + digits.toString())
 		BigNum_l _cur = bignum.list
-		doSeq((SeqCallback cb) -> begin
+		doSeq() cb ->
 			var continue = true
 			if _cur != null
 				big.addString(itochar(_cur.leaf))
@@ -69,14 +69,13 @@ public class Encoder
 				onFinish.customData = big castTo int
 				onFinish.doStep()
 			return continue
-		end)
 	
 	function fromString(BigString bs, PayloadCallback onFinishString)
 		int _i = 0
 		BigNum_l _cur = new BigNum_l()
 		bignum.list = _cur
 		Log.debug("from String")
-		doSeq((SeqCallback cb) -> begin
+		doSeq() cb ->
 			var continue = true
 			_cur.leaf = chartoi(bs.getString(_i, 1))
 			if _i < bs.getLength()-1
@@ -88,7 +87,6 @@ public class Encoder
 				destroy bs
 				onFinishString.doStep()
 			return continue
-		end)
 	
 	function hash() returns int
 		Log.debug("hash")
@@ -108,10 +106,10 @@ public class Encoder
 		execute(() -> clean())
 		Log.debug("save2")
 		hash = -1
-		execute(() -> begin 
+		execute() -> 
 			hash = hash() 
-		end)
-		nullTimer(() -> begin
+
+		nullTimer() ->
 			Log.debug("hash: " + hash.toString())
 			execute(() -> encode(hash,maxHash))
 			Log.debug("encoded hash")
@@ -120,28 +118,27 @@ public class Encoder
 			execute(() -> pad())
 			Log.debug("before toString bs: " + bs.getLength().toString())
 			execute(() -> toString(bs, onFinish))
-		end)
 
 	var inputhash = -1
 	var comparehash = -1
 	function load(BigString bs, PayloadCallback onFinishLoad)
 		inputhash = -1
 		comparehash = -1
-		fromString(bs, (PayloadCallback cb) -> begin
+		fromString(bs) cb ->
 			Log.debug("loaded..")
-			execute(() -> begin
+			execute() ->
 				inputhash = decode(maxHash)
-			end)
+
 			Log.debug("decoded..")
 			execute(() -> clean())
 			Log.debug("claned..")
-			execute(() -> begin
+			execute() -> 
 				comparehash = hash()
-			end)
+
 			Log.debug("hashed..")
 			onFinishLoad.customData = (inputhash == comparehash).toInt()
 			onFinishLoad.doStep()
-		end)
+
 		
 
 	function chartoi( string c ) returns int

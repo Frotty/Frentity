@@ -28,9 +28,9 @@ public function startEntityLoop() returns boolean
 	getTimer().startPeriodic(BUFF_ANIM_PERIOD, function updateBuffs)
 	getTimer().startPeriodic(1.0, function updateInactiveEntities)
 	// Remove buffs when unit leaves the map
-	onLeave(() -> begin
+	onLeave() ->
 		let e = getEnterLeaveUnit().getEntity()
 		if e != null and e instanceof UnitEntity
 			e.terminate()
-	end)
+
 	return true

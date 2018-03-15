@@ -4,9 +4,6 @@ import public BuffObjEditing
 import LinkedListModule
 import Squares
 import TextTagEntity
-import ObjectIds
-import AbilityObjEditing
-import ObjectIdGenerator
 import Frentity
 import ErrorHandling
 import ClosureTimers
@@ -124,7 +121,7 @@ public abstract class Buff
 
 init
 	// Call attack and defense modifiers of buffs
-	EventListener.add(EVENT_UNIT_DAMAGED, () -> begin
+	EventListener.add(EVENT_UNIT_DAMAGED) ->
 		let def = GetTriggerUnit()
 		let att = GetEventDamageSource()
 		UnitEntity attData = att.getEntity() != null and att.isAlive() ? att.getEntity() castTo UnitEntity : null
@@ -146,26 +143,22 @@ init
 				for bff from defData.getBuffs().staticItr()
 					if not bff.done
 						bff.defenseModifier()
-	end)		
+	
 	// Update the buff display on unit upgrade					
-	EventListener.add(EVENT_PLAYER_UNIT_UPGRADE_FINISH, () -> begin
+	EventListener.add(EVENT_PLAYER_UNIT_UPGRADE_FINISH) ->
 		let v = GetTriggerUnit()
 		if v.getUserData() > 0
 			let victimData = v.getEntity() castTo UnitEntity
 			if victimData != null and not victimData.done
-			doAfter(0.01, () -> begin
+			doAfter(0.01) ->
 				if v.getEntity() == victimData and victimData.hasBuffs()
 					for bff from victimData.getBuffs().staticItr()
 						bff.refresh(true)
-			end)
 			
-	end)
 	// Remove buffs when a unit dies and all other triggers fired.
-	EventListener.add(EVENT_PLAYER_UNIT_DEATH, () -> begin
+	EventListener.add(EVENT_PLAYER_UNIT_DEATH) ->
 		let v = GetTriggerUnit()
 		if v.getEntity() != null
 			let victimData = v.getEntity() castTo UnitEntity
-			doAfter(0.01, () -> begin
+			doAfter(0.01) ->
 				victimData.clearBuffs()
-			end)
-	end)

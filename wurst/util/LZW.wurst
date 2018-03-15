@@ -40,7 +40,7 @@ function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback 
 	let encoder = new Encoder(ALLOWED_PLAYER_CHARS)
 	// let max = intList.getSize()
 	let itr = intList.staticItr()
-	doSeq((SeqCallback cb) -> begin
+	doSeq() cb ->
 		var continue = true
 		if itr.hasNext()
 			encoder.encode(itr.next(), dictSize)
@@ -48,32 +48,28 @@ function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback 
 			continue = false
 			encoder.encode(dictSize, maxDictSize)
 			destroy intList
-			encoder.save(new BigString(), (PayloadCallback pc) -> begin
+			encoder.save(new BigString()) pc ->
 				onFinish.customData = pc.customData
 				destroy encoder
 				onFinish.doStep()
-			end)
+
 		return continue
-	end)
 	
-		
 
 function decodePositions(BigString input, PayloadCallback onFinish)
 	Log.debug("decode positions")
 	let encoder = new Encoder(ALLOWED_PLAYER_CHARS)
 	input.debugPrint()
-	encoder.load(input, (PayloadCallback cb) -> begin
+	encoder.load(input) cb ->
 		if cb.customData == 1
 			Log.debug("file valid")
-			nullTimer(() -> begin
-			end)
-			nullTimer(() -> begin
+			nullTimer() ->
 				Log.debug("file valid2")
 				let dictSize = encoder.decode(maxDictSize)
 				Log.debug("dictSize: " + dictSize.toString())
 				let positions = new LinkedList<int>()
 				Log.debug("start decoding pos")
-				doSeq((SeqCallback cb1) -> begin
+				doSeq() cb1 ->
 					var continue = true
 					if not encoder.bignum.isZero()
 						let dec = encoder.decode(dictSize)
@@ -88,12 +84,11 @@ function decodePositions(BigString input, PayloadCallback onFinish)
 						onFinish.customData = positions castTo int
 						onFinish.doStep()
 					return continue
-				end)
-			end)
+
 		else
 			error("loaded input is invalid")
 		destroy cb
-	end)
+
 		
 
 public function compress(BigString data, PayloadCallback onFinish) 
@@ -108,7 +103,7 @@ public function compress(BigString data, PayloadCallback onFinish)
 	int inc = 0
 	BigSubString A = null
 	BigSubString B = null
-	doSeq((SeqCallback cb) -> begin
+	doSeq() cb ->
 		var continue = true
 		if (inc < data.getLength() - 1)
 			if A != null
@@ -146,15 +141,15 @@ public function compress(BigString data, PayloadCallback onFinish)
 			continue = false
 			if B != null and A.getSingle().charAt(A.getSingleLength()-1) != B.getSingle()
 				intList.add(dictionary.get(B.getSingle()))
-			encodePositions(intList, dictSize, (PayloadCallback cb2) -> begin
+			encodePositions(intList, dictSize) cb2 ->
 				Log.debug("positions encoded")
 				let encoded = cb2.customData castTo BigString
 				encoded.debugPrint()
 				onFinish.customData = encoded castTo int
 				onFinish.doStep()
-			end)
+
 		return continue
-	end)
+
 
 /**
 	* @return boolean - true if successful, false otherwise.
@@ -164,13 +159,13 @@ public function decompress(BigString input, PayloadCallback onFinish)
 	let output = new BigString()
 	initDict()
 	
-	decodePositions(input, (PayloadCallback cb1) -> begin
+	decodePositions(input) cb1 ->
 		let positions = cb1.customData castTo LinkedList<int> 
 		let itr = positions.staticItr()
 		string A = ""
 		string B = ""
 		
-		doSeq((SeqCallback cb2) -> begin
+		doSeq() cb2 ->
 			var continue = true
 			if itr.hasNext()
 				let idx = itr.next()
@@ -193,7 +188,5 @@ public function decompress(BigString input, PayloadCallback onFinish)
 				onFinish.customData = output castTo int
 				onFinish.doStep()
 			return continue
-		end)
-	end)
 	
 	

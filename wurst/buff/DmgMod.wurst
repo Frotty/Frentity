@@ -71,7 +71,7 @@ class Active
 	construct()
 		// If this is the first Active DamageEvent we start the timer to apply this and all further
 		if this == first
-			inst_timer.start(0., () -> begin
+			inst_timer.start(0.) ->
 				while Active.first != null
 					var moddat = Active.first
 					var actlife = GetWidgetLife( moddat.target )
@@ -94,7 +94,6 @@ class Active
 							moddat.taketrg.enable()
 
 					destroy moddat
-			end)
 
 /** Generates the Health-Bonus Ability */
 @compiletime function generateObject()

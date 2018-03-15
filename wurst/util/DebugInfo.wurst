@@ -30,11 +30,11 @@ public int totalAllocations = 0
 
 init
 	for i = 0 to 11
-		CreateTrigger()..registerPlayerChatEvent(players[i], "-debug", true)..addAction(() -> begin
+		CreateTrigger()..registerPlayerChatEvent(players[i], "-debug", true)..addAction() ->
 			if GetLocalPlayer() == GetTriggerPlayer()
 				mb.display(not mb.isDisplayed())
-		end)
-	CreateTimer().startPeriodic(1, () -> begin
+
+	CreateTimer().startPeriodic(1) ->
 		if mb == null
 			createMultiboard()
 		seconds++
@@ -48,9 +48,9 @@ init
 		mb.getItem(2, 2).setValue(Entity.inactiveSize.toString())
 		eventCallbacksPerSecond = 0
 		allocationsPerSecond = 0
-	end)
 
-	EventListener.add(EVENT_PLAYER_CHAT_FILTER, () -> begin
+
+	EventListener.add(EVENT_PLAYER_CHAT_FILTER) ->
 		let entered = GetEventPlayerChatString()
 		if entered.startsWith("-d")
 			let level = entered.substring(3, 4).toInt()
@@ -58,4 +58,3 @@ init
 				let loglvl = level castTo Loglevel
 				Log.setLevel(loglvl)
 				printTimedToPlayer("Loglevel adjusted to: " + loglvl.getTag(), 10, GetTriggerPlayer())
-	end)

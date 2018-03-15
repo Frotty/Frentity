@@ -59,7 +59,7 @@ public class JsonParser
 			Log.debug("skip empty list")
 			finalCallback.doStep()
 		else
-			doSeq((SeqCallback cb) -> begin
+			doSeq() cb ->
 				var continue = true
 				if currentPosition < bigInput.getLength()
 					parseListSeq()
@@ -68,7 +68,7 @@ public class JsonParser
 					Log.debug("parsed list")
 					finalCallback.doStep()
 				return continue
-			end)
+
 
 	private function parseListSeq()
 		currentToken = bigInput.getString(currentPosition, 1)
@@ -101,7 +101,7 @@ public class JsonParser
 			return
 		bigInput.debugPrint()
 		output.reset()
-		doSeq((SeqCallback cb) -> begin
+		doSeq() cb ->
 			var continue = true
 			if currentPosition < bigInput.getLength()
 				parseSeq()
@@ -112,7 +112,6 @@ public class JsonParser
 					output.addProperty(new Property(propName, propVal))
 				callback.doStep()
 			return continue
-		end)
 
 	private function parseSeq()
 		currentToken = bigInput.getString(currentPosition, 1)
