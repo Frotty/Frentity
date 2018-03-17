@@ -1,10 +1,10 @@
 package Event
 import public EventHelper
 import RegisterEvents
-import OnUnitEnterLeave
 import ClosureTimers
 import AbilityObjEditing
 import ObjectIdGenerator
+import UnitIndexer
 import initlater DebugInfo
 //Listens to all PLAYER_UNIT_EVENTS plus EVENT_PLAYER_LEAVE and EVENT_UNIT_DAMAGED and EVENT_PLAYER_CHAT_FILTER
 public constant EVENT_PLAYER_CHAT_FILTER = ConvertPlayerEvent(96)
@@ -30,7 +30,7 @@ public abstract class EventListener
 		return listener
 		
 	static function add(unit u, eventid eventId, EventListener listener) returns EventListener
-		let uid = u.getUserData()
+		let uid = u.getIndex()
 		if uid <= 0
 			return listener
 		listener.eventId = eventId.toIntId()
@@ -47,8 +47,8 @@ public abstract class EventListener
 		eventCallbacksPerSecond++
 		// Unit Listeners
 		if trigUnit != null and not trigUnit.hasAbility(DONT_FIRE_EVENTS_ID)
-			if unitListenersFirsts[trigUnit.getUserData()] != null 
-				var listener = unitListenersFirsts[trigUnit.getUserData()]
+			if unitListenersFirsts[trigUnit.getIndex()] != null 
+				var listener = unitListenersFirsts[trigUnit.getIndex()]
 				while listener != null
 					if listener.eventId == id
 						listener.onEvent()
@@ -110,7 +110,7 @@ function registerEventsForUnit(unit u)
 
 public function unregisterEventsForUnit(unit u)
 	if not u.hasAbility(DONT_FIRE_EVENTS_ID)
-		unregisterEvents(u.getUserData())
+		unregisterEvents(u.getIndex())
 
 public function unregisterEvents(int id)
 	if id > 0 and EventListener.unitListenersFirsts[id] != null
@@ -125,9 +125,9 @@ public function unregisterEvents(int id)
 init
 	nullTimer() ->
 		// Register Events when unit enters map
-		onEnter(() -> registerEventsForUnit(getEnterLeaveUnit()))
+		onUnitIndex(() -> registerEventsForUnit(getIndexedUnit()))
 		// Delete 
-		onLeave(() -> unregisterEventsForUnit(getEnterLeaveUnit()))
+		onUnitDeindex(() -> unregisterEventsForUnit(getDeindexedUnit()))
 		
 		// Register Actions
 		unitTrig.addAction(() -> EventListener.generalEventCallback())	

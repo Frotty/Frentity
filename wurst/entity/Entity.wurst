@@ -7,13 +7,13 @@ import public PhysicsConstants
 import public LinkedList
 import public DmgMod
 import public MapBounds
-import public UnitRecycler
-import ErrorHandling
 import initlater DebugInfo
 import initlater Buff
 import initlater Json
 import public FText
+import ErrorHandling
 import Frentity
+import UnitIndexer
 
 public constant KEY_X = "x"
 public constant KEY_Y = "y"
@@ -22,15 +22,18 @@ public constant KEY_TYPE = "t"
 
 public vec3 serializeOrigin = ZERO3
 
+Entity array entities
+
 public function unit.getEntity() returns Entity
-	return this.getUserData() castTo Entity
+	return entities[this.getIndex()]
 	
+public function unit.setEntity(Entity e)
+	entities[this.getIndex()] = e
+
+// Item entities still use userdata as they aren't indexed
 public function item.getEntity() returns Entity
 	return this.getUserData() castTo Entity
 	
-public function unit.setEntity(Entity e)
-	this.setUserData(e castTo int)
-
 public function item.setEntity(Entity e)
 	this.setUserData(e castTo int)
 
@@ -54,7 +57,9 @@ public abstract class Entity implements Serializable
 	protected vec3 pos
 	/** 3d vector velocity */
 	protected vec3 vel
-	
+
+	/** gravity */
+	real gravity = -0.8	
 	/** radius */
 	real radius
 	/** speed factor (multiplies to added velocity) */
@@ -123,15 +128,15 @@ public abstract class Entity implements Serializable
 	function setTarget(vec3 tpos, real speed)
 		var t = pos.distanceTo2d(tpos) / speed
 		let tangle = pos.angleTo2d(tpos)
-		real e = 0.
+		var e = 0.
 		if DYNAMIC_Z
 			e = getTerrainZ(tpos.x,tpos.y)
 		
 		if t < 1.
 			t = 1./speed
 		
-		let startZVelocity = ((-gravity.z * t) / 2 - pos.z/t + e/t)
-		this.setVel( vec3( Cos(tangle.radians()) * speed, Sin(tangle.radians()) * speed, startZVelocity) )
+		let startZVelocity = ((-gravity * t) / 2 - pos.z/t + e/t)
+		setVel(tangle.toVec(speed).withZ(startZVelocity))
 		
 	/** This function is called every ANIMATION_PERIOD tick if the Entity is active */
 	function update()
@@ -205,7 +210,7 @@ abstract public class UnitEntity extends Entity
 	function setNewActor(unit u)
 		if u == null or not u.isAlive() or u.getEntity() != null
 			error("invalid actor replacement") 
-		actor.recycle()
+		actor.remove()
 		actor = u
 		actor.setEntity(this)
 
@@ -242,7 +247,5 @@ abstract public class UnitEntity extends Entity
 					actor.setEntity(null)
 					actor.kill()
 				else
-					actor.recycle()
+					actor.remove()
 		actor = null
-
-	

@@ -15,7 +15,7 @@ public class TextTagEntity extends Entity
 		ftext = createFText(pos, text, size, duration, ZERO2, col)
 		
 	override function update()
-		vel += gravity
+		vel.z += gravity
 		pos += vel
 		ftext.tt.setPos(pos)
 		ftext.tt.setColor(col)
