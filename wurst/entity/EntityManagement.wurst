@@ -1,7 +1,7 @@
 package EntityManagement
 import public Entity
 import Buff
-import OnUnitEnterLeave
+import UnitIndexer
 public constant activeItr = Entity.iterator()
 public constant buffItr = Buff.iterator()
 
@@ -28,9 +28,9 @@ public function startEntityLoop() returns boolean
 	getTimer().startPeriodic(BUFF_ANIM_PERIOD, function updateBuffs)
 	getTimer().startPeriodic(1.0, function updateInactiveEntities)
 	// Remove buffs when unit leaves the map
-	onLeave() ->
-		let e = getEnterLeaveUnit().getEntity()
-		if e != null and e instanceof UnitEntity
+	onUnitDeindex() ->
+		let e = getDeindexedUnit().getEntity()
+		if e != null
 			e.terminate()
 
 	return true

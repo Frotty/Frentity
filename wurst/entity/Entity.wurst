@@ -22,12 +22,12 @@ public constant KEY_TYPE = "t"
 
 public vec3 serializeOrigin = ZERO3
 
-Entity array entities
+UnitEntity array entities
 
-public function unit.getEntity() returns Entity
+public function unit.getEntity() returns UnitEntity
 	return entities[this.getIndex()]
 	
-public function unit.setEntity(Entity e)
+public function unit.setEntity(UnitEntity e)
 	entities[this.getIndex()] = e
 
 // Item entities still use userdata as they aren't indexed
@@ -263,10 +263,3 @@ abstract public class UnitEntity extends Entity
 					actor.remove()
 		unregisterEvents(actor.getIndex())
 		actor = null
-
-init
-	onUnitDeindex() ->
-		let idx = getDeindexedUnit().getIndex()
-		if entities[idx] != null
-			entities[idx].terminate()
-			
