@@ -261,5 +261,5 @@ abstract public class UnitEntity extends Entity
 					actor.kill()
 				else
 					actor.remove()
-		actor.setEntity(null)
+			actor.setEntity(null)
 		actor = null
