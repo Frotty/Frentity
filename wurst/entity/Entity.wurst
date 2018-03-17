@@ -180,8 +180,6 @@ public abstract class Entity implements Serializable
 	override function deserialize(Json json)
 		// pos = vec3(json.getReal(KEY_X)+serializeOrigin.x, json.getReal(KEY_Y)+serializeOrigin.y, json.getReal(KEY_Z)+serializeOrigin.z)
 
-	ondestroy 
-		unregisterEvents(this castTo int)
 
 function unit.getDynamicPos() returns vec3
 	if DYNAMIC_Z
@@ -263,6 +261,7 @@ abstract public class UnitEntity extends Entity
 					actor.kill()
 				else
 					actor.remove()
+		unregisterEvents(actor.getIndex())
 		actor = null
 
 init
