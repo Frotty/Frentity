@@ -26,6 +26,7 @@ abstract public class FxEntity extends Entity
 		
 	override function update()
 		if pos.inPlayable()
+			super.update()
 			fx.setXYZ(pos)
 		else 
 			terminate()
