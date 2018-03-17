@@ -59,7 +59,7 @@ public abstract class Entity implements Serializable
 	protected vec3 vel
 
 	/** gravity */
-	real gravity = -0.8	
+	real gravity = defaultGravity
 	/** radius */
 	real radius
 	/** speed factor (multiplies to added velocity) */
@@ -97,6 +97,8 @@ public abstract class Entity implements Serializable
 		this.vel = vel
 		this.owner = owner
 		this.radius = radius
+		if pos.z > (DYNAMIC_Z ? getTerrainZ(pos.toVec2()) : 0)
+			flying = true
 		allocationsPerSecond++
 		
 	function getPos() returns vec3
@@ -107,9 +109,13 @@ public abstract class Entity implements Serializable
 
 	function setPos(vec3 pos)
 		this.pos = pos
+		if pos.z > getTerrainZ(pos.toVec2()) and gravity != 0
+			activate()
 		
 	function addPos(vec3 pos)
 		this.pos += pos
+		if pos.z > getTerrainZ(pos.toVec2()) and gravity != 0
+			activate()
 		
 	function getVel() returns vec3
 		return vel
@@ -140,9 +146,18 @@ public abstract class Entity implements Serializable
 		
 	/** This function is called every ANIMATION_PERIOD tick if the Entity is active */
 	function update()
-		if sleeps and vel.lengthSquared() < 1.5
+		if sleeps and not flying and vel.lengthSquared() < 1.5
 			deactivate()
 		else
+			let tz = (DYNAMIC_Z ? getTerrainZ(pos.toVec2()) : 0)
+			if pos.z > tz
+				vel.z += gravity
+				flying = true
+			else
+				vel.z = 0
+				pos.z = tz
+				flying = false
+
 			pos += (vel*speedFactor)
 			setXY(pos)
 
@@ -249,3 +264,10 @@ abstract public class UnitEntity extends Entity
 				else
 					actor.remove()
 		actor = null
+
+init
+	onUnitDeindex() ->
+		let idx = getDeindexedUnit().getIndex()
+		if entities[idx] != null
+			entities[idx].terminate()
+			

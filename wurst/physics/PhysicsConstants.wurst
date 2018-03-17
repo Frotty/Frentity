@@ -1,5 +1,5 @@
 package PhysicsConstants
 
-public real airDensity = 1.2754
-public vec3 defaultGravity = vec3(0,0,-0.8)
+@configurable public var airDensity = 1.2754
+@configurable public var defaultGravity = -0.8
 

@@ -80,9 +80,9 @@ public abstract class EventListener
 		next = null
 		prev = null
 	
-trigger unitTrig = CreateTrigger()
-trigger leaveTrig = CreateTrigger()
-trigger keyTrig = CreateTrigger()
+let unitTrig = CreateTrigger()
+let leaveTrig = CreateTrigger()
+let keyTrig = CreateTrigger()
 
 public function eventid.toIntId() returns int
 	var id = eventidToIndex[this.getHandleId()]
@@ -91,7 +91,7 @@ public function eventid.toIntId() returns int
 	return id
 			
 int array eventidToIndex
-int eventTypeCounter = 0
+var eventTypeCounter = 0
 
 function registerEventId(eventid evnt) returns int
 	let eventId = evnt.getHandleId()

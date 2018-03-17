@@ -1,6 +1,6 @@
 package Frentity
-/** If the map's height is completely flat (EBR), things can be simplified */
-@configurable public constant DYNAMIC_Z = false
+/** If the map's height is completely flat (EBR), set to false for improved performance */
+@configurable public constant DYNAMIC_Z = true
 /** Kills actors attached to Entities instead of removing them, when the entity is destroyed */
 @configurable public constant KILL_ACTORS = false
 /** Disables damage between allied units */
