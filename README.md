@@ -71,7 +71,8 @@ class ColorChangeTextEntity extends TextTagEntity
 			ftext.tt.setColor(color)
 ```
 You can easily create the following effect
-![](https://i.imgur.com/us3gsnb.gif)
+
+![](https://media.giphy.com/media/1o1oeeUn3HP64iCIuV/giphy.gif)
 
 Notice the color change, terrain-aware bouncing and the permanent *Item Shop* texttag staying even though the limit was surpassed. Of course you can fully customize this to your needs.
 
