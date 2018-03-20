@@ -1,3 +1,4 @@
+![](https://i.imgur.com/Nl6hRes.png)
 [![Build Status](http://peeeq.de/hudson/job/Frentity/badge/icon)](http://peeeq.de/hudson/job/Frentity/) 
 # Frentity
 *short fort Frotty's Entity System*
@@ -7,6 +8,8 @@ Its main feature are the Entity base classes for Units, Effects and Items, that 
 Additionally it contains some neat wrapper and bootstrap features that make map development more rapid and integrated.
 
 What at first started as just a collection of common snippets has now grown into a fully featured third party library that provides a different, more limited but therefore also simplified workflow.
+
+**To add to your wurst project** add `https://github.com/Frotty/Frentity` as dependency via the setup tool.
 
 # Core Features
 
