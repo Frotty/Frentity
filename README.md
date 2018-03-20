@@ -118,7 +118,7 @@ new ShieldKitBuff(400.).apply(data)
 ```
 
 
-These projects were made with Frentity:
+Project achieved with Frentity:
 - https://github.com/Frotty/ForestDef
 - https://github.com/Frotty/EBR
-
+- https://github.com/Frotty/EscapeTheCrab
