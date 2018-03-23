@@ -11,9 +11,9 @@ import initlater DebugInfo
 import initlater Buff
 import initlater Json
 import public FText
-import ErrorHandling
-import Frentity
-import UnitIndexer
+import public ErrorHandling
+import public UnitIndexer
+import public Frentity
 
 public constant KEY_X = "x"
 public constant KEY_Y = "y"
