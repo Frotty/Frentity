@@ -1,3 +1,4 @@
+![](https://i.imgur.com/Nl6hRes.png)
 [![Build Status](http://peeeq.de/hudson/job/Frentity/badge/icon)](http://peeeq.de/hudson/job/Frentity/) 
 # Frentity
 *short fort Frotty's Entity System*
@@ -7,6 +8,8 @@ Its main feature are the Entity base classes for Units, Effects and Items, that 
 Additionally it contains some neat wrapper and bootstrap features that make map development more rapid and integrated.
 
 What at first started as just a collection of common snippets has now grown into a fully featured third party library that provides a different, more limited but therefore also simplified workflow.
+
+**To add to your wurst project** add `https://github.com/Frotty/Frentity` as dependency via the setup tool.
 
 # Core Features
 
@@ -71,7 +74,8 @@ class ColorChangeTextEntity extends TextTagEntity
 			ftext.tt.setColor(color)
 ```
 You can easily create the following effect
-![](https://i.imgur.com/us3gsnb.gif)
+
+![](https://media.giphy.com/media/1o1oeeUn3HP64iCIuV/giphy.gif)
 
 Notice the color change, terrain-aware bouncing and the permanent *Item Shop* texttag staying even though the limit was surpassed. Of course you can fully customize this to your needs.
 
@@ -114,7 +118,7 @@ new ShieldKitBuff(400.).apply(data)
 ```
 
 
-These projects were made with Frentity:
+Project achieved with Frentity:
 - https://github.com/Frotty/ForestDef
 - https://github.com/Frotty/EBR
-
+- https://github.com/Frotty/EscapeTheCrab
