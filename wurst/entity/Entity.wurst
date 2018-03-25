@@ -223,6 +223,7 @@ abstract public class UnitEntity extends Entity
 	function setNewActor(unit u)
 		if u == null or not u.isAlive() or u.getEntity() != null
 			error("invalid actor replacement") 
+		actor.setEntity(null)
 		actor.remove()
 		actor = u
 		actor.setEntity(this)
@@ -254,12 +255,12 @@ abstract public class UnitEntity extends Entity
 		
 	ondestroy
 		this.clearBuffs()
+		
 		if actor.getEntity() == this
+			actor.setEntity(null)
 			if actor.isAlive()
 				if KILL_ACTORS
-					actor.setEntity(null)
 					actor.kill()
 				else
 					actor.remove()
-			actor.setEntity(null)
 		actor = null

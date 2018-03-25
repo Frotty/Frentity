@@ -1,7 +1,6 @@
 package EntityManagement
 import public Entity
 import Buff
-import UnitIndexer
 public constant activeItr = Entity.iterator()
 public constant buffItr = Buff.iterator()
 

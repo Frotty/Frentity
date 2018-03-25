@@ -1,6 +1,6 @@
 package PhysicsEntity
 import public Entity
-import Frentity
+
 public constant MAX_MASS = 250
 //Module for Physical Simulation
 public module PhysicsModule

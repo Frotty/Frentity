@@ -4,8 +4,6 @@ import public BuffObjEditing
 import LinkedListModule
 import Squares
 import TextTagEntity
-import Frentity
-import ErrorHandling
 import ClosureTimers
 
 public constant BUFF_ANIM_PERIOD = 0.25

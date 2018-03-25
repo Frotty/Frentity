@@ -63,7 +63,7 @@ public abstract class EventListener
 		let id = GetTriggerEventId().toIntId()
 		eventCallbacksPerSecond++
 		// Unit Listeners
-		if trigUnit != null and not trigUnit.hasAbility(DONT_FIRE_EVENTS_ID)
+		if trigUnit != null and not trigUnit.hasAbility(DONT_FIRE_EVENTS_ID) and trigUnit.getIndex() > 0
 			if unitListenersFirsts[trigUnit.getIndex()] != null 
 				var listener = unitListenersFirsts[trigUnit.getIndex()]
 				while listener != null
