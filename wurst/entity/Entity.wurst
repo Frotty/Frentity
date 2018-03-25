@@ -98,7 +98,7 @@ public abstract class Entity implements Serializable
 		this.owner = owner
 		this.radius = radius
 		if pos.z > (DYNAMIC_Z ? getTerrainZ(pos.toVec2()) : 0)
-			flying = true
+			setFlying(true)
 		allocationsPerSecond++
 		
 	function getPos() returns vec3
@@ -144,22 +144,28 @@ public abstract class Entity implements Serializable
 		let startZVelocity = ((-gravity * t) / 2 - pos.z/t + e/t)
 		setVel(tangle.toVec(speed).withZ(startZVelocity))
 		
+	function setFlying(boolean flag)
+		flying = flag
+
 	/** This function is called every ANIMATION_PERIOD tick if the Entity is active */
 	function update()
 		if sleeps and not flying and vel.lengthSquared() < 1.5
 			deactivate()
 		else
+			pos += (vel*speedFactor)
+			setXY(pos)
+			
 			let tz = (DYNAMIC_Z ? getTerrainZ(pos.toVec2()) : 0)
 			if pos.z > tz
 				vel.z += gravity
-				flying = true
+				setFlying(true)
 			else
 				vel.z = 0
 				pos.z = tz
-				flying = false
+				setFlying(false)
 
-			pos += (vel*speedFactor)
-			setXY(pos)
+			
+			
 
 	function slowUpdate()
 		idleSeconds++
