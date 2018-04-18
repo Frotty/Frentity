@@ -1,19 +1,36 @@
 package Usage
 import EntityManagement
 import ClosureTimers
+import UnitObjEditing
+import ObjectIdGenerator
+import HashMap
+
+let map = new HashMap<int, lightning>
+
+constant id = UNIT_ID_GEN.next()
 
 class TestUnitEntity extends UnitEntity
 
 	construct(vec3 pos)
 		super(createUnitZ(players[0], 'hfoo', pos, angle(0)), pos)
+		print(GetObjectName(0))
 
 
 	override function update()
 		super.update()
 		print(pos.toString())
 
+@compiletime function gen()
+	new UnitDefinition(id, 'hfoo')
+	..setName("test")
+
 init
 	doAfter(1.) ->
+		map.put(0, addLightning(LIGHTNING_MANA_FLARE, false, ZERO2, vec2(-256,0)))
+		if map.has(0)
+			print("YEAH")
+		doAfter(3.) ->
+			map.get(0).destr()
 		startEntityLoop()
 		new TestUnitEntity(vec3(0,0,32))
 		new TestUnitEntity(vec3(128,0,64))
