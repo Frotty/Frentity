@@ -22,18 +22,33 @@ function createMultiboard()
 	mbi..setValue("Entites")..setWidth(0.10)
 
 	
-public int seconds = 0
-public int eventCallbacksPerSecond = 0
-public int totalEventCallbacks = 0
-public int allocationsPerSecond = 0
-public int totalAllocations = 0
+public var seconds = 0
+public var eventCallbacksPerSecond = 0
+public var totalEventCallbacks = 0
+public var allocationsPerSecond = 0
+public var totalAllocations = 0
+
+var isFirst = true
 
 init
 	for i = 0 to 11
 		CreateTrigger()..registerPlayerChatEvent(players[i], "-debug", true)..addAction() ->
+			if isFirst
+				isFirst = false
+				startDebug()
 			if GetLocalPlayer() == GetTriggerPlayer()
 				mb.display(not mb.isDisplayed())
 
+	EventListener.add(EVENT_PLAYER_CHAT_FILTER) ->
+		let entered = GetEventPlayerChatString()
+		if entered.startsWith("-d")
+			let level = entered.substring(3, 4).toInt()
+			if level >= 0 and level < 5
+				let loglvl = level castTo Loglevel
+				Log.setLevel(loglvl)
+				printTimedToPlayer("Loglevel adjusted to: " + loglvl.getTag(), 10, GetTriggerPlayer())
+
+function startDebug()
 	CreateTimer().startPeriodic(1) ->
 		if mb == null
 			createMultiboard()
@@ -48,13 +63,3 @@ init
 		mb.getItem(2, 2).setValue(Entity.inactiveSize.toString())
 		eventCallbacksPerSecond = 0
 		allocationsPerSecond = 0
-
-
-	EventListener.add(EVENT_PLAYER_CHAT_FILTER) ->
-		let entered = GetEventPlayerChatString()
-		if entered.startsWith("-d")
-			let level = entered.substring(3, 4).toInt()
-			if level >= 0 and level < 5
-				let loglvl = level castTo Loglevel
-				Log.setLevel(loglvl)
-				printTimedToPlayer("Loglevel adjusted to: " + loglvl.getTag(), 10, GetTriggerPlayer())
