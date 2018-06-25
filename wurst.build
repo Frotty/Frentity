@@ -6,3 +6,4 @@ buildMapData:
   name: "DefaultName"
   fileName: "DefaultFileName"
   author: "DefaultAuthor"
+  playerCount: 1

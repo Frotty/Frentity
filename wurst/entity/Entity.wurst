@@ -1,6 +1,6 @@
 package Entity
 import public TimerUtils
-import public Event
+import public ClosureEvents
 import public DupletListModule
 import public TerrainUtils
 import public PhysicsConstants
@@ -97,7 +97,7 @@ public abstract class Entity implements Serializable
 		this.vel = vel
 		this.owner = owner
 		this.radius = radius
-		if pos.z > (DYNAMIC_Z ? getTerrainZ(pos.toVec2()) : 0)
+		if pos.z > (DYNAMIC_Z ? pos.getTerrainZ() : 0)
 			setFlying(true)
 		allocationsPerSecond++
 		
@@ -109,12 +109,12 @@ public abstract class Entity implements Serializable
 
 	function setPos(vec3 pos)
 		this.pos = pos
-		if pos.z > getTerrainZ(pos.toVec2()) and gravity != 0
+		if pos.z > pos.getTerrainZ() and gravity != 0
 			activate()
 		
 	function addPos(vec3 pos)
 		this.pos += pos
-		if pos.z > getTerrainZ(pos.toVec2()) and gravity != 0
+		if pos.z > pos.getTerrainZ() and gravity != 0
 			activate()
 		
 	function getVel() returns vec3
@@ -136,7 +136,7 @@ public abstract class Entity implements Serializable
 		let tangle = pos.angleTo2d(tpos)
 		var e = 0.
 		if DYNAMIC_Z
-			e = getTerrainZ(tpos.x,tpos.y)
+			e = tpos.getTerrainZ()
 		
 		if t < 1.
 			t = 1./speed
@@ -155,7 +155,7 @@ public abstract class Entity implements Serializable
 			pos += (vel*speedFactor)
 			setXY(pos)
 			
-			let tz = (DYNAMIC_Z ? getTerrainZ(pos.toVec2()) : 0)
+			let tz = (DYNAMIC_Z ? pos.getTerrainZ() : 0)
 			if pos.z > tz
 				vel.z += gravity
 				setFlying(true)

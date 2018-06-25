@@ -1,5 +1,5 @@
 package KeyUtils
-import Event
+import ClosureEvents
 
 public tuple keyTuple(boolean up, boolean down, boolean left, boolean right)
 

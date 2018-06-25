@@ -21,7 +21,7 @@ public module PhysicsModule
 	function physicsUpdate(Entity e)
 		let pos = e.getPos()
 		if DYNAMIC_Z
-			terrainZ = getTerrainZ(pos.x, pos.y)
+			terrainZ = pos.getTerrainZ()
 		if pos.z <= terrainZ + .45
 			onGround(e)
 		else

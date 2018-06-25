@@ -4,6 +4,7 @@ import ClosureTimers
 import UnitObjEditing
 import ObjectIdGenerator
 import HashMap
+import Dialog
 
 let map = new HashMap<int, lightning>
 
@@ -24,13 +25,13 @@ class TestUnitEntity extends UnitEntity
 	new UnitDefinition(id, 'hfoo')
 	..setName("test")
 
-init
-	doAfter(1.) ->
-		map.put(0, addLightning(LIGHTNING_MANA_FLARE, false, ZERO2, vec2(-256,0)))
-		if map.has(0)
-			print("YEAH")
-		doAfter(3.) ->
-			map.get(0).destr()
-		startEntityLoop()
-		new TestUnitEntity(vec3(0,0,32))
-		new TestUnitEntity(vec3(128,0,64))
+	let dia = createDialog()
+	if(dia == null)
+		print("yes")
+	if(dia != null)
+		print("no" + dia.getHandleId().toString())
+
+	doAfter(bj_SMARTPAN_TRESHOLD_PAN) ->
+		dia.display(Player(0), true)
+	
+
