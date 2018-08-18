@@ -1,0 +1,9 @@
+package PlayerData
+import LinkedList
+
+public constant ALL_PLAYERS = new LinkedList<player>()
+
+init
+	for i = 0 to bj_MAX_PLAYER_SLOTS
+		if players[i].isIngame()
+			ALL_PLAYERS.add(players[i])
