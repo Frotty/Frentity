@@ -1,0 +1,104 @@
+package MouseUtils
+import ClosureEvents
+import ClosureTimers
+import Players
+import GameTimer
+
+// Tuple containing mouse status. Use 'isMoving' for a 'Is the cursor moving?' test.
+public tuple mouseTuple(boolean left, boolean right, boolean middle, boolean isMoving, vec2 position, real updateTimestamp, real lastMoveTimestamp)
+
+public function CreateMouseTuple() returns mouseTuple
+	return mouseTuple(false, false, false, false, vec2(0., 0.), getElapsedGameTime(), 0.00)
+
+constant real MOUSE_UPDATE_RATE = 0.1
+constant real MOUSE_MOVE_END = 0.2
+
+mouseTuple array mouseStatuses
+
+public function player.getMouseStatus() returns mouseTuple
+	return mouseStatuses[this.getId()]
+
+EventListener firstMouseListener = null
+
+public function addMouseListener(EventListener listener) returns EventListener
+	if firstMouseListener != null
+		firstMouseListener.prev = listener
+		listener.next = firstMouseListener
+
+	firstMouseListener = listener
+	return listener
+
+public function removeMouseListener(EventListener listener)
+	if firstMouseListener == listener
+		firstMouseListener = null
+	destroy listener
+
+function onMouseEvent()
+	var mouseStatus = mouseStatuses[GetTriggerPlayer().getId()]
+	let id = GetTriggerEventId()
+	let mouseButton = BlzGetTriggerPlayerMouseButton()
+	real x
+	real y
+	real timestamp = getElapsedGameTime()
+
+	mouseStatus.updateTimestamp = timestamp
+
+	if id == EVENT_PLAYER_MOUSE_DOWN
+		if mouseButton == MOUSE_BUTTON_TYPE_LEFT
+			mouseStatus.left = true
+		else if mouseButton == MOUSE_BUTTON_TYPE_RIGHT
+			mouseStatus.right = true
+		else if mouseButton == MOUSE_BUTTON_TYPE_MIDDLE
+			mouseStatus.middle = true 
+	else if id == EVENT_PLAYER_MOUSE_UP
+		if mouseButton == MOUSE_BUTTON_TYPE_LEFT
+			mouseStatus.left = false
+		else if mouseButton == MOUSE_BUTTON_TYPE_RIGHT
+			mouseStatus.right = false
+		else if mouseButton == MOUSE_BUTTON_TYPE_MIDDLE
+			mouseStatus.middle = false 
+	else if id == EVENT_PLAYER_MOUSE_MOVE
+		x = BlzGetTriggerPlayerMouseX()
+		y = BlzGetTriggerPlayerMouseY()
+		mouseStatus.position = vec2(x, y) 
+		mouseStatus.lastMoveTimestamp = timestamp
+		mouseStatus.isMoving = true
+			
+
+	mouseStatuses[GetTriggerPlayer().getId()] = mouseStatus
+
+	var listener = firstMouseListener
+	while listener != null
+		listener.onEvent()
+		listener = listener.next
+
+function updateMouseStatus(player p)
+	var id = p.getId()
+	var mouseStatus = mouseStatuses[id]
+	real timestamp = getElapsedGameTime()
+
+	if (mouseStatus.isMoving)
+		if (timestamp - mouseStatus.lastMoveTimestamp >= MOUSE_MOVE_END)
+			mouseStatus.isMoving = false
+
+	mouseStatuses[id] = mouseStatus
+
+init
+	for i = 0 to bj_MAX_PLAYER_SLOTS
+		mouseStatuses[i] = CreateMouseTuple()
+
+	EventListener.add(EVENT_PLAYER_MOUSE_DOWN, () -> onMouseEvent())
+	EventListener.add(EVENT_PLAYER_MOUSE_UP, () -> onMouseEvent())
+	EventListener.add(EVENT_PLAYER_MOUSE_MOVE, () -> onMouseEvent())
+
+	EventListener.add(EVENT_PLAYER_LEAVE) ->
+		mouseStatuses[GetTriggerPlayer().getId()] = CreateMouseTuple()
+
+	doPeriodically(MOUSE_UPDATE_RATE) cb -> 
+		ALL_PLAYERS.forEach(p -> updateMouseStatus(p))
+			
+
+
+
+		
+		

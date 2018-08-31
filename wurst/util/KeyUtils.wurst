@@ -52,7 +52,7 @@ function onKeyEvent()
 		listener = listener.next
 
 init
-	for i = 0 to 11
+	for i = 0 to bj_MAX_PLAYER_SLOTS
 		keyStatuses[i] = keyTuple(false, false, false, false)
 	EventListener.add(EVENT_PLAYER_ARROW_DOWN_DOWN, () -> onKeyEvent())
 	EventListener.add(EVENT_PLAYER_ARROW_DOWN_UP, () -> onKeyEvent())

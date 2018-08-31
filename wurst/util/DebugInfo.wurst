@@ -31,7 +31,7 @@ public var totalAllocations = 0
 var isFirst = true
 
 init
-	for i = 0 to 11
+	for i = 0 to bj_MAX_PLAYER_SLOTS
 		CreateTrigger()..registerPlayerChatEvent(players[i], "-debug", true)..addAction() ->
 			if isFirst
 				isFirst = false
