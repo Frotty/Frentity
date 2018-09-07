@@ -16,7 +16,8 @@ public class TextTagEntity extends Entity
 		ftext = createFText(pos, text, size, duration, ZERO2, col)
 		
 	override function update()
-		super.update()
+		vel.z += gravity
+		pos += vel * speedFactor
 		ftext.tt.setPos(pos)
 		ftext.tt.setColor(col)
 		dur -= ANIMATION_PERIOD

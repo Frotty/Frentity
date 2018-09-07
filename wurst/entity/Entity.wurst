@@ -152,10 +152,10 @@ public abstract class Entity implements Serializable
 		if sleeps and not flying and vel.lengthSquared() < 1.5
 			deactivate()
 		else
-			pos += (vel*speedFactor)
+			pos += vel * speedFactor
 			setXY(pos)
 			
-			let tz = (DYNAMIC_Z ? pos.getTerrainZ() : 0)
+			let tz = DYNAMIC_Z ? pos.getTerrainZ() : 0
 			if pos.z > tz
 				vel.z += gravity
 				setFlying(true)

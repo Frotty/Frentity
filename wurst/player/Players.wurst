@@ -11,16 +11,19 @@ public constant ALL_PLAYERS = new LinkedList<player>()
 interface OnPlayerLeave
 	function onLeave(player leaver)
 
-OnPlayerLeave onLeaveListeners
+OnPlayerLeave onLeaveListener
 
 /** Set listener for when a player leaves the game */
 public function onPlayerLeave(OnPlayerLeave onLeave)
-	onLeaveListeners = onLeave
+	onLeaveListener = onLeave
 
 init
 	for i = 0 to bj_MAX_PLAYER_SLOTS
 		if players[i].isIngame()
 			EventListener.add(EVENT_PLAYER_LEAVE) ->
 				ALL_PLAYERS.remove(GetTriggerPlayer())
-				onLeaveListeners.onLeave(GetTriggerPlayer())
+				onLeaveListener.onLeave(GetTriggerPlayer())
 			ALL_PLAYERS.add(players[i])
+
+	onPlayerLeave() p ->
+		printTimed(p.getNameColored() + " has left the game", 15.)
