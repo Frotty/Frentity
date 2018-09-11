@@ -9,7 +9,7 @@ import HashMap
 /** Lempel Ziv Welch Compression */
 
 constant maxDictSize = 5000
-constant string DICT_INIT                   = "_0123456789abcdefghijklmnopqrstuvwxyz-[]"
+constant string DICT_INIT				   = "_0123456789abcdefghijklmnopqrstuvwxyz-[]"
 constant string ALLOWED_PLAYER_CHARS 		= "0aUb1GLwR2kHvP3CQIM4npFs5iSW6tzAr7TNxo8JXVjy9OcdEfBKgqeuYDhmlZ"
 
 
@@ -112,9 +112,9 @@ public function compress(BigString data, PayloadCallback onFinish)
 			inc++
 			if B != null
 				destroy B
-			B = data.charAt(inc)     //Z is next character
+			B = data.charAt(inc)	 //Z is next character
 			A.concat(B)
-			while true     //Loop until the sequence of
+			while true	 //Loop until the sequence of
 				if not dictionary.has(A.getCombined())
 					break
 				let sng = A.getSingle()
@@ -135,7 +135,7 @@ public function compress(BigString data, PayloadCallback onFinish)
 
 			putDict(A.getCombined())
 
-		//        output += (dictionary.indexOf(Z) + " ");
+		//		output += (dictionary.indexOf(Z) + " ");
 		else
 			Log.debug("Compressed")
 			continue = false
@@ -172,11 +172,11 @@ public function decompress(BigString input, PayloadCallback onFinish)
 				A = dictionary.loadString(idx)
 				if (itr.hasNext() and itr.lookahead() < dictSize)
 					B = dictionary.loadString(itr.lookahead())
-					B = B.charAt(0)       //Add first letter of next String
-				else if (not itr.hasNext())       //Reached end of input
+					B = B.charAt(0)	   //Add first letter of next String
+				else if (not itr.hasNext())	   //Reached end of input
 					B = null
-				else                                //Dictionary does not have next index
-					B = A.charAt(0)        //must be first letter of current String
+				else								//Dictionary does not have next index
+					B = A.charAt(0)		//must be first letter of current String
 				if (B != null and B.length() > 0)
 					putDict(A + B)
 
