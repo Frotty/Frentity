@@ -62,6 +62,8 @@ public abstract class Entity implements Serializable
 	real gravity = defaultGravity
 	/** radius */
 	real radius
+	/** squared radius to speed up distance checks */
+	real radius2
 	/** speed factor (multiplies to added velocity) */
 	real speedFactor = 1.
 	
@@ -97,6 +99,7 @@ public abstract class Entity implements Serializable
 		this.vel = vel
 		this.owner = owner
 		this.radius = radius
+		this.radius2 = radius * radius
 		if pos.z > (DYNAMIC_Z ? pos.getTerrainZ() : 0)
 			setFlying(true)
 		allocationsPerSecond++
