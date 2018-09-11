@@ -1,4 +1,3 @@
-sudo: required
 jdk: oraclejdk8
 
 before_install: 
@@ -9,11 +8,11 @@ before_install:
 install:
   - wget https://grill.wurstlang.org/hudson/job/Wurst/lastSuccessfulBuild/artifact/downloads/wurstpack_compiler.zip
   - unzip -qq -n wurstpack_compiler.zip -d $HOME/.wurst
-  - wget https://grill.wurstlang.org/hudson/job/WurstSetup/lastSuccessfulBuild/artifact/downloads/WurstSetup.jar
+  - wget https://grill.wurstlang.org/hudson/job/WurstSetup/lastSuccessfulBuild/artifact/downloads/WurstSetup.jar -P $HOME/.wurst
 
 
 before_script: cd $TRAVIS_BUILD_DIR 
 
 script:
-  - java -jar WurstSetup.jar -silent -updateProject -projectDir ./
+  - java -jar $HOME/.wurst/WurstSetup.jar -silent -updateProject -projectDir ./
   - java -jar $HOME/.wurst/wurstscript.jar $HOME/.wurst/common.j $HOME/.wurst/blizzard.j ./ -runcompiletimefunctions -runtests
