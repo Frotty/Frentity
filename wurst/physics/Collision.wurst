@@ -1,5 +1,7 @@
 package Collision
-import LinkedList
+import Entity
+
+constant globalWorld = new CollisionWorld(playableMapRect)
 
 public tuple rectangle(vec2 min, vec2 max)
 
@@ -9,30 +11,44 @@ public function rectangle.intersect(rectangle other) returns boolean
 public function rectangle.contains(vec2 point) returns boolean 
 	return point.x > this.min.x and point.x < this.max.x and point.y > this.min.y and point.y < this.max.y
 
-// There are 2 types of bodies
-// Collidables provide collision for dynamic bodies, but do not collide themselves
-// Colliders collide with collidables but not with themselves
 
-public interface Collider
-	function getPos() returns vec3
-	function getVel() returns vec3
+public interface CollisionShape
+	abstract function intersect(Entity e1, Entity e2) returns boolean
 
-public interface Collidable
-	function intersect(Collider collider) returns boolean
-	function onCollision(Collider collider)
+public abstract class CollisionListener
+	abstract function onHit(Entity e1, Entity e2)
 
+public class SphereShape implements CollisionShape
+
+	override function intersect(Entity e1, Entity e2) returns boolean
+		return e1.getPos().distanceToSq(e2.getPos()) <= e1.radius2 + e2.radius2
+
+public constant SHAPE_SPHERE = new SphereShape()
+
+public function registerCollider(Entity e, CollisionShape shape, CollisionListener listener)
+	shapes[e castTo int] = shape
+	listeners[e castTo int] = listener
+	globalWorld.colliders.add()
+
+public function registerCollidable(Entity e, CollisionShape shape, CollisionListener listener)
+	shapes[e castTo int] = shape
+	listeners[e castTo int] = listener
+	globalWorld.collidables.add(e)
+
+CollisionShape array shapes
+CollisionListener array listeners
 public class CollisionWorld
 	rectangle worldBounds
-	LinkedList<Collidable> collidables = new LinkedList<Collidable>()
+	let colliders = new LinkedList<Entity>()
+	let collidables = new LinkedList<Entity>()
 
 	construct(rect re)
 		worldBounds = rectangle(vec2(re.getMinX(), re.getMinY()), vec2(re.getMaxX(), re.getMaxY()))
 
-	function addCollidable(Collidable colliadable)
-		collidables.add(colliadable)
-
-	function update(Collider collider)
+	function update(real _delta)
+		colliders.get(0)
 		// iterate through list of collision objects
-		for collidable from collidables.staticItr()
-			if collidable.intersect(collider)
-				collidable.onCollision(collider)
+		for collider from colliders.staticItr()
+			for collidable from collidables.staticItr()
+				listeners[collider castTo int].onHit(collider, collidable)
+				listeners[collidable castTo int].onHit(collider, collidable)
