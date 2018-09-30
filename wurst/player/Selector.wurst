@@ -1,0 +1,137 @@
+package Selector
+import Entity
+import ChannelAbilityPreset
+import Assets
+
+/* 	A selector is a unit with a set of spells which each have listeners to for example pick a hero or a race.
+	One player can only have one active selector. 
+	
+	IMPORTANT: You need to create your SelectorBuilder in a function annotated with @selectorGen
+	
+	Create your selector using the builder:
+		`@selectorGen function myHeroSelector() returns SelectorBuilder
+			return new SelectorBuilder()
+				..btn("Hero 1")
+				..pos(0, 1)
+				..tooltip("Very cool dude")
+				..onClick((selector) -> pickHero(selector.owner, 1))
+				..build()`
+	
+	Then use .display($player$) to create a selector for a certain player:
+		`let heroSelector = myHeroSelector()
+		ALL_PLAYERS.forEach() p -> heroSelector.display(p)`
+			
+	Notice that the selector is saved in a variable to avoid unnecessary builder allocations.
+	To end a selection simple destroy the Selector (not the builder). */
+
+function compiletime(hashtable ht) returns hashtable
+	return ht
+
+public constant PICK_DUMMY_ID = compiletime(UNIT_ID_GEN.next())
+
+constant ID_GEN = new IdGenerator('sel0')
+constant BTN_TO_ID_MAP = compiletime(InitHashtable())
+
+Selector array selectors
+
+public class SelectorBuilder
+	protected let btns = new LinkedList<BtnConfig>
+	BtnConfig currentBtn = null
+	
+	function build() returns SelectorBuilder
+		if currentBtn != null
+			btns.add(currentBtn)
+		
+		for btn in btns
+			btn.generateObj()
+				
+		return this
+	
+	function display(player owner, vec2 pos) returns Selector
+		return new Selector(this, owner, pos)
+
+	function btn(string name)
+		if currentBtn != null
+			btns.add(currentBtn)
+		currentBtn = new BtnConfig()
+		currentBtn.name = name
+
+	function pos(int x, int y)
+		currentBtn.x = x
+		currentBtn.y = y
+
+	function tooltip(string tooltip)
+		currentBtn.tooltip = tooltip
+
+	function icon(string path)
+		currentBtn.icon = path
+
+	function onClick(BtnListener listener)
+		currentBtn.listener = listener
+
+public class BtnConfig
+	private var abilId = 0
+	var x = 0
+	var y = 0
+	var name = "Unnamed"
+	var tooltip = ""
+	var icon = Icons.bTNDeathPact
+	BtnListener listener = null
+
+	function generateObj()
+		if compiletime
+			abilId = ID_GEN.next()
+			BTN_TO_ID_MAP.saveInt((name + tooltip + x.toString() + y.toString()).getHash(), 0, abilId)
+			new ChannelAbilityPreset(abilId, 1, true)
+			..setName(name)
+			..setTooltipNormal(1, name)
+			..setTooltipNormalExtended(1, tooltip)
+			..presetButtonPosNormal(x, y)
+			..presetIcon(icon)
+
+	function getAbilId() returns int
+		if abilId == 0
+			abilId = BTN_TO_ID_MAP.loadInt((name + tooltip + x.toString() + y.toString()).getHash(), 0)
+		return abilId
+
+public interface BtnListener
+	function onClick(Selector selector)
+
+public class Selector extends UnitEntity
+	SelectorBuilder builder
+
+	construct(SelectorBuilder builder, player owner, vec2 tpos)
+		super(createUnit(owner, PICK_DUMMY_ID, tpos, 0. .fromRad()))
+		this.builder = builder
+		owner.selectSingle(actor)
+		actor.setVertexColor(owner.getColor().toColor())
+		selectors[owner.getId()] = this
+
+		builder.btns.forEach() btn ->
+			actor.addAbility(btn.getAbilId())
+			
+		EventListener.add(actor, EVENT_PLAYER_UNIT_SPELL_CAST, () -> onCast())
+
+	function onCast()
+		let id = GetSpellAbilityId()
+		
+		for btn in builder.btns
+			if btn.getAbilId() == id
+				btn.listener.onClick(this)
+
+@compiletime function genObjs()
+	new UnitDefinition(PICK_DUMMY_ID, 'hpea')
+	..setAttacksEnabled(0)
+	..setShadowImageUnit("")
+	..setModelFile(Objects.randomObject1)
+	..setSpeedBase(0)
+	..setCollisionSize(0)
+	..setNormalAbilities(commaList(GHOST_VIS_ID))
+	..setHotkey("")
+	..setName("Selector")
+	..setTooltipBasic("")
+	..setTooltipExtended("")
+	..setStructuresBuilt("")
+	..setUpgradesUsed("")
+	..setBuildTime(1)
+	..setHitPointsMaximumBase(100000000)

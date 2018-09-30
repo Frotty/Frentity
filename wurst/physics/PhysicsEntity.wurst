@@ -22,18 +22,18 @@ public module PhysicsModule
 		let pos = e.getPos()
 		if DYNAMIC_Z
 			terrainZ = pos.getTerrainZ()
-		if pos.z <= terrainZ + .45
-			onGround(e)
-		else
+		if pos.z > terrainZ
 			inAir(e)
+		else
+			onGround(e)
 				
 	// When the Entity is on or near the ground	
 	function onGround(Entity e)
+		e.scaleVel(surfaceFriction)
 		if e.flying
 			e.flying = false
 			onGroundHit()
-		// If the Entity is moving towards
-		e.scaleVel(surfaceFriction)
+			
 		
 	function inAir(Entity e)
 		if not e.flying

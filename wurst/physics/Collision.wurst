@@ -1,7 +1,7 @@
 package Collision
 import Entity
 
-constant globalWorld = new CollisionWorld(playableMapRect)
+public constant globalWorld = new CollisionWorld(playableMapRect)
 
 public tuple rectangle(vec2 min, vec2 max)
 
@@ -16,7 +16,7 @@ public interface CollisionShape
 	abstract function intersect(Entity e1, Entity e2) returns boolean
 
 public abstract class CollisionListener
-	abstract function onHit(Entity e1, Entity e2)
+	abstract function onHit(Entity other)
 
 public class SphereShape implements CollisionShape
 
@@ -28,12 +28,23 @@ public constant SHAPE_SPHERE = new SphereShape()
 public function registerCollider(Entity e, CollisionShape shape, CollisionListener listener)
 	shapes[e castTo int] = shape
 	listeners[e castTo int] = listener
-	globalWorld.colliders.add()
+	globalWorld.colliders.add(e)
 
-public function registerCollidable(Entity e, CollisionShape shape, CollisionListener listener)
-	shapes[e castTo int] = shape
+public function registerCollidable(Entity e, CollisionListener listener)
 	listeners[e castTo int] = listener
 	globalWorld.collidables.add(e)
+
+public function removeCollidable(Entity e)
+	if listeners[e castTo int] != null
+		destroy listeners[e castTo int]
+		listeners[e castTo int] = null
+	globalWorld.collidables.remove(e)
+
+public function removeCollider(Entity e)
+	if listeners[e castTo int] != null
+		destroy listeners[e castTo int]
+		listeners[e castTo int] = null
+	globalWorld.colliders.remove(e)
 
 CollisionShape array shapes
 CollisionListener array listeners
@@ -46,9 +57,9 @@ public class CollisionWorld
 		worldBounds = rectangle(vec2(re.getMinX(), re.getMinY()), vec2(re.getMaxX(), re.getMaxY()))
 
 	function update(real _delta)
-		colliders.get(0)
-		// iterate through list of collision objects
-		for collider from colliders.staticItr()
-			for collidable from collidables.staticItr()
-				listeners[collider castTo int].onHit(collider, collidable)
-				listeners[collidable castTo int].onHit(collider, collidable)
+		for collider in colliders
+			for collidable in collidables
+				if collider != null and not collider.done and collidable != null and not collidable.done
+					listeners[collider castTo int].onHit(collidable)
+					listeners[collidable castTo int].onHit(collider)
+				

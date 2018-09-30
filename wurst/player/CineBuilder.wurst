@@ -1,0 +1,80 @@
+package CineBuilder
+import LinkedList
+import ClosureTimers
+import Camera
+
+/* 	Cine Builder allows for easy creation of single timeline cinematic 
+
+	`function testCine() returns Cine
+		return new CineBuilder()
+			..cam(vec2(0,0), 0.5)
+			..text("Text1")
+		..after(4.)
+			..text("Text2")
+		..after(3.)
+		.build()`
+
+	*/
+
+public class CineBuilder
+	let keyFrames = new LinkedList<KeyFrame>()
+	KeyFrame currentFrame = new KeyFrame()
+
+	function cam(vec2 pos, real time)
+		currentFrame.camPosition = pos
+		currentFrame.camTime = time
+
+	function text(string text)
+		currentFrame.text = text
+
+	function after(real timeout)
+		currentFrame.duration = timeout
+		keyFrames.add(currentFrame)
+		currentFrame = new KeyFrame()
+
+	function build() returns Cine
+		keyFrames.add(currentFrame)
+		let cine = new Cine(this)
+
+		return cine
+
+class KeyFrame
+	vec2 camPosition = ZERO2
+	real camTime = 0
+	string text = ""
+	real duration = 1.
+
+	function apply(player target)
+		target.panCameraToTimed(camPosition, camTime)
+		printTimedToPlayerClear(text, duration, target)
+
+public class Cine
+	CineBuilder builder
+	int keyFramePointer = 0
+
+	construct(CineBuilder builder)
+		this.builder = builder
+
+	function play(player target)
+		if localPlayer == target
+			ClearTextMessages()
+			ShowInterface(false, 0.)
+			EnableUserControl(false)
+
+		playKeyFrame(target)
+
+	function playKeyFrame(player target)
+		if keyFramePointer < builder.keyFrames.size()
+			let keyFrame = builder.keyFrames.get(keyFramePointer)
+			keyFramePointer++
+			keyFrame.apply(target)
+			doAfter(keyFrame.duration) ->
+				playKeyFrame(target)
+		else
+			endCine(target)
+
+	function endCine(player target)
+		if localPlayer == target
+			ClearTextMessages()
+			ShowInterface(true, 1.)
+			EnableUserControl(true)
