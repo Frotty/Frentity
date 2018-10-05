@@ -166,8 +166,6 @@ public abstract class Entity implements Serializable
 				vel.z = 0
 				pos.z = tz
 				setFlying(false)
-
-			
 			
 
 	function slowUpdate()
@@ -212,17 +210,20 @@ abstract public class UnitEntity extends Entity
 
 	function setupUnitEntity(unit actor)
 		this.actor = actor
+		getPos()
 		if not actor.isAlive()
 			terminate()
 			error("Trying to assign entity to unit that is not alive")
-		if actor.getEntity() != null
+		else if actor.getEntity() != null
 			terminate()
 			error("Trying to assign entity to unit that already has an entity")
 			
 		actor..setEntity(this)..addAbility(HEIGHT_ENABLER)..removeAbility(HEIGHT_ENABLER)
 		if DYNAMIC_Z
+			pos = actor.getPos3Real()
 			actor.setXYZReal(pos)
 		else
+			pos = actor.getPos3Fly()
 			actor.setXYZ(pos)
 				
 	override function update()
@@ -273,3 +274,80 @@ abstract public class UnitEntity extends Entity
 				else
 					actor.remove()
 		actor = null
+
+abstract public class ItemEntity extends Entity
+	item actor = null
+	
+	construct(item actor)
+		super(DUMMY_PLAYER, actor.getPos())
+		this.actor = actor
+		actor.setEntity(this)
+
+	construct(item actor, player owner)
+		super(owner, pos)
+		this.actor = actor
+		actor.setEntity(this)
+
+	abstract function onPickup(UnitEntity entity)
+
+	abstract function onDrop(UnitEntity entity)
+
+	abstract function onUse(UnitEntity entity)
+
+	function setNewActor(item u)
+		if u == null or not u.isAlive() or u.getEntity() != null
+			error("invalid actor replacement") 
+		actor.setEntity(null)
+		actor.remove()
+		actor = u
+		actor.setEntity(this)
+
+	override function setXY(vec3 tpos)
+		if tpos.inPlayable()
+			pos = tpos
+			actor.setPos(pos.toVec2())
+		else 
+			terminate()
+		
+	override function setPos(vec3 tpos)
+		super.setPos(tpos)
+		actor.setPos(pos.toVec2())
+			
+	override function getPos() returns vec3
+		if not active
+			pos = actor.getPos().withTerrainZ()
+		return pos
+		
+	ondestroy
+		if actor.getEntity() == this
+			actor.setEntity(null)
+			if actor.isAlive()
+				actor.remove()
+		actor = null
+
+function onItemUse()
+	let idata = GetManipulatedItem().getEntity()
+	let edata = GetManipulatingUnit().getEntity()
+	if idata != null and not idata.done
+		if edata != null and not edata.done
+			(idata castTo ItemEntity).onUse(edata)
+
+function onItemPickup()
+	let idata = GetManipulatedItem().getEntity()
+	let edata = GetManipulatingUnit().getEntity()
+	if idata != null and not idata.done
+		if edata != null and not edata.done
+			(idata castTo ItemEntity).onPickup(edata)
+
+function onItemDrop()
+	let idata = GetManipulatedItem().getEntity()
+	let edata = GetManipulatingUnit().getEntity()
+	if idata != null and not idata.done
+		if edata != null and not edata.done
+			(idata castTo ItemEntity).onDrop(edata)
+
+init
+	EventListener.add(EVENT_PLAYER_UNIT_PICKUP_ITEM, () -> onItemPickup())
+	EventListener.add(EVENT_PLAYER_UNIT_DROP_ITEM, () -> onItemDrop())
+	EventListener.add(EVENT_PLAYER_UNIT_USE_ITEM, () -> onItemUse())
+

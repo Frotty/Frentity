@@ -3,29 +3,15 @@
 # Frentity
 *short fort Frotty's Entity System*
 
+**To add to your wurst project** add `https://github.com/Frotty/Frentity` as dependency via the setup tool.
+
 Frentity is a lightweight entity framework which I use as basis for all my maps.
 Its main feature are the Entity base classes for Units, Effects and Items, that allow positional and velocital manipulation via 3d vector math.
 Additionally it contains some neat wrapper and bootstrap features that make map development more rapid and integrated.
 
-What at first started as just a collection of common snippets has now grown into a fully featured third party library that provides a different, more limited but therefore also simplified workflow.
+# Documentation
 
-**To add to your wurst project** add `https://github.com/Frotty/Frentity` as dependency via the setup tool.
-
-# Core Features
-
-These features define the basis of the framework and are most frequently used.
-
-## Event Listening
-
-The `EventListener` package provides easy and comfortable listener API for wc3 events.
-Example:
-```
-EventListener.add(someUnit, EVENT_PLAYER_UNIT_DEATH) ->
-	print(someUnit.getName())
-```
-
-Due to the use of closures, variables can be retained and the callbacks saved, in case you want to stop them manually.
-Listeners for specific units are removed once the unit leaves the map.
+[View Documentation](https://github.com/Frotty/Frentity/blob/master/doc/DOCUMENTATION.md)
 
 ## Entity base
 
