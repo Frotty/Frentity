@@ -1,6 +1,6 @@
 package AbilityTooltipGenerator
 import public ChannelAbilityPreset
-import ErrorHandling
+import HashMap
 
 @configurable constant TITLE_COLOR = "|cff3B97D3"
 @configurable constant TITLE_TTYPE = "Targettype:"
@@ -9,152 +9,131 @@ import ErrorHandling
 @configurable constant NORMAL_ACTIVE_PATTERN = "$name$ - $lvl$ [|cffFFCC00$hotkey$|r]"
 @configurable constant NORMAL_PASSIVE_PATTERN = "$name$ - $lvl$"
 
-public abstract class LevelClosure
-    abstract function run(int lvl) returns string
-
 public class AbilityTooltipGenerator implements TooltipGenerator
-    private string name      = ""
-    private string hotkey    = ""
-    private string hotkeylearn = ""
-    private string description = ""
+	private constant propMap = new IterableMap<string, StringLevelClosure>
+	private var description = ""
+
+	private var levels = 1
+	private var hotkey = ""
+	private var name = ""
+	private var targettype = Targettype.NONE
    
-    private int maxLevel = 1
+	construct(string description)
+		this.description = description
+	   
+	construct()
+	   
+	override function addProperty(string title, StringLevelClosure lc)
+		propMap.put(title, lc)
+		// titles[titleCount] = TITLE_COLOR + title + "|r "
+		// values[titleCount] = ""
+		// for i = 1 to maxLevel
+		// 	values[titleCount] += fixValue(lc.run(i)) + "/"
+		// values[titleCount] = values[titleCount].substring(0, values[titleCount].length() -1)
+		// titleCount++
+	   
+	// function addProperty(string title, string value)
+	// 	if titleCount >= MAX_TITLES
+	// 		error("Maximum titles reached")
+	// 	titles[titleCount] = TITLE_COLOR + title + "|r "
+	// 	values[titleCount] = fixValue(value)
+	// 	titleCount++
+
+
+	   
+	override function applyToDef(AbilityDefinition def)
+		levels = propMap.has("Levels") ? propMap.getAndRemove("Levels").run(0).toInt() : 1
+		name = propMap.has("Name") ? propMap.getAndRemove("Name").run(0) : "unnamed"
+		hotkey = propMap.has("Hotkey") ? propMap.getAndRemove("Hotkey").run(0) : "Q"
+		targettype = propMap.has("Targettype") ? propMap.get("Targettype").run(0).toInt() castTo Targettype : Targettype.NONE
+		def..setName(name)
+		..setLevels(levels)
+		for i = 1 to levels
+			def..setTooltipNormal(i, generateTooltipNormal(i))
+			..setTooltipNormalExtended(i, generateTooltipExtended(i, false))
+			..setTooltipLearn(generateTooltipLearn())
+			..setTooltipLearnExtended(generateTooltipExtended(-1, true))
+			..setHotkeyNormal(hotkey)
    
-    private string array[MAX_TITLES] titles
-    private string array[MAX_TITLES] values
-    private int titleCount = 0
-   
-    Targettype targettype = Targettype.NONE
-   
-    construct(string name, string hotkey, Targettype ttype, int maxLevel, string description)
-        this.name = name
-        this.hotkey = hotkey
-        this.maxLevel = maxLevel
-        this.description = description
-        this.targettype = ttype
-       
-    construct(string name, string hotkey, Targettype ttype, string description)
-        this.name = name
-        this.hotkey = hotkey
-        this.description = description
-        this.targettype = ttype
-       
-    construct(string name, Targettype ttype, string description)
-        this.name = name
-        this.description = description
-        this.targettype = ttype
-       
-    function setExtraLearnHotkey(string hotkey)
-        hotkeylearn = hotkey
-       
-    override function addProperty(string title, StringLevelClosure lc)
-        if titleCount >= MAX_TITLES
-            error("Maximum titles reached")
-        titles[titleCount] = TITLE_COLOR + title + "|r "
-        values[titleCount] = ""
-        for i = 1 to maxLevel
-            values[titleCount] += fixValue(lc.run(i)) + "/"
-        values[titleCount] = values[titleCount].substring(0, values[titleCount].length() -1)
-        titleCount++
-       
-    function addProperty(string title, string value)
-        if titleCount >= MAX_TITLES
-            error("Maximum titles reached")
-        titles[titleCount] = TITLE_COLOR + title + "|r "
-        values[titleCount] = fixValue(value)
-        titleCount++
-       
-    function addProperty(string title, LevelClosure lc)
-        if titleCount >= MAX_TITLES
-            error("Maximum titles reached")
-        titles[titleCount] = TITLE_COLOR + title + "|r "
-        values[titleCount] = ""
-        for i = 1 to maxLevel
-            values[titleCount] += fixValue(lc.run(i)) + "/"
-        values[titleCount] = values[titleCount].substring(0, values[titleCount].length() -1)
-        titleCount++
-       
-       
-    override function applyToDef(AbilityDefinition def)
-        for i = 1 to maxLevel
-            def..setTooltipNormal(i, generateTooltipNormal(i))
-            ..setTooltipNormalExtended(i, generateTooltipExtended(i, false))
-        ..setTooltipLearn(generateTooltipLearn())
-        ..setTooltipLearnExtended(generateTooltipExtended(-1, true))
-        ..setHotkeyNormal(hotkey)..setLevels(maxLevel)..setName(name)
-   
-    private function generateTooltipLearn() returns string
-        return replaceRefs(LEARN_PATTERN)
-       
-    private function generateTooltipNormal(int lvl) returns string
-        if targettype == Targettype.PASSIVE
-            return replaceRefs(NORMAL_PASSIVE_PATTERN, lvl)
-        else
-            return replaceRefs(NORMAL_ACTIVE_PATTERN, lvl)
-       
-    private function replaceRefs(string old, int lvl) returns string
-        var newString = old
-        newString = newString.replace("$name$", name)
-        newString = newString.replace("$hotkey$", hotkey.toUpperCase())
-        newString = newString.replace("$hotkeylearn$", hotkeylearn.toUpperCase())
-        newString = newString.replace("$lvl$", lvl.toString())
-        return newString
-       
-    private function replaceRefs(string old) returns string
-        var newString = old
-        newString = newString.replace("$name$", name)
-        newString = newString.replace("$hotkey$", hotkey.toUpperCase())
-        newString = newString.replace("$hotkeylearn$", hotkeylearn.toUpperCase())
-        return newString
-       
-    private function generateTooltipExtended(int lvl, boolean learn) returns string
-        var s = ""
-        if targettype == Targettype.PASSIVE
-            s += TITLE_COLOR + "Passive|r\n"
-        else
-            if learn
-                s += TITLE_COLOR + TITLE_TTYPE + "|r " + targettype.toString() + "\n"
-            else
-                s += TITLE_COLOR + TITLE_TTYPE + " |cffFFCC00" + targettype.toString() + "|r\n"
-        for i = 0 to titleCount-1
-            s += titles[i] + colorLevelValue(values[i], lvl, maxLevel) + "\n"
-        s+= "\n"
-        s+= description
-        return s
-       
-   
-       
-    private static function fixValue(string value) returns string
-        var s = value
-        if s.endsWith(".")
-            s = s.substring(0, s.length()-1)
-        else if s.length() > 1 and s.endsWith(".0")
-            s = s.substring(0, s.length()-2)
-        return s
-       
-    private static function colorLevelValue(string oldString, int lvl, int maxLevel) returns string
-        var _newString = ""
-        var charCount = 0
-        var charPosCount = 0
-        int array charPos
-        for char in oldString
-            if char == "/"
-                charPos[charPosCount] = charCount
-                charPosCount++
-            charCount++
-        if lvl == -1
-            _newString = oldString
-        else if charPosCount <= 0
-            _newString = "|cffFFCC00" + oldString
-        else if maxLevel <= 1
-            _newString = "|cffFFCC00" + oldString
-        else if lvl == 1
-            _newString = "|cffFFCC00" + oldString.substring(0, charPos[0]) + "|r" + oldString.substring(charPos[0], oldString.length())
-        else if lvl == maxLevel
-            _newString = oldString.substring(0, charPos[lvl-2]) + "|cffFFCC00" + oldString.substring(charPos[lvl-2], oldString.length()) + "|r"
-        else
-            _newString = oldString.substring(0, charPos[lvl-2]) + "|cffFFCC00" + oldString.substring(charPos[lvl-2], charPos[lvl-1]) + "|r" + oldString.substring(charPos[lvl-1], oldString.length())
-        return _newString
-       
-       
-       
+	private function generateTooltipLearn() returns string
+		return replaceRefs(LEARN_PATTERN)
+	   
+	private function generateTooltipNormal(int lvl) returns string
+		if targettype == Targettype.PASSIVE
+			return replaceRefs(NORMAL_PASSIVE_PATTERN, lvl)
+		else
+			return replaceRefs(NORMAL_ACTIVE_PATTERN, lvl)
+	   
+	private function replaceRefs(string old, int lvl) returns string
+		var newString = old
+		newString = newString.replace("$name$", name)
+		newString = newString.replace("$hotkey$", hotkey.toUpperCase())
+		newString = newString.replace("$lvl$", lvl.toString())
+		return newString
+	   
+	private function replaceRefs(string old) returns string
+		var newString = old
+		newString = newString.replace("$name$", name)
+		newString = newString.replace("$hotkey$", hotkey.toUpperCase())
+		return newString
+	   
+	private function generateTooltipExtended(int lvl, boolean learn) returns string
+		var s = ""
+		if targettype == Targettype.PASSIVE
+			s += TITLE_COLOR + "Passive|r\n"
+		else
+			if learn
+				s += TITLE_COLOR + TITLE_TTYPE + "|r " + targettype.toString() + "\n"
+			else
+				s += TITLE_COLOR + TITLE_TTYPE + " |cffFFCC00" + targettype.toString() + "|r\n"
+		
+		for key in propMap
+			s += TITLE_COLOR + key + ":|r " + colorLevelValue(propMap.get(key).run(lvl), lvl, levels) + "\n"
+		s+= "\n"
+		s+= description
+		return s
+	   
+	private static function fixValue(string value) returns string
+		var s = value
+		if s.endsWith(".")
+			s = s.substring(0, s.length()-1)
+		else if s.length() > 1 and s.endsWith(".0")
+			s = s.substring(0, s.length()-2)
+		return s
+	   
+	private static function colorLevelValue(string oldString, int lvl, int maxLevel) returns string
+		var _newString = ""
+		var charCount = 0
+		var charPosCount = 0
+		int array charPos
+		for char in oldString
+			if char == "/"
+				charPos[charPosCount] = charCount
+				charPosCount++
+			charCount++
+		if lvl == -1
+			_newString = oldString
+		else if charPosCount <= 0
+			_newString = "|cffFFCC00" + oldString
+		else if maxLevel <= 1
+			_newString = "|cffFFCC00" + oldString
+		else if lvl == 1
+			_newString = "|cffFFCC00" + oldString.substring(0, charPos[0]) + "|r" + oldString.substring(charPos[0], oldString.length())
+		else if lvl == maxLevel
+			_newString = oldString.substring(0, charPos[lvl-2]) + "|cffFFCC00" + oldString.substring(charPos[lvl-2], oldString.length()) + "|r"
+		else
+			_newString = oldString.substring(0, charPos[lvl-2]) + "|cffFFCC00" + oldString.substring(charPos[lvl-2], charPos[lvl-1]) + "|r" + oldString.substring(charPos[lvl-1], oldString.length())
+		return _newString
+
+
+@compiletime function testGenerator()
+	new ChannelAbilityPreset('new0', 4, true)
+	..registerTooltipGenerator(new AbilityTooltipGenerator("A mighty custom spell with a nifty description."))
+	..setName("My Spell")
+	..presetCooldown(lvl -> 8. - lvl)
+	..presetManaCost(lvl -> 120 - lvl * 10)
+	..presetTargetTypes(Targettype.POINTUNIT)
+	..tooltipStopListen()
+	   
+	   
+	   
