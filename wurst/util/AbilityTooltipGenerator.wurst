@@ -42,18 +42,15 @@ public class AbilityTooltipGenerator implements TooltipGenerator
 
 	   
 	override function applyToDef(AbilityDefinition def)
-		levels = propMap.has("Levels") ? propMap.getAndRemove("Levels").run(0).toInt() : 1
+		levels = propMap.has("Levels") ? fixValue(propMap.getAndRemove("Levels").run(0)).toInt() : 1
 		name = propMap.has("Name") ? propMap.getAndRemove("Name").run(0) : "unnamed"
 		hotkey = propMap.has("Hotkey") ? propMap.getAndRemove("Hotkey").run(0) : "Q"
 		targettype = propMap.has("Targettype") ? propMap.get("Targettype").run(0).toInt() castTo Targettype : Targettype.NONE
-		def..setName(name)
-		..setLevels(levels)
+		def..setTooltipLearn(generateTooltipLearn())
+		..setTooltipLearnExtended(generateTooltipExtended(-1, true))
 		for i = 1 to levels
 			def..setTooltipNormal(i, generateTooltipNormal(i))
 			..setTooltipNormalExtended(i, generateTooltipExtended(i, false))
-			..setTooltipLearn(generateTooltipLearn())
-			..setTooltipLearnExtended(generateTooltipExtended(-1, true))
-			..setHotkeyNormal(hotkey)
    
 	private function generateTooltipLearn() returns string
 		return replaceRefs(LEARN_PATTERN)
@@ -88,7 +85,10 @@ public class AbilityTooltipGenerator implements TooltipGenerator
 				s += TITLE_COLOR + TITLE_TTYPE + " |cffFFCC00" + targettype.toString() + "|r\n"
 		
 		for key in propMap
-			s += TITLE_COLOR + key + ":|r " + colorLevelValue(propMap.get(key).run(lvl), lvl, levels) + "\n"
+			var tmp = ""
+			for i = 1 to levels
+				tmp += fixValue(propMap.get(key).run(i)) + "/"
+			s += TITLE_COLOR + key + ":|r " + colorLevelValue(tmp.substring(0, tmp.length() - 1), lvl, levels) + "\n"
 		s+= "\n"
 		s+= description
 		return s
@@ -129,6 +129,7 @@ public class AbilityTooltipGenerator implements TooltipGenerator
 @compiletime function testGenerator()
 	new ChannelAbilityPreset('new0', 4, true)
 	..registerTooltipGenerator(new AbilityTooltipGenerator("A mighty custom spell with a nifty description."))
+	..setLevels(4)
 	..setName("My Spell")
 	..presetCooldown(lvl -> 8. - lvl)
 	..presetManaCost(lvl -> 120 - lvl * 10)
