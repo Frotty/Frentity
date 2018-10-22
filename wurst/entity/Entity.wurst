@@ -294,13 +294,14 @@ abstract public class ItemEntity extends Entity
 
 	abstract function onUse(UnitEntity entity)
 
-	function setNewActor(item u)
-		if u == null or not u.isAlive() or u.getEntity() != null
+	function setNewActor(item i)
+		if i == null or not i.isAlive() or i.getEntity() != null
 			error("invalid actor replacement") 
 		actor.setEntity(null)
 		actor.remove()
-		actor = u
+		actor = i
 		actor.setEntity(this)
+		actor.setPos(pos.toVec2())
 
 	override function setXY(vec3 tpos)
 		if tpos.inPlayable()
