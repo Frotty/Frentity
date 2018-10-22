@@ -284,7 +284,7 @@ abstract public class ItemEntity extends Entity
 		actor.setEntity(this)
 
 	construct(item actor, player owner)
-		super(owner, pos)
+		super(owner, actor.getPos())
 		this.actor = actor
 		actor.setEntity(this)
 
