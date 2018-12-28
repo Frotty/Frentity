@@ -156,7 +156,7 @@ public abstract class Entity implements Serializable
 			deactivate()
 		else
 			let tz = DYNAMIC_Z ? pos.getTerrainZ() : 0
-			if pos.z > tz
+			if pos.z >= tz
 				vel.z += gravity
 				setFlying(true)
 			else
