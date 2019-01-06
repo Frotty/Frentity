@@ -16,6 +16,7 @@ Additionally it contains some neat wrapper and bootstrap features that make map 
 # Showcase
 
 Project achieved with Frentity:
-- https://github.com/Frotty/ForestDef
 - https://github.com/Frotty/EBR
+- https://github.com/Frotty/ForestDef
+- https://github.com/Frotty/Snowball-Fight
 - https://github.com/Frotty/EscapeTheCrab
