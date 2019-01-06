@@ -160,13 +160,11 @@ public abstract class Entity implements Serializable
 				vel.z += gravity
 				setFlying(true)
 			else
-				vel.z = 0
 				pos.z = tz
 				setFlying(false)
 
 			pos += vel * speedFactor
 			setXY(pos)
-
 
 	function slowUpdate()
 		idleSeconds++
