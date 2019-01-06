@@ -21,7 +21,7 @@ public abstract class CollisionListener
 public class SphereShape implements CollisionShape
 
 	override function intersect(Entity e1, Entity e2) returns boolean
-		return e1.getPos().distanceToSq(e2.getPos()) <= e1.radius2 + e2.radius2
+		return (e1.getPos() + vec3(0, 0, e1.radius / 2) ).distanceToSq(e2.getPos() + vec3(0, 0, e1.radius / 2)) <= e1.radius2 + e2.radius2
 
 public constant SHAPE_SPHERE = new SphereShape()
 
@@ -59,6 +59,6 @@ public class CollisionWorld
 	function update(real _delta)
 		for collider in colliders
 			for collidable in collidables
-				if collider != null and not collider.done and collidable != null and not collidable.done and shapes[collider castTo int].intersect(collider, collidable)
+				if collider != null and not collider.done and collidable != null and not collidable.done and collider != collidable and shapes[collider castTo int].intersect(collider, collidable)
 					listeners[collider castTo int].onHit(collidable)
 					listeners[collidable castTo int].onHit(collider)
