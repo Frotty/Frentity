@@ -26,14 +26,14 @@ UnitEntity array entities
 
 public function unit.getEntity() returns UnitEntity
 	return entities[this.getIndex()]
-	
+
 public function unit.setEntity(UnitEntity e)
 	entities[this.getIndex()] = e
 
 // Item entities still use userdata as they aren't indexed
 public function item.getEntity() returns Entity
 	return this.getUserData() castTo Entity
-	
+
 public function item.setEntity(Entity e)
 	this.setUserData(e castTo int)
 
@@ -66,10 +66,10 @@ public abstract class Entity implements Serializable
 	real radius2
 	/** speed factor (multiplies to added velocity) */
 	real speedFactor = 1.
-	
+
 	/** owning player */
 	player owner
-	
+
 	/** sleeping or active? */
 	boolean flying 		= false
 	boolean done 		= false
@@ -90,7 +90,7 @@ public abstract class Entity implements Serializable
 
 	construct(player owner, vec3 pos, real radius)
 		setupEntity(pos, ZERO3, owner, radius)
-	
+
 	construct(player owner, vec3 pos, real radius, vec3 vel)
 		setupEntity(pos, vel, owner, radius)
 
@@ -103,10 +103,10 @@ public abstract class Entity implements Serializable
 		if pos.z > (DYNAMIC_Z ? pos.getTerrainZ() : 0)
 			setFlying(true)
 		allocationsPerSecond++
-		
+
 	function getPos() returns vec3
 		return pos
-		
+
 	function setXY(vec3 pos)
 		this.pos = pos
 
@@ -114,39 +114,39 @@ public abstract class Entity implements Serializable
 		this.pos = pos
 		if pos.z > pos.getTerrainZ() and gravity != 0
 			activate()
-		
+
 	function addPos(vec3 pos)
 		this.pos += pos
 		if pos.z > pos.getTerrainZ() and gravity != 0
 			activate()
-		
+
 	function getVel() returns vec3
 		return vel
-		
+
 	function setVel(vec3 vel)
 		this.vel = vel
 		activate()
-	
+
 	function addVel(vec3 vel)
 		this.vel += vel
 		activate()
 
 	function scaleVel(real factor)
 		this.vel *= factor
-		
+
 	function setTarget(vec3 tpos, real speed)
 		var t = pos.distanceTo2d(tpos) / speed
 		let tangle = pos.angleTo2d(tpos)
 		var e = 0.
 		if DYNAMIC_Z
 			e = tpos.getTerrainZ()
-		
+
 		if t < 1.
 			t = 1./speed
-		
+
 		let startZVelocity = ((-gravity * t) / 2 - pos.z/t + e/t)
 		setVel(tangle.toVec(speed).withZ(startZVelocity))
-		
+
 	function setFlying(boolean flag)
 		flying = flag
 
@@ -155,18 +155,15 @@ public abstract class Entity implements Serializable
 		if sleeps and not flying and vel.lengthSquared() < 1.5
 			deactivate()
 		else
-			pos += vel * speedFactor
-			setXY(pos)
-			
 			let tz = DYNAMIC_Z ? pos.getTerrainZ() : 0
-			if pos.z > tz
+			if pos.z >= tz
 				vel.z += gravity
 				setFlying(true)
 			else
-				vel.z = 0
-				pos.z = tz
+				pos.z = tz - 0.01
 				setFlying(false)
-			
+
+			setXY(pos + vel * speedFactor)
 
 	function slowUpdate()
 		idleSeconds++
@@ -192,18 +189,18 @@ function unit.getDynamicPos() returns vec3
 	if DYNAMIC_Z
 		return this.getPos3Real()
 	return this.getPos().withZ(0)
-	
+
 abstract public class UnitEntity extends Entity
 	unit actor = null
-	
+
 	construct(unit actor)
 		super(actor.getOwner(), actor.getDynamicPos(), 0)
 		setupUnitEntity(actor)
-	
+
 	construct(unit actor, vec3 pos)
 		super(actor.getOwner(), pos, 0)
 		setupUnitEntity(actor)
-		
+
 	construct(unit actor, vec3 pos, real radius)
 		super(actor.getOwner(), pos, radius)
 		setupUnitEntity(actor)
@@ -217,7 +214,7 @@ abstract public class UnitEntity extends Entity
 		else if actor.getEntity() != null
 			terminate()
 			error("Trying to assign entity to unit that already has an entity")
-			
+
 		actor..setEntity(this)..addAbility(HEIGHT_ENABLER)..removeAbility(HEIGHT_ENABLER)
 		if DYNAMIC_Z
 			pos = actor.getPos3Real()
@@ -225,14 +222,14 @@ abstract public class UnitEntity extends Entity
 		else
 			pos = actor.getPos3Fly()
 			actor.setXYZ(pos)
-				
+
 	override function update()
 		pos = actor.getPos3with(pos.z)
 		super.update()
-		
+
 	function setNewActor(unit u)
 		if u == null or not u.isAlive() or u.getEntity() != null
-			error("invalid actor replacement") 
+			error("invalid actor replacement")
 		actor.setEntity(null)
 		actor.remove()
 		actor = u
@@ -245,16 +242,17 @@ abstract public class UnitEntity extends Entity
 				actor.setXYZReal(pos)
 			else
 				actor.setXYZ(pos)
-		else 
-			terminate()
-		
+		else
+			Log.error("out of bounds: " + tpos.toString())
+			setPos(ZERO3)
+
 	override function setPos(vec3 tpos)
 		super.setPos(tpos)
 		if DYNAMIC_Z
 			actor.setPosReal(pos)
 		else
 			actor.setPos(pos.toVec2())
-			
+
 	override function getPos() returns vec3
 		if not active
 			if DYNAMIC_Z
@@ -262,10 +260,10 @@ abstract public class UnitEntity extends Entity
 			else
 				pos = actor.getPos3Fly()
 		return pos
-		
+
 	ondestroy
 		this.clearBuffs()
-		
+
 		if actor.getEntity() == this
 			actor.setEntity(null)
 			if actor.isAlive()
@@ -277,7 +275,7 @@ abstract public class UnitEntity extends Entity
 
 abstract public class ItemEntity extends Entity
 	item actor = null
-	
+
 	construct(item actor)
 		super(DUMMY_PLAYER, actor.getPos())
 		this.actor = actor
@@ -296,7 +294,7 @@ abstract public class ItemEntity extends Entity
 
 	function setNewActor(item i)
 		if i == null or not i.isAlive() or i.getEntity() != null
-			error("invalid actor replacement") 
+			error("invalid actor replacement")
 		actor.setEntity(null)
 		actor.remove()
 		actor = i
@@ -307,18 +305,18 @@ abstract public class ItemEntity extends Entity
 		if tpos.inPlayable()
 			pos = tpos
 			actor.setPos(pos.toVec2())
-		else 
+		else
 			terminate()
-		
+
 	override function setPos(vec3 tpos)
 		super.setPos(tpos)
 		actor.setPos(pos.toVec2())
-			
+
 	override function getPos() returns vec3
 		if not active
 			pos = actor.getPos().withTerrainZ()
 		return pos
-		
+
 	ondestroy
 		if actor.getEntity() == this
 			actor.setEntity(null)
