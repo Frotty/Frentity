@@ -160,11 +160,10 @@ public abstract class Entity implements Serializable
 				vel.z += gravity
 				setFlying(true)
 			else
-				pos.z = tz
+				pos.z = tz - 0.01
 				setFlying(false)
 
-			pos += vel * speedFactor
-			setXY(pos)
+			setXY(pos + vel * speedFactor)
 
 	function slowUpdate()
 		idleSeconds++
@@ -244,7 +243,8 @@ abstract public class UnitEntity extends Entity
 			else
 				actor.setXYZ(pos)
 		else
-			terminate()
+			Log.error("out of bounds: " + tpos.toString())
+			setPos(ZERO3)
 
 	override function setPos(vec3 tpos)
 		super.setPos(tpos)
