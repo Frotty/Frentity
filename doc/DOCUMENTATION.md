@@ -55,7 +55,9 @@ public class Projectile extends FxEntity
 			terminate()
 ```
 
-The obvious problem that comes to mind with updating all entites in a single loop is performance. The more entites you have the longer the loop will take and most entites wouldn't even require the update, since they aren't doing anything right now or ever, but still are an entity as they are supposed to. The solution to this is that all entities which are consider inactive or sleeping, will be removed from the quickly iterated list, to a slowly iterated list. The active state of an entity is determined by the flag `sleeps` (default true), indicating that this entity should be marked inactive, and the entity itself not moving, i.e. having no velocity.
+The obvious problem that comes to mind with updating all entites in a single loop is performance. The more entites you have the longer the loop will take and most entites wouldn't even require the update, since they aren't doing anything right now, or ever, but still are an entity *as they are supposed to*.
+
+The solution to this is that all entities which are considered inactive or sleeping, will be removed from the quickly iterated list, and added to a slowly iterated list. Whether or not an entity is affected by this is determined by the flag `sleeps` (default true), indicating that this entity should be marked inactive if it has no velocity.
 Once a unit starts moving, it is added to the active list again. If you don't want an entity to ever fall asleep, e.g. a homing missile that may have very low velocity, but should still update after that, simply set `sleeps = false` in the constructor.
 The lifecycle function for the inactive entites is `slowUpdate` and it is called every second. Override this function to add custom behaviour for when the entity is asleep. Remember to call super. Take a look at this example of a structure generating income every second:
 
