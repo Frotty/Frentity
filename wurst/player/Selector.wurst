@@ -4,23 +4,23 @@ import ChannelAbilityPreset
 import Assets
 
 /* 	A selector is a unit with a set of spells which each have listeners to for example pick a hero or a race.
-	One player can only have one active selector. 
-	
-	IMPORTANT: You need to create your SelectorBuilder in a function annotated with @selectorGen
-	
+	One player can only have one active selector.
+
+	IMPORTANT: You need to create your SelectorBuilder in a function annotated with @compiletime
+
 	Create your selector using the builder:
-		`@selectorGen function myHeroSelector() returns SelectorBuilder
+		`@compiletime function myHeroSelector() returns SelectorBuilder
 			return new SelectorBuilder()
 				..btn("Hero 1")
 				..pos(0, 1)
 				..tooltip("Very cool dude")
 				..onClick((selector) -> pickHero(selector.owner, 1))
 				..build()`
-	
+
 	Then use .display($player$) to create a selector for a certain player:
 		`let heroSelector = myHeroSelector()
 		ALL_PLAYERS.forEach() p -> heroSelector.display(p)`
-			
+
 	Notice that the selector is saved in a variable to avoid unnecessary builder allocations.
 	To end a selection simple destroy the Selector (not the builder). */
 
@@ -38,16 +38,16 @@ public class SelectorBuilder
 	protected let btns = new LinkedList<BtnConfig>
 	BtnConfig currentBtn = null
 	boolean hide = false
-	
+
 	function build() returns SelectorBuilder
 		if currentBtn != null
 			btns.add(currentBtn)
-		
+
 		for btn in btns
 			btn.generateObj()
-				
+
 		return this
-	
+
 	function display(player owner, vec2 pos) returns Selector
 		return new Selector(this, owner, pos, hide)
 
@@ -110,17 +110,18 @@ public class Selector extends UnitEntity
 			actor.addAbility(GHOST_INVIS_ID)
 		this.builder = builder
 		owner.selectSingle(actor)
+		owner.panCamToTimed(actor, 0.)
 		actor.setVertexColor(owner.getColor().toColor())
 		selectors[owner.getId()] = this
 
 		builder.btns.forEach() btn ->
 			actor.addAbility(btn.getAbilId())
-			
+
 		EventListener.add(actor, EVENT_PLAYER_UNIT_SPELL_CAST, () -> onCast())
 
 	function onCast()
 		let id = GetSpellAbilityId()
-		
+
 		for btn in builder.btns
 			if btn.getAbilId() == id
 				btn.listener.onClick(this)
