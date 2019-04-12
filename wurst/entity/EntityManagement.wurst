@@ -21,15 +21,14 @@ function updateBuffs()
 	for b from buffItr
 		if not b.done
 			b.update()
-			
+
 public function startEntityLoop() returns boolean
 	getTimer().startPeriodic(ANIMATION_PERIOD, function updateActiveEntities)
 	getTimer().startPeriodic(BUFF_ANIM_PERIOD, function updateBuffs)
 	getTimer().startPeriodic(1.0, function updateInactiveEntities)
 	// Remove buffs when unit leaves the map
 	onUnitDeindex() ->
-		let e = getDeindexedUnit().getEntity()
+		let e = getIndexingUnit().getEntity()
 		if e != null
 			e.terminate()
-
 	return true

@@ -1,9 +1,4 @@
 ---
 projectName: "DefaultName"
 dependencies:
-- "https://github.com/wurstscript/wurstStdlib2"
-buildMapData:
-  name: "DefaultName"
-  fileName: "DefaultFileName"
-  author: "DefaultAuthor"
-  playerCount: 1
+  - https://github.com/wurstscript/wurstStdlib2

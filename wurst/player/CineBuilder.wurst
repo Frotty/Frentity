@@ -1,9 +1,8 @@
 package CineBuilder
 import LinkedList
 import ClosureTimers
-import Camera
 
-/* 	Cine Builder allows for easy creation of single timeline cinematic 
+/* 	Cine Builder allows for easy creation of single timeline cinematic
 
 	`function testCine() returns Cine
 		return new CineBuilder()
