@@ -1,4 +1,4 @@
 ---
-projectName: "DefaultName"
+projectName: Frentity
 dependencies:
   - https://github.com/wurstscript/wurstStdlib2
