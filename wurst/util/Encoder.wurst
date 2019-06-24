@@ -12,13 +12,13 @@ public class Encoder
 	string charset
 	int base
 	real digits	= 0.	//logarithmic approximation
-	BigNum bignum 
+	BigNum bignum
 
 	construct(string charset)
 		this.charset = charset
 		this.base = charset.length()
 		this.bignum = new BigNum(base)
-	
+
 	ondestroy
 		destroy bignum
 
@@ -27,35 +27,35 @@ public class Encoder
 		bignum.mulSmall(max+1)
 		bignum.addSmall(val)
 		Log.trace("encoded val: " + val.toString() + " max: " + max.toString())
-	
+
 	function decode(int max) returns int
 		return bignum.divSmall(max+1)
-	
+
 	function isEmpty() returns boolean
 		return bignum.isZero()
-	
+
 	function length() returns real
 		return digits
-	
+
 	function clean()
 		bignum.clean()
-	
+
 	function pad()
 		BigNum_l cur = bignum.list
 		BigNum_l prev = null
 		int maxlen = R2I(1.0 + length())
-		
+
 		while cur != null
 			prev = cur
 			cur = cur.next
 			maxlen--
-			
+
 		while maxlen > 0
 			prev.next = new BigNum_l()
 			prev = prev.next
 			maxlen--
-	
-	
+
+
 	function toString(BigString big, PayloadCallback onFinish)
 		Log.debug("toString digits: " + digits.toString())
 		BigNum_l _cur = bignum.list
@@ -69,10 +69,10 @@ public class Encoder
 				onFinish.customData = big castTo int
 				onFinish.doStep()
 			return continue
-	
+
 	function fromString(BigString bs, PayloadCallback onFinishString)
 		int _i = 0
-		BigNum_l _cur = new BigNum_l()
+		var _cur = new BigNum_l()
 		bignum.list = _cur
 		Log.debug("from String")
 		doSeq() cb ->
@@ -87,7 +87,7 @@ public class Encoder
 				destroy bs
 				onFinishString.doStep()
 			return continue
-	
+
 	function hash() returns int
 		Log.debug("hash")
 		int hash = 0
@@ -106,8 +106,8 @@ public class Encoder
 		execute(() -> clean())
 		Log.debug("save2")
 		hash = -1
-		execute() -> 
-			hash = hash() 
+		execute() ->
+			hash = hash()
 
 		nullTimer() ->
 			Log.debug("hash: " + hash.toString())
@@ -132,14 +132,14 @@ public class Encoder
 			Log.debug("decoded..")
 			execute(() -> clean())
 			Log.debug("claned..")
-			execute() -> 
+			execute() ->
 				comparehash = hash()
 
 			Log.debug("hashed..")
 			onFinishLoad.customData = (inputhash == comparehash).toInt()
 			onFinishLoad.doStep()
 
-		
+
 
 	function chartoi( string c ) returns int
 		int i = 0
@@ -151,4 +151,4 @@ public class Encoder
 
 	function itochar( int i ) returns string
 		return SubString(charset,i,i+1)
-	
+

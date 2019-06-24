@@ -54,7 +54,7 @@ function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback 
 				onFinish.doStep()
 
 		return continue
-	
+
 
 function decodePositions(BigString input, PayloadCallback onFinish)
 	Log.debug("decode positions")
@@ -89,17 +89,17 @@ function decodePositions(BigString input, PayloadCallback onFinish)
 			error("loaded input is invalid")
 		destroy cb
 
-		
 
-public function compress(BigString data, PayloadCallback onFinish) 
+
+public function compress(BigString data, PayloadCallback onFinish)
 	Log.debug("Compressing:")
 	data.debugPrint()
-	
-	// List 
-	LinkedList<int> intList = new LinkedList<int>()
+
+	// List
+	let intList = new LinkedList<int>()
 
 	initDict()
-		
+
 	int inc = 0
 	BigSubString A = null
 	BigSubString B = null
@@ -108,7 +108,7 @@ public function compress(BigString data, PayloadCallback onFinish)
 		if (inc < data.getLength() - 1)
 			if A != null
 				destroy A
-			A = data.charAt(inc)  
+			A = data.charAt(inc)
 			inc++
 			if B != null
 				destroy B
@@ -129,7 +129,7 @@ public function compress(BigString data, PayloadCallback onFinish)
 					A.concat(B)
 				else
 					break
-			
+
 			//Write index to output
 			intList.add(dictionary.get(A.getSingle()))
 
@@ -158,13 +158,13 @@ public function decompress(BigString input, PayloadCallback onFinish)
 	Log.debug("Start decompress")
 	let output = new BigString()
 	initDict()
-	
+
 	decodePositions(input) cb1 ->
-		let positions = cb1.customData castTo LinkedList<int> 
+		let positions = cb1.customData castTo LinkedList<int>
 		let itr = positions.staticItr()
 		string A = ""
 		string B = ""
-		
+
 		doSeq() cb2 ->
 			var continue = true
 			if itr.hasNext()
@@ -188,5 +188,4 @@ public function decompress(BigString input, PayloadCallback onFinish)
 				onFinish.customData = output castTo int
 				onFinish.doStep()
 			return continue
-	
-	
+
