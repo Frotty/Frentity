@@ -24,9 +24,6 @@ import Assets
 	Notice that the selector is saved in a variable to avoid unnecessary builder allocations.
 	To end a selection simple destroy the Selector (not the builder). */
 
-function compiletime(hashtable ht) returns hashtable
-	return ht
-
 public constant PICK_DUMMY_ID = compiletime(UNIT_ID_GEN.next())
 
 constant ID_GEN = new IdGenerator('sel0')

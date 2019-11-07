@@ -11,7 +11,7 @@ public constant maxHash = 1000
 public class Encoder
 	string charset
 	int base
-	real digits	= 0.	//logarithmic approximation
+	real digits	= 0.
 	BigNum bignum
 
 	construct(string charset)
