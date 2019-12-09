@@ -6,8 +6,7 @@ import Assets
 public constant DEFAULT_FX = Abilities.arrowMissile1
 
 abstract public class FxEntity extends Entity
-	protected Fx fx
-	boolean silent = false
+	protected effect fx
 
 	construct(player owner, vec3 pos, real radius, angle xyAngle, string sfxpath)
 		super(owner, pos, radius)
@@ -22,32 +21,30 @@ abstract public class FxEntity extends Entity
 		setupFx(angle(0), DEFAULT_FX)
 
 	private function setupFx(angle xyAngle, string sfxpath)
-		fx = new Fx(owner.getColor(), pos, xyAngle, sfxpath)
-		fx.setOwner(owner, true)
+		fx = addEffect(sfxpath, pos)..setYaw(xyAngle)
 
 	override function update()
 		if pos.inPlayable()
 			super.update()
-			fx.setXYZ(pos)
+			fx.setPos(pos)
 		else
 			terminate()
 
 	function setFx(string sfxpath)
-		fx.setFx(sfxpath)
-
-	function getDummy() returns unit
-		return fx.getDummy()
+		fx.destr()
+		fx = addEffect(sfxpath, pos)
 
 	override function setPos(vec3 tpos)
 		pos = tpos
-		fx.setXYZ(tpos)
+		fx.setPos(tpos)
 
 	override function setXY(vec3 tpos)
 		pos = tpos
-		fx.setXYZ(tpos)
+		fx.setPos(tpos)
+
+	function hiddenDestroy()
+		fx.setAlpha(0)
+		destroy this
 
 	ondestroy
-		if silent
-			fx.hiddenDestroy()
-		else
-			destroy fx
+		fx.destr()
