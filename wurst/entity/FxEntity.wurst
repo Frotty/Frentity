@@ -42,9 +42,7 @@ abstract public class FxEntity extends Entity
 		pos = tpos
 		fx.setPos(tpos)
 
-	function hiddenDestroy()
-		fx.setAlpha(0)
-		destroy this
-
 	ondestroy
+		if (silent)
+			fx.setPos(vec2(2147483647, 2147483647))
 		fx.destr()
