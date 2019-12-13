@@ -7,6 +7,7 @@ public constant DEFAULT_FX = Abilities.arrowMissile1
 
 abstract public class FxEntity extends Entity
 	protected effect fx
+	boolean silent = false
 
 	construct(player owner, vec3 pos, real radius, angle xyAngle, string sfxpath)
 		super(owner, pos, radius)
