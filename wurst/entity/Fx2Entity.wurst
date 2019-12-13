@@ -1,13 +1,14 @@
-package FxEntity
+package Fx2Entity
 import public Entity
-import public Fx
+import public Fx2
 import Assets
+import Quaternion
 
 public constant DEFAULT_FX = Abilities.arrowMissile1
 
-abstract public class FxEntity extends Entity
-	protected Fx fx
-	boolean silent = false
+abstract public class Fx2Entity extends Entity
+	protected Fx2 fx
+	var silent = false
 
 	construct(player owner, vec3 pos, real radius, angle xyAngle, string sfxpath)
 		super(owner, pos, radius)
@@ -22,32 +23,30 @@ abstract public class FxEntity extends Entity
 		setupFx(angle(0), DEFAULT_FX)
 
 	private function setupFx(angle xyAngle, string sfxpath)
-		fx = new Fx(owner.getColor(), pos, xyAngle, sfxpath)
-		fx.setOwner(owner, true)
+		fx = new Fx2(pos, sfxpath)
+		fx.setOrientation(xyAngle.toQuat(vec3(0, 0, 1)))
 
 	override function update()
 		if pos.inPlayable()
 			super.update()
-			fx.setXYZ(pos)
+			fx.eff.setPos(pos)
 		else
 			terminate()
 
 	function setFx(string sfxpath)
-		fx.setFx(sfxpath)
-
-	function getDummy() returns unit
-		return fx.getDummy()
+		fx.eff.destr()
+		fx.eff = addEffect(sfxpath, pos)
 
 	override function setPos(vec3 tpos)
 		pos = tpos
-		fx.setXYZ(tpos)
+		fx.eff.setPos(tpos)
 
 	override function setXY(vec3 tpos)
 		pos = tpos
-		fx.setXYZ(tpos)
+		fx.eff.setPos(tpos)
 
 	ondestroy
 		if silent
-			fx.hiddenDestroy()
-		else
-			destroy fx
+			fx.eff.setAlpha(0)
+			fx.eff.setPos(boundMax)
+		destroy fx
