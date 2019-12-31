@@ -113,6 +113,7 @@ public abstract class Buff
 		Log.debug("Destroy Buff")
 		onEnd()
 		if target != null and not target.done and target.hasBuffs()
+			this.target.actor.removeAbility(this.buffData.buffId)
 			target.removeBuff(this.typeId)
 			target.actor.removeAbility(buffData.abilId)
 		target = null
