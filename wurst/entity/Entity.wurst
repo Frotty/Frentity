@@ -5,10 +5,8 @@ import public DupletListModule
 import public TerrainUtils
 import public PhysicsConstants
 import public LinkedList
-import public DmgMod
 import public MapBounds
 import initlater DebugInfo
-import initlater Buff
 import initlater Json
 import public FText
 import public ErrorHandling
@@ -53,9 +51,9 @@ public interface Serializable
 /** Base Entity Class  */
 public abstract class Entity implements Serializable
 	use DupletListModule
-	/** 3d vector position */
+	/** 3d position */
 	protected vec3 pos
-	/** 3d vector velocity */
+	/** 3d velocity */
 	protected vec3 vel
 
 	/** gravity */
@@ -64,17 +62,17 @@ public abstract class Entity implements Serializable
 	real radius
 	/** squared radius to speed up distance checks */
 	real radius2
-	/** speed factor (multiplies to added velocity) */
+	/** speed factor (multiplied to velocity) */
 	real speedFactor = 1.
 
 	/** owning player */
 	player owner
 
 	/** sleeping or active? */
-	boolean flying 		= false
-	boolean done 		= false
-	boolean sleeps 		= true
-	int idleSeconds		= 0
+	var flying 		= false
+	var done 		= false
+	var sleeps 		= true
+	var idleSeconds	= 0
 
 	construct()
 		setupEntity(ZERO3, ZERO3, DUMMY_PLAYER, 0.)
@@ -262,8 +260,6 @@ abstract public class UnitEntity extends Entity
 		return pos
 
 	ondestroy
-		this.clearBuffs()
-
 		if actor.getEntity() == this
 			actor.setEntity(null)
 			if actor.isAlive()

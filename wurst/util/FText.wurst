@@ -38,13 +38,11 @@ public function createFText(vec3 pos, string text, real size, real lifespan, vec
 	// Get FText instance
 	FText ftext = null
 	if recylcer.size() > 0
-		Log.debug("get recycled")
 		ftext = recylcer.dequeue()
 	else
 		if FText.size < 100
 			// Recycler was empty and we still have space
 			ftext = new FText()
-			Log.debug("get new")
 		else
 			// we maxed out and need to recycle the oldest, dynamic tag
 			for etext in FText
@@ -52,7 +50,6 @@ public function createFText(vec3 pos, string text, real size, real lifespan, vec
 					ftext = etext
 			if ftext == null
 				error("You have reached the maximum possible permanent texttags")
-			Log.debug("get force recycle")
 	ftext..setup(text, pos, size)
 	ftext.tt.setColor(col)
 	if permanent
@@ -95,7 +92,7 @@ public class FText
 		..setVelocity(ZERO2.x, ZERO2.y)
 		..setFadepoint(.45)
 		..setLifespan(REAL_MAX)
-	
+
 	function setPermanent()
 		permanent = true
 		if cb != null

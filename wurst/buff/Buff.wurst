@@ -1,6 +1,7 @@
 package Buff
 import public Entity
 import public BuffObjEditing
+import public DamageEvent
 import LinkedListModule
 import Squares
 import TextTagEntity
@@ -15,7 +16,6 @@ public function UnitEntity.hasBuffs() returns boolean
 public function UnitEntity.addBuff(Buff buffObj)
 	if buffObj == null
 		error("Cannot add null buff")
-	Log.debug("Added buff")
 	currentBuffs[this castTo int].add(buffObj)
 
 public function UnitEntity.getBuff(int typeId) returns Buff
@@ -27,7 +27,6 @@ public function UnitEntity.getBuff(int typeId) returns Buff
 
 public function UnitEntity.removeBuff(int typeId)
 	if this.hasBuffs()
-		Log.debug("Removing Buff")
 		let itr = this.getBuffs().staticItr()
 		for b from itr
 			if b.typeId == typeId
@@ -39,9 +38,7 @@ public function UnitEntity.getBuffs() returns LinkedList<Buff>
 public function UnitEntity.clearBuffs()
 	let buffs = currentBuffs[this castTo int]
 	if buffs != null
-		Log.debug("Cleaning Buffs")
 		for bff from buffs.staticItr()
-			Log.debug("Clear buffs: Terminate")
 			bff.terminate()
 		destroy buffs
 		currentBuffs[this castTo int] = null
@@ -59,7 +56,6 @@ public function UnitEntity.transferBuffs(UnitEntity otherEntity)
 	if buffs != null
 		for bff from buffs.staticItr()
 			if not bff.done
-				Log.debug("Apply Buff")
 				bff.apply(otherEntity)
 		destroy buffs
 		currentBuffs[this castTo int] = null
@@ -85,22 +81,21 @@ public abstract class Buff
 	function onApply()
 
 	function attackModifier()
-	
+
 	function defenseModifier()
 
 	function onEnd()
-		
+
 	function update()
 		if duration <= 0.
-			Log.debug("Terminating Buff: duration <= 0.")
 			terminate()
 		else
 			duration -= BUFF_ANIM_PERIOD
-		
+
 	function refresh()
 		refresh(false)
 
-	function refresh(boolean forceRefresh) 
+	function refresh(boolean forceRefresh)
 		if not target.actor.hasAbility(buffData.abilId) or forceRefresh
 			target.actor.addAbility(buffData.abilId)
 
@@ -108,9 +103,8 @@ public abstract class Buff
 		if not done
 			done = true
 			destroy this
-			
+
 	ondestroy
-		Log.debug("Destroy Buff")
 		onEnd()
 		if target != null and not target.done and target.hasBuffs()
 			target.removeBuff(this.typeId)
@@ -126,8 +120,8 @@ init
 		UnitEntity defData = def.getEntity() != null and def.isAlive() ? def.getEntity() : null
 		if DISABLE_TEAMATTACK and defData != null and attData != null and (defData.owner.isAllyOf(attData.owner) or defData.owner == attData.owner)
 			// Falsify teamattacks
-			if getDamage() > 0.5
-				modifyDamage(0)
+			if DamageEvent.getAmount() > 0.5
+				DamageEvent.setAmount(0)
 				if SHOW_SQUARE
 					new TextTagEntity(defData.getPos(), vec3(GetRandomReal(-2,2),GetRandomReal(-2,2),GetRandomReal(8,10)), getSquare(), 10, .8
 						,colorA(GetRandomInt(150,250),GetRandomInt(125,150),GetRandomInt(125,150), 255))
@@ -136,13 +130,13 @@ init
 				for bff from attData.getBuffs().staticItr()
 					if not bff.done
 						bff.attackModifier()
-		
+
 			if defData.hasBuffs()
 				for bff from defData.getBuffs().staticItr()
 					if not bff.done
 						bff.defenseModifier()
-	
-	// Update the buff display on unit upgrade					
+
+	// Update the buff display on unit upgrade
 	EventListener.add(EVENT_PLAYER_UNIT_UPGRADE_FINISH) ->
 		let v = GetTriggerUnit()
 		if v.getUserData() > 0
@@ -152,7 +146,7 @@ init
 				if v.getEntity() == victimData and victimData.hasBuffs()
 					for bff from victimData.getBuffs().staticItr()
 						bff.refresh(true)
-			
+
 	// Remove buffs when a unit dies and all other triggers fired.
 	EventListener.add(EVENT_PLAYER_UNIT_DEATH) ->
 		let v = GetTriggerUnit()

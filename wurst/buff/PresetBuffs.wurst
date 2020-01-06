@@ -1,7 +1,7 @@
 package PresetBuffs
 import public Buff
 
-/** When applied to a unit that already has the buff, the existing Buff's duration gets set to 
+/** When applied to a unit that already has the buff, the existing Buff's duration gets set to
 this buff's duration */
 public abstract class NormalBuff extends Buff
 
@@ -27,8 +27,8 @@ public abstract class StackingBuff extends Buff
 
 	construct(real dur, buffTuple buffData)
 		super(dur, buffData)
-			
-	override function apply(UnitEntity target)			
+
+	override function apply(UnitEntity target)
 		this.target = target
 		if not target.hasBuffs()
 			target.newBuffs()
@@ -59,16 +59,16 @@ public abstract class FixedBuff extends Buff
 the block damage of this buff gets addedto the existing one's */
 public class ShieldBuff extends NormalBuff
 	real blockAmount
-	
+
 	construct(real dur, buffTuple buffData, real amount)
 		super(dur, buffData)
 		blockAmount = amount
-		
+
 	override function update()
 		super.update()
 		if blockAmount <= 0
 			terminate()
-		
+
 	override function apply(UnitEntity target)
 		this.target = target
 		if not target.hasBuffs()
@@ -84,15 +84,14 @@ public class ShieldBuff extends NormalBuff
 					return
 		target.addBuff(this)
 		refresh()
-		
+
 
 	override function defenseModifier()
-		let dmg = getDamage()
+		let dmg = DamageEvent.getAmount()
 		if dmg >= blockAmount
-			modifyDamageBy(-blockAmount)
+			DamageEvent.addAmount(-blockAmount)
 			blockAmount = 0
 			terminate()
 		else
-			modifyDamage(0)
+			DamageEvent.setAmount(0)
 			blockAmount = blockAmount - dmg
-			

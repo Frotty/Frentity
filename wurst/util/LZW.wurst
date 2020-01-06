@@ -57,12 +57,10 @@ function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback 
 
 
 function decodePositions(BigString input, PayloadCallback onFinish)
-	Log.debug("decode positions")
 	let encoder = new Encoder(ALLOWED_PLAYER_CHARS)
 	input.debugPrint()
 	encoder.load(input) cb ->
 		if cb.customData == 1
-			Log.debug("file valid")
 			nullTimer() ->
 				Log.debug("file valid2")
 				let dictSize = encoder.decode(maxDictSize)
