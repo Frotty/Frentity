@@ -114,7 +114,7 @@ public abstract class Buff
 
 init
 	// Call attack and defense modifiers of buffs
-	EventListener.add(EVENT_UNIT_DAMAGED) ->
+	DamageEvent.addListener() ->
 		let def = GetTriggerUnit()
 		let att = GetEventDamageSource()
 		UnitEntity attData = att.getEntity() != null and att.isAlive() ? att.getEntity() : null
