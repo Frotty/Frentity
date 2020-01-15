@@ -117,8 +117,8 @@ init
 	DamageEvent.addListener() ->
 		let def = GetTriggerUnit()
 		let att = GetEventDamageSource()
-		UnitEntity attData = att.getEntity() != null and att.isAlive() ? att.getEntity() : null
-		UnitEntity defData = def.getEntity() != null and def.isAlive() ? def.getEntity() : null
+		let attData = att.getEntity() != null and att.isAlive() ? att.getEntity() : null
+		let defData = def.getEntity() != null and def.isAlive() ? def.getEntity() : null
 		if DISABLE_TEAMATTACK and defData != null and attData != null and (defData.owner.isAllyOf(attData.owner) or defData.owner == attData.owner)
 			// Falsify teamattacks
 			if DamageEvent.getAmount() > 0.5
