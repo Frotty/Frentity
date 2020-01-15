@@ -143,8 +143,8 @@ public class Encoder
 
 	function chartoi( string c ) returns int
 		int i = 0
-		string cs = charset
-		int len = base
+		let cs = charset
+		let len = base
 		while i < len and c != SubString(cs,i,i+1)
 			i = i + 1
 		return i

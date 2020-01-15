@@ -60,7 +60,7 @@ public class BigSubString
 			s += parent.getSubStringData(this)
 		if next != null
 			s += next.getCombined()
-		
+
 		return s
 
 	function concat(BigSubString next) returns BigSubString
@@ -89,8 +89,8 @@ public class BigSubString
 
 	function hash() returns int
 		int hash = (parent castTo int) * 100000
-		var len = getCombinedLength()
-		var off = start
+		let len = getCombinedLength()
+		let off = start
 		hash += len * 17
 		hash += off * 11
 		return hash
@@ -118,7 +118,7 @@ public class BigString
 
 	function asSubstring() returns BigSubString
 		return new BigSubString(this, 0, length)
-		
+
 	function getLength() returns int
 		return length-startoffset
 
@@ -151,7 +151,7 @@ public class BigString
 		length += sp.length()
 
 	function getSubStringData(BigSubString substring) returns string
-		if substring.getStart()+substring.getSingleLength() > length 
+		if substring.getStart()+substring.getSingleLength() > length
 			error("string out of bounds: length: " + length.toString() + " s.length: " + substring.getSingleLength().toString() + " s.start: " + substring.getStart().toString())
 		if substring.getSingleLength() > BIG_SUBSTRING_LEN
 			error("substring is longer than maxsize")
@@ -171,14 +171,14 @@ public class BigString
 		return substrings[idx].substring(offsetstart, length)
 
 	function getString(int startpos, int plength) returns string
-		if startpos+plength > getLength() 
+		if startpos+plength > getLength()
 			error("2Trying to get string out of bounds")
 		if plength > BIG_SUBSTRING_LEN
 			error("Trying to get oversized string")
 		let modpos = startpos + startoffset
 		let idx = (modpos / BIG_SUBSTRING_LEN).toInt()
-		let offsetstart = (modpos mod BIG_SUBSTRING_LEN) 
-		let offsetend = offsetstart + plength 
+		let offsetstart = (modpos mod BIG_SUBSTRING_LEN)
+		let offsetend = offsetstart + plength
 		if offsetend > BIG_SUBSTRING_LEN
 			return substrings[idx].substring(offsetstart, substrings[idx].length()) + substrings[idx+1].substring(0, offsetend-BIG_SUBSTRING_LEN)
 		return substrings[idx].substring(offsetstart, offsetend)

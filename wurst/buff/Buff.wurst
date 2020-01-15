@@ -124,8 +124,8 @@ init
 			if DamageEvent.getAmount() > 0.5
 				DamageEvent.setAmount(0)
 				if SHOW_SQUARE
-					new TextTagEntity(defData.getPos(), vec3(GetRandomReal(-2,2),GetRandomReal(-2,2),GetRandomReal(8,10)), getSquare(), 10, .8
-						,colorA(GetRandomInt(150,250),GetRandomInt(125,150),GetRandomInt(125,150), 255))
+					new TextTagEntity(defData.getPos(), vec3(GetRandomReal(-2,2),GetRandomReal(-2,2),GetRandomReal(8,10)), getSquare(), 10, .8,
+						colorA(GetRandomInt(150,250),GetRandomInt(125,150),GetRandomInt(125,150), 255))
 		else
 			if attData.hasBuffs()
 				for bff from attData.getBuffs().staticItr()
