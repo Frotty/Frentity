@@ -17,7 +17,7 @@ public function onPlayerLeave(OnPlayerLeave onLeave)
 
 init
 	nullTimer() ->
-		for i = 0 to bj_MAX_PLAYER_SLOTS
+		for i = 0 to bj_MAX_PLAYER_SLOTS - 1
 			if players[i].isIngame()
 				ALL_PLAYERS.add(players[i])
 
