@@ -20,7 +20,7 @@ public function UnitEntity.addBuff(Buff buffObj)
 
 public function UnitEntity.getBuff(int typeId) returns Buff
 	if this.hasBuffs()
-		for b from currentBuffs[this castTo int].staticItr()
+		for b from this.getBuffs().staticItr()
 			if b.typeId == typeId
 				return b
 	return null
@@ -53,12 +53,11 @@ public function UnitEntity.transferBuffs(UnitEntity otherEntity)
 	if buffs == null or buffs.size() == 0
 		return
 
-	if buffs != null
-		for bff from buffs.staticItr()
-			if not bff.done
-				bff.apply(otherEntity)
-		destroy buffs
-		currentBuffs[this castTo int] = null
+	for bff in buffs
+		if not bff.done
+			bff.apply(otherEntity)
+	destroy buffs
+	currentBuffs[this castTo int] = null
 
 public function UnitEntity.newBuffs() returns LinkedList<Buff>
 	currentBuffs[this castTo int] = new LinkedList<Buff>()
@@ -70,7 +69,7 @@ public abstract class Buff
 	UnitEntity target = null
 	real duration
 	buffTuple buffData
-	boolean done = false
+	var done = false
 
 	construct(real duration, buffTuple buffData)
 		this.duration = duration
@@ -128,12 +127,12 @@ init
 						colorA(GetRandomInt(150,250),GetRandomInt(125,150),GetRandomInt(125,150), 255))
 		else
 			if attData.hasBuffs()
-				for bff from attData.getBuffs().staticItr()
+				for bff in attData.getBuffs()
 					if not bff.done
 						bff.attackModifier()
 
 			if defData.hasBuffs()
-				for bff from defData.getBuffs().staticItr()
+				for bff in defData.getBuffs()
 					if not bff.done
 						bff.defenseModifier()
 
@@ -145,7 +144,7 @@ init
 			if victimData != null and not victimData.done
 			doAfter(0.01) ->
 				if v.getEntity() == victimData and victimData.hasBuffs()
-					for bff from victimData.getBuffs().staticItr()
+					for bff in victimData.getBuffs()
 						bff.refresh(true)
 
 	// Remove buffs when a unit dies and all other triggers fired.
