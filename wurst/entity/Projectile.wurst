@@ -1,7 +1,7 @@
 package Projectile
 import public Fx2Entity
 import ClosureForGroups
-
+import GroupUtils
 
 public interface OnHitListener
 	function run(unit target)
@@ -14,20 +14,21 @@ public class Projectile extends Fx2Entity
 	private angle xyAngle
 	private vec3 startpos
 
-	private boolean timed = false
-	private boolean ranged = false
+	private var timed = false
+	private var ranged = false
+	private group hitGroup = null
 
 	// Moving Speed
-	private real speed = 0
-	private real acc = 1.0
-	protected real dist = 0
-	private real maxDist = 0
-	protected real time = 0
-	private real maxTime = 0
+	private var speed = 0.
+	private var acc = 1.0
+	protected var dist = 0.
+	private var maxDist = 0.
+	protected var time = 0.
+	private var maxTime = 0.
 
-	Entity target = null
-	OnHitListener onHit = null
-	OnEndListener onEnd = null
+	private Entity target = null
+	private OnHitListener onHit = null
+	private OnEndListener onEnd = null
 
 	construct(vec3 pos, real radius, player owner, angle xyAngle, string fxpath)
 		super(owner, pos, radius, xyAngle, fxpath)
@@ -35,6 +36,13 @@ public class Projectile extends Fx2Entity
 		setXYAngle(xyAngle)
 		sleeps = false
 		gravity = 0.
+
+	function onHit(OnHitListener listener)
+		hitGroup = getGroup()
+		this.onHit = listener
+
+	function onEnd(OnEndListener listener)
+		this.onEnd = listener
 
 	function setTargetted(Entity target)
 		this.target = target
@@ -73,7 +81,9 @@ public class Projectile extends Fx2Entity
 		if not done
 			if onHit != null
 				forUnitsInRange(pos.toVec2(), radius) target ->
-					onHit.run(target)
+					if not hitGroup.contains(target)
+						hitGroup.addUnit(target)
+						onHit.run(target)
 			if timed
 				time += ANIMATION_PERIOD
 				if time >= maxTime
@@ -92,6 +102,7 @@ public class Projectile extends Fx2Entity
 
 	ondestroy
 		if onEnd != null
+			hitGroup.destr()
 			destroy onEnd
 		if onHit != null
 			destroy onHit
