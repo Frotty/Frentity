@@ -7,6 +7,23 @@ import Squares
 import TextTagEntity
 import ClosureTimers
 
+/* 
+ * Use Frentity Buffs for your custom buff needs.
+ * 1. Create your buff object using `createDummyBuffObject`.
+ * 2. Create a class for your buff that extends one of the preset buffs.abstract
+ * 3. Apply the buff via `new YourBuff().apply(target)`
+ *
+ * Buffs have 2 lifecycle hooks:
+ *
+ * 	function onApply()
+ *	function onEnd()
+ * 
+ * and api for attack/defense modifiers.
+ * 
+ *	function attackModifier()
+ *	function defenseModifier()
+*/
+
 public constant BUFF_ANIM_PERIOD = 0.25
 LinkedList<Buff> array currentBuffs
 

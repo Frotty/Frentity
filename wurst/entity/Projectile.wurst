@@ -1,0 +1,97 @@
+package Projectile
+import public Fx2Entity
+import ClosureForGroups
+
+
+public interface OnHitListener
+	function run(unit target)
+
+public interface OnEndListener
+	function run()
+
+public class Projectile extends Fx2Entity
+	// Angles
+	private angle xyAngle
+	private vec3 startpos
+
+	private boolean timed = false
+	private boolean ranged = false
+
+	// Moving Speed
+	private real speed = 0
+	private real acc = 1.0
+	protected real dist = 0
+	private real maxDist = 0
+	protected real time = 0
+	private real maxTime = 0
+
+	Entity target = null
+	OnHitListener onHit = null
+	OnEndListener onEnd = null
+
+	construct(vec3 pos, real radius, player owner, angle xyAngle, string fxpath)
+		super(owner, pos, radius, xyAngle, fxpath)
+		startpos = pos
+		setXYAngle(xyAngle)
+		sleeps = false
+		gravity = 0.
+
+	function setTargetted(Entity target)
+		this.target = target
+
+	function setRanged(real maxDistance)
+		this.maxDist = maxDistance*maxDistance
+		ranged = true
+
+	function setTimed(real lifespan)
+		this.maxTime = lifespan
+		timed = true
+
+	function setSpeed(real speed)
+		this.speed = speed
+		setVel(vec3(xyAngle.cos()*speed, xyAngle.sin()*speed, 0.))
+
+	function setAcc(real factor)
+		this.acc = factor
+
+	function getSpeed() returns real
+		return speed
+
+	function setXYAngle(angle xyA)
+		this.xyAngle = xyA
+		fx.eff.setYaw(xyA)
+
+	function getXYAngle() returns angle
+		return xyAngle
+
+	function setZAngle(angle zA)
+		fx.eff.setPitch(zA)
+
+	override function update()
+		vel *= acc
+		super.update()
+		if not done
+			if onHit != null
+				forUnitsInRange(pos.toVec2(), radius) target ->
+					onHit.run(target)
+			if timed
+				time += ANIMATION_PERIOD
+				if time >= maxTime
+					terminate()
+			if ranged
+				if startpos.distanceToSq(pos) > maxDist
+					terminate()
+			if target != null
+				if pos.toVec2().distanceToSq(target.getPos().toVec2()) < radius2
+					terminate()
+
+	override function terminate()
+		if onEnd != null
+			onEnd.run()
+		super.terminate()
+
+	ondestroy
+		if onEnd != null
+			destroy onEnd
+		if onHit != null
+			destroy onHit

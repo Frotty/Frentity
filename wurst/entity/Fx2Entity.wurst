@@ -2,7 +2,6 @@ package Fx2Entity
 import public Entity
 import public Fx2
 import Assets
-import Quaternion
 
 public constant DEFAULT_FX = Abilities.arrowMissile1
 
