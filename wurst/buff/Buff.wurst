@@ -7,7 +7,7 @@ import Squares
 import TextTagEntity
 import ClosureTimers
 
-/* 
+/*
  * Use Frentity Buffs for your custom buff needs.
  * 1. Create your buff object using `createDummyBuffObject`.
  * 2. Create a class for your buff that extends one of the preset buffs.abstract
@@ -17,9 +17,9 @@ import ClosureTimers
  *
  * 	function onApply()
  *	function onEnd()
- * 
+ *
  * and api for attack/defense modifiers.
- * 
+ *
  *	function attackModifier()
  *	function defenseModifier()
 */
@@ -37,14 +37,14 @@ public function UnitEntity.addBuff(Buff buffObj)
 
 public function UnitEntity.getBuff(int typeId) returns Buff
 	if this.hasBuffs()
-		for b from this.getBuffs().staticItr()
+		for b in this.getBuffs()
 			if b.typeId == typeId
 				return b
 	return null
 
 public function UnitEntity.removeBuff(int typeId)
 	if this.hasBuffs()
-		let itr = this.getBuffs().staticItr()
+		let itr = this.getBuffs().iterator()
 		for b from itr
 			if b.typeId == typeId
 				itr.remove()
@@ -55,7 +55,7 @@ public function UnitEntity.getBuffs() returns LinkedList<Buff>
 public function UnitEntity.clearBuffs()
 	let buffs = currentBuffs[this castTo int]
 	if buffs != null
-		for bff from buffs.staticItr()
+		for bff in buffs
 			bff.terminate()
 		destroy buffs
 		currentBuffs[this castTo int] = null
