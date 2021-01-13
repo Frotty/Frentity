@@ -8,16 +8,15 @@ public abstract class NormalBuff extends Buff
 	construct(real dur, buffTuple buffData)
 		super(dur, buffData)
 
-	override function apply(UnitEntity target)
+	override function apply(unit target)
 		this.target = target
-		if not target.hasBuffs()
-			target.newBuffs()
-		for bff in target.getBuffs()
-			if bff.typeId == this.typeId
-				bff.duration = duration
-				this.target = null
-				terminate()
-				return
+		if target.hasBuffs()
+			for bff in target.getBuffs()
+				if bff.typeId == this.typeId
+					bff.duration = duration
+					this.target = null
+					terminate()
+					return
 		target.addBuff(this)
 		refresh()
 		onApply()
@@ -28,10 +27,8 @@ public abstract class StackingBuff extends Buff
 	construct(real dur, buffTuple buffData)
 		super(dur, buffData)
 
-	override function apply(UnitEntity target)
+	override function apply(unit target)
 		this.target = target
-		if not target.hasBuffs()
-			target.newBuffs()
 		target.addBuff(this)
 		refresh()
 		onApply()
@@ -42,10 +39,8 @@ public abstract class FixedBuff extends Buff
 	construct(real dur, buffTuple buffData)
 		super(dur, buffData)
 
-	override function apply(UnitEntity target)
+	override function apply(unit target)
 		this.target = target
-		if not target.hasBuffs()
-			target.newBuffs()
 		for bff in target.getBuffs()
 			if bff.typeId == this.typeId
 				this.target = null
@@ -69,11 +64,9 @@ public class ShieldBuff extends NormalBuff
 		if blockAmount <= 0
 			terminate()
 
-	override function apply(UnitEntity target)
+	override function apply(unit target)
 		this.target = target
-		if not target.hasBuffs()
-			target.newBuffs()
-		else
+		if target.hasBuffs()
 			for bff in target.getBuffs()
 				if bff.typeId == this.typeId and bff != this
 					let sd = bff castTo thistype
