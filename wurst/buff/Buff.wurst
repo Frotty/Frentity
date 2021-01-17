@@ -42,8 +42,8 @@ public function unit.addBuff(Buff buffObj)
 	else
 		buffMap[this.getIndex()].add(buffObj)
 
-public function unit.hasBuff(buffTuple buffT) returns boolean
-	return this.hasAbility(buffT.buffId)
+public function unit.hasBuff(int buffTypeId) returns boolean
+	return this.getBuff(buffTypeId) != null
 
 public function unit.getBuff(int buffTypeId) returns Buff
 	if this.hasBuffs()
