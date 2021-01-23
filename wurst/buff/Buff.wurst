@@ -66,7 +66,9 @@ public function unit.clearBuffs()
 	let buffs = this.getBuffs()
 	if buffs != null
 		for bff in buffs
-			bff.terminate()
+			bff.onEnd()
+		for bff in buffs
+			bff.onEnd()
 		destroy buffs
 		buffMap[this.getIndex()] = null
 
@@ -124,11 +126,11 @@ public abstract class Buff
 	function terminate()
 		if not done
 			done = true
+			onEnd()
 			destroy this
 
 	ondestroy
-		onEnd()
-		if target != null and target.hasBuffs()
+		if target != null and target.isAlive()
 			this.target.removeAbility(this.buffData.buffId)
 			target.removeBuff(this.typeId)
 			target.removeAbility(buffData.abilId)
@@ -167,6 +169,7 @@ init
 						bff.refresh(true)
 
 	// Remove buffs when a unit dies and all other triggers fired.
-	onUnitDeindex() ->
-		let u = getIndexingUnit()
+	EventListener.add(EVENT_PLAYER_UNIT_DEATH) ->
+		let u = GetTriggerUnit()
 		u.clearBuffs()
+
