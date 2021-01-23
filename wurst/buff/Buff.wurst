@@ -167,7 +167,6 @@ init
 						bff.refresh(true)
 
 	// Remove buffs when a unit dies and all other triggers fired.
-	EventListener.add(EVENT_PLAYER_UNIT_DEATH) ->
-		let u = GetTriggerUnit()
-		doAfter(0.01) ->
-			u.clearBuffs()
+	onUnitDeindex() ->
+		let u = getIndexingUnit()
+		u.clearBuffs()
