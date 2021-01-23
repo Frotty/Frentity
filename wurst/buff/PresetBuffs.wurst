@@ -84,7 +84,7 @@ public class ShieldBuff extends NormalBuff
 					return
 		target.addBuff(this)
 		refresh()
-
+		onApply()
 
 	override function defenseModifier()
 		let dmg = DamageEvent.getAmount()
