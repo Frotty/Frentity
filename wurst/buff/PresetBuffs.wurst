@@ -9,17 +9,18 @@ public abstract class NormalBuff extends Buff
 		super(dur, buffData)
 
 	override function apply(unit target)
-		this.target = target
-		if target.hasBuffs()
-			for bff in target.getBuffs()
-				if bff.typeId == this.typeId
-					bff.duration = duration
-					this.target = null
-					terminate()
-					return
-		target.addBuff(this)
-		refresh()
-		onApply()
+		if target.isAlive()
+			this.target = target
+			if target.hasBuffs()
+				for bff in target.getBuffs()
+					if bff.typeId == this.typeId
+						bff.duration = duration
+						this.target = null
+						terminate()
+						return
+			target.addBuff(this)
+			refresh()
+			onApply()
 
 /** When applied to a unit that already has the buff, another buff instance is added */
 public abstract class StackingBuff extends Buff
@@ -28,10 +29,11 @@ public abstract class StackingBuff extends Buff
 		super(dur, buffData)
 
 	override function apply(unit target)
-		this.target = target
-		target.addBuff(this)
-		refresh()
-		onApply()
+		if target.isAlive()
+			this.target = target
+			target.addBuff(this)
+			refresh()
+			onApply()
 
 /** Can only be applied once. If the unit already has the buff nothing happens */
 public abstract class FixedBuff extends Buff
@@ -65,19 +67,20 @@ public class ShieldBuff extends NormalBuff
 			terminate()
 
 	override function apply(unit target)
-		this.target = target
-		if target.hasBuffs()
-			for bff in target.getBuffs()
-				if bff.typeId == this.typeId and bff != this
-					let sd = bff castTo thistype
-					sd.duration = duration
-					sd.blockAmount += blockAmount
-					this.target = null
-					terminate()
-					return
-		target.addBuff(this)
-		refresh()
-		onApply()
+		if target.isAlive()
+			this.target = target
+			if target.hasBuffs()
+				for bff in target.getBuffs()
+					if bff.typeId == this.typeId and bff != this
+						let sd = bff castTo thistype
+						sd.duration = duration
+						sd.blockAmount += blockAmount
+						this.target = null
+						terminate()
+						return
+			target.addBuff(this)
+			refresh()
+			onApply()
 
 	override function defenseModifier()
 		let dmg = DamageEvent.getAmount()
