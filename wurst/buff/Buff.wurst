@@ -57,7 +57,7 @@ public function unit.removeBuff(int typeId)
 		let itr = this.getBuffs().iterator()
 		for b from itr
 			if b.typeId == typeId
-				itr.remove()
+				destroy itr.remove()
 
 public function unit.getBuffs() returns LinkedList<Buff>
 	return buffMap[this.getIndex()]
