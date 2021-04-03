@@ -67,8 +67,6 @@ public function unit.clearBuffs()
 	if buffs != null
 		for bff in buffs
 			bff.onEnd()
-		for bff in buffs
-			bff.onEnd()
 		destroy buffs
 		buffMap[this.getIndex()] = null
 
