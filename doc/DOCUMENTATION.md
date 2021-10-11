@@ -117,7 +117,7 @@ class ColorChangeTextEntity extends TextTagEntity
 ```
 You can easily create the following effect
 
-![](https://media.giphy.com/media/1o1oeeUn3HP64iCIuV/giphy.gif)
+![image](https://user-images.githubusercontent.com/1486037/136803206-64e2d7b6-cffa-4fc0-a99f-33fc4d5fabec.png)
 
 Notice the color change, terrain-aware bouncing and the permanent *Item Shop* texttag staying even though the limit was surpassed. Of course you can fully customize this to your needs.
 
