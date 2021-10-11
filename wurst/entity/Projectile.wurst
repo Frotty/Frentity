@@ -81,8 +81,8 @@ public class Projectile extends Fx2Entity
 		if not done
 			if onHit != null
 				forUnitsInRange(pos.toVec2(), radius) target ->
-					if not hitGroup.contains(target)
-						hitGroup.addUnit(target)
+					if not done and not hitGroup.has(target)
+						hitGroup.add(target)
 						onHit.run(target)
 			if timed
 				time += ANIMATION_PERIOD
