@@ -52,7 +52,15 @@ public function unit.getBuff(int buffTypeId) returns Buff
 				return b
 	return null
 
-public function unit.removeBuff(int typeId)
+
+public function unit.removeBuff(Buff bff)
+	if this.hasBuffs()
+		let itr = this.getBuffs().iterator()
+		for b from itr
+			if b == bff
+				itr.remove().terminate()
+
+public function unit.removeBuffById(int typeId)
 	if this.hasBuffs()
 		let itr = this.getBuffs().iterator()
 		for b from itr
@@ -130,7 +138,7 @@ public abstract class Buff
 	ondestroy
 		if target != null and target.isAlive()
 			this.target.removeAbility(this.buffData.buffId)
-			target.removeBuff(this.typeId)
+			target.removeBuff(this)
 			target.removeAbility(buffData.abilId)
 		target = null
 
