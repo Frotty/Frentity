@@ -4,6 +4,7 @@ import TerrainUtils
 import HashMap
 import MapBounds
 import Execute
+import Reference
 
 tuple quad(int x, int y, vec2 botLeft, real z1, real z2, real z3, real z4)
 
@@ -39,14 +40,20 @@ public function vec2.withHeightMap() returns vec3
         return vec3(this.x, this.y, weight1 * quad.z3 + weight2 * quad.z2 + weight3 * quad.z1)
 
 init
-    execute() ->
-        for x = 0 to TILES_X
+    let xRef = new Reference(0)
+    while xRef.val < TILES_X
+        execute() ->
+            xRef.val++
             for y = 0 to TILES_Y
-                let tile = tile(x, y)
+                let tile = tile(xRef.val, y)
                 zMap.put(tile.id, tile.toVec2().getTerrainZ())
 
-    execute() ->
-        for x = 0 to TILES_X
+
+    xRef.val = 0
+    while xRef.val < TILES_X
+        execute() ->
+            xRef.val++
+            let x = xRef.val
             for y = 0 to TILES_Y
                 quads[x + TILES_X * y] = quad(x, y, vec2(boundMin.x + x * 128, boundMin.y + y * 128), zMap.get(tile(x, y).id), zMap.get(tile(x + 1, y).id), zMap.get(tile(x, y + 1).id), zMap.get(tile(x + 1, y + 1).id))
 
