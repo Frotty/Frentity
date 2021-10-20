@@ -12,6 +12,7 @@ import public FText
 import public ErrorHandling
 import public UnitIndexer
 import public Frentity
+import Heightmap
 
 public constant KEY_X = "x"
 public constant KEY_Y = "y"
@@ -185,7 +186,7 @@ public abstract class Entity implements Serializable
 
 function unit.getDynamicPos() returns vec3
 	if DYNAMIC_Z
-		return this.getPos3Real()
+		return this.getPos().withHeightMap() + vec3(0, 0, this.getFlyHeight())
 	return this.getPos().withZ(0)
 
 abstract public class UnitEntity extends Entity
@@ -215,7 +216,7 @@ abstract public class UnitEntity extends Entity
 
 		actor..setEntity(this)..addAbility(HEIGHT_ENABLER)..removeAbility(HEIGHT_ENABLER)
 		if DYNAMIC_Z
-			pos = actor.getPos3Real()
+			pos = actor.getDynamicPos()
 			actor.setXYZReal(pos)
 		else
 			pos = actor.getPos3Fly()
@@ -254,7 +255,7 @@ abstract public class UnitEntity extends Entity
 	override function getPos() returns vec3
 		if not active
 			if DYNAMIC_Z
-				pos = actor.getPos3Real()
+				pos = actor.getDynamicPos()
 			else
 				pos = actor.getPos3Fly()
 		return pos

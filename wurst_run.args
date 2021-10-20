@@ -10,8 +10,8 @@ Following are the default enabled arguments:
 
 Optimization arguments (default disabled):
 
--inline
+inline
 opt
--localOptimizations
+localOptimizations
 
 For a list of all arguments visit the manual or run wurstscript.jar without arguments.
