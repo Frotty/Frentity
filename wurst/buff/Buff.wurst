@@ -14,7 +14,7 @@ import ClosureEvents
 /*
  * Use Frentity Buffs for your custom buff needs.
  * 1. Create your buff object using `createDummyBuffObject`.
- * 2. Create a class for your buff that extends one of the preset buffs.abstract
+ * 2. Create a class for your buff that extends one of the preset buffs.
  * 3. Apply the buff via `new YourBuff().apply(target)`
  *
  * Buffs have 2 lifecycle hooks:
