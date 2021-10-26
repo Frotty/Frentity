@@ -24,7 +24,10 @@ public function vec2.withHeightMap() returns vec3
 public function vec2.withHeightMap(real zoffset) returns vec3
     return vec3(this.x, this.y, this.getHeightMap() + zoffset)
 
-function vec2.getHeightMap() returns real
+public function vec3.getHeightMap() returns real
+    return this.toVec2().getHeightMap()
+
+public function vec2.getHeightMap() returns real
     let quad = this.getQuad()
     let localVec = this - quad.botLeft
     let normVec = vec2(localVec.x / 128, localVec.y / 128)

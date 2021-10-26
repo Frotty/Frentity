@@ -99,7 +99,7 @@ public abstract class Entity implements Serializable
 		this.owner = owner
 		this.radius = radius
 		this.radius2 = radius * radius
-		if pos.z > (DYNAMIC_Z ? pos.getTerrainZ() : 0)
+		if pos.z > (DYNAMIC_Z ? pos.getHeightMap() : 0)
 			setFlying(true)
 		allocationsPerSecond++
 
@@ -111,12 +111,12 @@ public abstract class Entity implements Serializable
 
 	function setPos(vec3 pos)
 		this.pos = pos
-		if pos.z > pos.getTerrainZ() and gravity != 0
+		if pos.z > pos.getHeightMap() and gravity != 0
 			activate()
 
 	function addPos(vec3 pos)
 		this.pos += pos
-		if pos.z > pos.getTerrainZ() and gravity != 0
+		if pos.z > pos.getHeightMap() and gravity != 0
 			activate()
 
 	function getVel() returns vec3
@@ -138,7 +138,7 @@ public abstract class Entity implements Serializable
 		let tangle = pos.angleTo2d(tpos)
 		var e = 0.
 		if DYNAMIC_Z
-			e = tpos.getTerrainZ()
+			e = tpos.getHeightMap()
 
 		if t < 1.
 			t = 1./speed
@@ -154,7 +154,7 @@ public abstract class Entity implements Serializable
 		if sleeps and not flying and vel.lengthSquared() < 1.5
 			deactivate()
 		else
-			let tz = DYNAMIC_Z ? pos.getTerrainZ() : 0
+			let tz = DYNAMIC_Z ? pos.getHeightMap() : 0
 			if pos.z >= tz
 				vel.z += gravity
 				setFlying(true)
