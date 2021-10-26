@@ -19,6 +19,9 @@ function vec2.getQuad() returns quad
     return quads[(this.x - boundMin.x).toInt() div 128 + (TILES_X * ((this.y - boundMin.y).toInt() div 128))]
 
 public function vec2.withHeightMap() returns vec3
+    return this.withHeightMap(0)
+
+public function vec2.withHeightMap(real zoffset) returns vec3
     let quad = this.getQuad()
     let localVec = this - quad.botLeft
     let normVec = vec2(localVec.x / 128, localVec.y / 128)
@@ -31,13 +34,13 @@ public function vec2.withHeightMap() returns vec3
         let weight2 = 1 - normVec.y
         let weight3 = 1 - weight1 - weight2
 
-        return vec3(this.x, this.y, weight1 * quad.z3 + weight2 * quad.z2 + weight3 * quad.z4)
+        return vec3(this.x, this.y, weight1 * quad.z3 + weight2 * quad.z2 + weight3 * quad.z4 + zoffset)
     else
         // lower triangle
         let weight1 = normVec.y
         let weight2 = normVec.x
         let weight3 = 1 - weight1 - weight2
-        return vec3(this.x, this.y, weight1 * quad.z3 + weight2 * quad.z2 + weight3 * quad.z1)
+        return vec3(this.x, this.y, weight1 * quad.z3 + weight2 * quad.z2 + weight3 * quad.z1 + zoffset)
 
 init
     let xRef = new Reference(0)
