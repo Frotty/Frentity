@@ -5,7 +5,7 @@
 
 ## Installation
 
-Use grill to install wurst-lodash as a dependency.
+Use grill to install frentity as a dependency.
 
 `$ grill install https://github.com/Frotty/Frentity`
 
