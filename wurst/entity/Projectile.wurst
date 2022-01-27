@@ -16,6 +16,7 @@ public class Projectile extends Fx2Entity
 
 	private var timed = false
 	private var ranged = false
+	private var use3DDistance = true
 	private group hitGroup = null
 
 	// Moving Speed
@@ -48,7 +49,11 @@ public class Projectile extends Fx2Entity
 		this.target = target
 
 	function setRanged(real maxDistance)
+		setRanged(maxDistance, use3DDistance)
+
+	function setRanged(real maxDistance, boolean use3DDistance)
 		this.maxDist = maxDistance*maxDistance
+		this.use3DDistance = use3DDistance
 		ranged = true
 
 	function setTimed(real lifespan)
@@ -89,7 +94,7 @@ public class Projectile extends Fx2Entity
 				if time >= maxTime
 					terminate()
 			if ranged
-				if startpos.distanceToSq(pos) > maxDist
+				if (use3DDistance ? startpos.distanceToSq(pos) : startpos.toVec2().distanceToSq(pos.toVec2())) > maxDist
 					terminate()
 			if target != null
 				if pos.toVec2().distanceToSq(target.getPos().toVec2()) < radius2
