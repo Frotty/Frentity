@@ -106,7 +106,7 @@ public class Projectile extends Fx2Entity
 			if isPointTarget
 				if (use3DDistance ? pos.distanceToSq(targetPoint) : pos.toVec2().distanceToSq(targetPoint.toVec2())) < radius2
 					terminate()
-			if killZ and pos.z <= killBelowZ
+			if vel.z < 0 and killZ and pos.z <= killBelowZ
 				terminate()
 			if timed
 				time += ANIMATION_PERIOD
