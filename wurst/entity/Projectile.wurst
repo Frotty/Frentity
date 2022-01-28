@@ -20,6 +20,8 @@ public class Projectile extends Fx2Entity
 	private group hitGroup = null
 	private var isPointTarget = false
 	private var targetPoint = ZERO3
+	private var killZ = false
+	private var killBelowZ = 0.
 
 	// Moving Speed
 	private var speed = 0.
@@ -49,6 +51,10 @@ public class Projectile extends Fx2Entity
 
 	function setTargetted(Entity target)
 		this.target = target
+
+	function setKillBelowZ(real zVal)
+		this.killZ = true
+		this.killBelowZ = zVal
 
 	function setPointTarget(vec3 target, boolean use3DDistance)
 		isPointTarget = true
@@ -100,6 +106,8 @@ public class Projectile extends Fx2Entity
 			if isPointTarget
 				if (use3DDistance ? pos.distanceToSq(targetPoint) : pos.toVec2().distanceToSq(targetPoint.toVec2())) < radius2
 					terminate()
+			if killZ and pos.z <= killBelowZ
+				terminate()
 			if timed
 				time += ANIMATION_PERIOD
 				if time >= maxTime
