@@ -18,6 +18,8 @@ public class Projectile extends Fx2Entity
 	private var ranged = false
 	private var use3DDistance = true
 	private group hitGroup = null
+	private var isPointTarget = false
+	private var targetPoint = ZERO3
 
 	// Moving Speed
 	private var speed = 0.
@@ -47,6 +49,11 @@ public class Projectile extends Fx2Entity
 
 	function setTargetted(Entity target)
 		this.target = target
+
+	function setPointTarget(vec3 target, boolean use3DDistance)
+		isPointTarget = true
+		this.targetPoint = target
+		this.use3DDistance = use3DDistance
 
 	function setRanged(real maxDistance)
 		setRanged(maxDistance, use3DDistance)
@@ -89,6 +96,10 @@ public class Projectile extends Fx2Entity
 					if not done and not hitGroup.has(target)
 						hitGroup.add(target)
 						onHit.run(target)
+
+			if isPointTarget
+				if (use3DDistance ? pos.distanceToSq(targetPoint) : pos.toVec2().distanceToSq(targetPoint.toVec2())) < radius2
+					terminate()
 			if timed
 				time += ANIMATION_PERIOD
 				if time >= maxTime
