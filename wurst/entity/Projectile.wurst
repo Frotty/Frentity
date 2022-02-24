@@ -16,8 +16,10 @@ public class Projectile extends Fx2Entity
 
 	private var timed = false
 	private var ranged = false
+
 	private var use3DDistance = true
 	private group hitGroup = null
+
 	private var isPointTarget = false
 	private var targetPoint = ZERO3
 	private var killZ = false
@@ -56,10 +58,17 @@ public class Projectile extends Fx2Entity
 		this.killZ = true
 		this.killBelowZ = zVal
 
-	function setPointTarget(vec3 target, boolean use3DDistance)
+	function setPointTarget(vec2 target, real speed)
+		isPointTarget = true
+		this.targetPoint = target.toVec3()
+		this.use3DDistance = false
+		this.vel = (target - pos.toVec2()).setLength(speed).toVec3()
+
+	function setPointTarget(vec3 target, real speed)
 		isPointTarget = true
 		this.targetPoint = target
-		this.use3DDistance = use3DDistance
+		this.use3DDistance = true
+		this.vel = (target - pos).setLength(speed)
 
 	function setRanged(real maxDistance)
 		setRanged(maxDistance, use3DDistance)
@@ -120,9 +129,10 @@ public class Projectile extends Fx2Entity
 					terminate()
 
 	override function terminate()
-		if onEnd != null
-			onEnd.run()
-		super.terminate()
+		if not done
+			if onEnd != null
+				onEnd.run()
+			super.terminate()
 
 	ondestroy
 		if onEnd != null
