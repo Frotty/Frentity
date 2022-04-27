@@ -1,0 +1,55 @@
+package Pathingmap
+import BitSet
+import Heightmap
+import Reference
+import TerrainUtils
+import Execute
+
+public constant INDEX_PATHING = 1
+
+tuple pathing(bitset x1, bitset x2, bitset x3, bitset x4)
+
+pathing array pathings
+
+public function vec2.getPathingMap() returns bitset
+    let quad = this.getQuad()
+    let normVec = this - quad.botLeft
+    if normVec.x <= 64.
+        if normVec.y <= 64.
+            return pathings[quad.id].x1
+        else
+            return pathings[quad.id].x2
+    else
+        if normVec.y <= 64.
+            return pathings[quad.id].x3
+        else
+            return pathings[quad.id].x4
+
+public function vec2.setPathingMap(int index, boolean flag)
+    this.getPathingMap().set(index, flag)
+
+public function vec2.getPathing1x1() returns boolean
+    return this.getPathingMap().get(INDEX_PATHING)
+
+public function vec2.setPathing1x1(boolean flag)
+    this.getPathingMap().set(INDEX_PATHING, flag)
+
+public function vec2.setPathing2x2(boolean flag)
+    (this + vec2(32, 32)).getPathingMap().set(INDEX_PATHING, flag)
+    (this + vec2(-32, -32)).getPathingMap().set(INDEX_PATHING, flag)
+    (this + vec2(-32, 32)).getPathingMap().set(INDEX_PATHING, flag)
+    (this + vec2(32, -32)).getPathingMap().set(INDEX_PATHING, flag)
+
+init
+    let xRef = new Reference(0)
+    while xRef.val < TILES_X
+        execute() ->
+            xRef.val++
+            let x = xRef.val
+            for y = 0 to TILES_Y
+                let path = pathing(emptyBitset(), emptyBitset(), emptyBitset(), emptyBitset())
+                pathings[x + TILES_X * y] = path
+
+
+    destroy xRef
+
