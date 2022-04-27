@@ -7,9 +7,23 @@ import Execute
 
 public constant INDEX_PATHING = 1
 
-tuple pathing(bitset x1, bitset x2, bitset x3, bitset x4)
+tuple pathing(int id, bitset x1, bitset x2, bitset x3, bitset x4)
 
 pathing array pathings
+
+public function vec2.setPathingMap(bitset val)
+    let quad = this.getQuad()
+    let normVec = this - quad.botLeft
+    if normVec.x <= 64.
+        if normVec.y <= 64.
+            pathings[quad.id].x1 = val
+        else
+            pathings[quad.id].x2 = val
+    else
+        if normVec.y <= 64.
+            pathings[quad.id].x3 = val
+        else
+            pathings[quad.id].x4 = val
 
 public function vec2.getPathingMap() returns bitset
     let quad = this.getQuad()
@@ -32,13 +46,27 @@ public function vec2.getPathing1x1() returns boolean
     return this.getPathingMap().get(INDEX_PATHING)
 
 public function vec2.setPathing1x1(boolean flag)
-    this.getPathingMap().set(INDEX_PATHING, flag)
+    this.setPathingMap(this.getPathingMap().set(INDEX_PATHING, flag))
+
+public function vec2.setPathing5x1(boolean flag)
+    (this - vec2(64., 0)).setPathing1x1(flag)
+    (this - vec2(2. * 64, 0)).setPathing1x1(flag)
+    (this).setPathing1x1(flag)
+    (this + vec2(64., 0)).setPathing1x1(flag)
+    (this + vec2(2. * 64, 0)).setPathing1x1(flag)
+
+public function vec2.setPathing1x5(boolean flag)
+    (this - vec2(0, 64.)).setPathing1x1(flag)
+    (this - vec2(0, 2.)).setPathing1x1(flag)
+    (this).setPathing1x1(flag)
+    (this + vec2(0, 64.)).setPathing1x1(flag)
+    (this + vec2(0, 2.)).setPathing1x1(flag)
 
 public function vec2.setPathing2x2(boolean flag)
-    (this + vec2(32, 32)).getPathingMap().set(INDEX_PATHING, flag)
-    (this + vec2(-32, -32)).getPathingMap().set(INDEX_PATHING, flag)
-    (this + vec2(-32, 32)).getPathingMap().set(INDEX_PATHING, flag)
-    (this + vec2(32, -32)).getPathingMap().set(INDEX_PATHING, flag)
+    (this + vec2(32, 32)).setPathing1x1(flag)
+    (this + vec2(-32, -32)).setPathing1x1(flag)
+    (this + vec2(-32, 32)).setPathing1x1(flag)
+    (this + vec2(32, -32)).setPathing1x1(flag)
 
 init
     let xRef = new Reference(0)
@@ -47,8 +75,8 @@ init
             xRef.val++
             let x = xRef.val
             for y = 0 to TILES_Y
-                let path = pathing(emptyBitset(), emptyBitset(), emptyBitset(), emptyBitset())
-                pathings[x + TILES_X * y] = path
+                let path = pathing(x + TILES_X * y, emptyBitset(), emptyBitset(), emptyBitset(), emptyBitset())
+                pathings[path.id] = path
 
 
     destroy xRef
