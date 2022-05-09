@@ -43,10 +43,16 @@ public function vec2.setPathingMap(int index, boolean flag)
     this.getPathingMap().set(index, flag)
 
 public function vec2.getPathing1x1() returns boolean
-    return this.getPathingMap().get(INDEX_PATHING)
+    return this.getPathing1x1(INDEX_PATHING)
+
+public function vec2.getPathing1x1(int index) returns boolean
+    return this.getPathingMap().get(index)
 
 public function vec2.setPathing1x1(boolean flag)
-    this.setPathingMap(this.getPathingMap().set(INDEX_PATHING, flag))
+    this.setPathing1x1(INDEX_PATHING, flag)
+
+public function vec2.setPathing1x1(int index, boolean flag)
+    this.setPathingMap(this.getPathingMap().set(index, flag))
 
 public function vec2.setPathing5x1(boolean flag)
     (this - vec2(64., 0)).setPathing1x1(flag)
@@ -63,6 +69,9 @@ public function vec2.setPathing1x5(boolean flag)
     (this + vec2(0, 2.)).setPathing1x1(flag)
 
 public function vec2.setPathing2x2(boolean flag)
+    this.setPathing2x2(INDEX_PATHING, flag)
+
+public function vec2.setPathing2x2(int index, boolean flag)
     (this + vec2(32, 32)).setPathing1x1(flag)
     (this + vec2(-32, -32)).setPathing1x1(flag)
     (this + vec2(-32, 32)).setPathing1x1(flag)
