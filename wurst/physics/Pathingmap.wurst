@@ -72,10 +72,10 @@ public function vec2.setPathing2x2(boolean flag)
     this.setPathing2x2(INDEX_PATHING, flag)
 
 public function vec2.setPathing2x2(int index, boolean flag)
-    (this + vec2(32, 32)).setPathing1x1(flag)
-    (this + vec2(-32, -32)).setPathing1x1(flag)
-    (this + vec2(-32, 32)).setPathing1x1(flag)
-    (this + vec2(32, -32)).setPathing1x1(flag)
+    (this + vec2(32, 32)).setPathing1x1(index, flag)
+    (this + vec2(-32, -32)).setPathing1x1(index, flag)
+    (this + vec2(-32, 32)).setPathing1x1(index, flag)
+    (this + vec2(32, -32)).setPathing1x1(index, flag)
 
 init
     let xRef = new Reference(0)
