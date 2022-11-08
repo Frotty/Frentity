@@ -44,6 +44,9 @@ public class Projectile extends Fx2Entity
 		sleeps = false
 		gravity = 0.
 
+	function getFx() returns Fx2
+		return fx
+
 	function onHit(OnHitListener listener)
 		hitGroup = getGroup()
 		this.onHit = listener
