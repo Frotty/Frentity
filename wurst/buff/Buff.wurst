@@ -74,7 +74,7 @@ public function unit.clearBuffs()
 	let buffs = this.getBuffs()
 	if buffs != null
 		for bff in buffs
-			bff.onEnd()
+			bff.terminate()
 		destroy buffs
 		buffMap[this.getIndex()] = null
 
@@ -136,7 +136,7 @@ public abstract class Buff
 			destroy this
 
 	ondestroy
-		if target != null and target.isAlive()
+		if target != null
 			this.target.removeAbility(this.buffData.buffId)
 			target.removeBuff(this)
 			target.removeAbility(buffData.abilId)
