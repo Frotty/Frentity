@@ -1,0 +1,42 @@
+package Impulse
+import Entity
+import Heightmap
+
+/** Initial z-velocity required to push an entity against its gravity for the given height **/
+public function calculateZImpulse(Entity e, real height) returns real
+    return SquareRoot(2 * -e.gravity * height) / ANIMATION_PERIOD
+
+/** Initial xy-velocity required to push an entity against surface friction for the given distance **/
+public function calculateXYImpulse(real friction, angle direction, real distance) returns vec2
+    let velocity = distance * (1 - friction) / ANIMATION_PERIOD
+
+    return direction.toVec(velocity)
+
+/** Initial velocity vector required for a jump from the entity's current position to the target position,
+    with the given XY-speed **/
+public function calculateJumpImpulse(Entity entity, vec3 tpos, real speed) returns vec3
+    let distance = entity.getPos().distanceTo2d(tpos)
+    var timeOfFlight = distance / speed
+    let tangle = entity.getPos().angleTo2d(tpos)
+    var e = 0.
+    if DYNAMIC_Z
+        e = tpos.getHeightMap()
+
+    if timeOfFlight < 1.
+        timeOfFlight = 1./speed
+
+    let startZVelocity = ((-entity.gravity * timeOfFlight) / 2 - entity.getPos().z/timeOfFlight + e/timeOfFlight)
+    return tangle.toVec(speed).withZ(startZVelocity)
+
+/** Initial velocity vector required for a jump from the entity's current position to the target position,
+    with the given time of flight **/
+public function calculateTimedJumpImpulse(Entity entity, vec3 tpos, real timeOfFlight) returns vec3
+    let distance = entity.getPos().distanceTo2d(tpos)
+    let speed = distance / timeOfFlight
+    let tangle = entity.getPos().angleTo2d(tpos)
+    var e = 0.
+    if DYNAMIC_Z
+        e = tpos.getHeightMap()
+
+    let startZVelocity = ((-entity.gravity * timeOfFlight) / 2 - entity.getPos().z/timeOfFlight + e/timeOfFlight)
+    return tangle.toVec(speed).withZ(startZVelocity)
