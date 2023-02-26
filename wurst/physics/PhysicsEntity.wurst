@@ -20,14 +20,13 @@ public module PhysicsModule
 
 	// This function should be called every ANIMATION_PERIOD tick if the Entity is active
 	function physicsUpdate(Entity e)
-		if not e.done and e.active
-			let pos = e.getPos()
-			if DYNAMIC_Z
-				terrainZ = pos.getHeightMap()
-			if pos.z > terrainZ
-				inAir(e)
-			else
-				onGround(e)
+		let pos = e.getPos()
+		if DYNAMIC_Z
+			terrainZ = pos.getHeightMap()
+		if pos.z > terrainZ
+			inAir(e)
+		else
+			onGround(e)
 
 	// When the Entity is on or near the ground
 	function onGround(Entity e)
