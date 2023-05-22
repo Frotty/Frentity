@@ -14,18 +14,20 @@ public function calculateXYImpulse(real friction, angle direction, real distance
 
 /** Initial velocity vector required for a jump from the entity's current position to the target position,
     with the given XY-speed **/
-public function calculateJumpImpulse(Entity entity, vec3 tpos, real speed) returns vec3
-    let distance = entity.getPos().distanceTo2d(tpos)
+public function calculateJumpImpulse(Entity entity, vec3 targetPos, real speed) returns vec3
+    return calculateJumpImpulse(entity.getPos(), vec3(targetPos.x, targetPos.y, DYNAMIC_Z ? targetPos.getHeightMap() : 0.), speed, entity.gravity)
+
+/** Initial velocity vector required for a jump from the entity's current position to the target position,
+    with the given XY-speed **/
+public function calculateJumpImpulse(vec3 startPos, vec3 targetPos, real speed, real gravity) returns vec3
+    let distance = startPos.distanceTo2d(targetPos)
     var timeOfFlight = distance / speed
-    let tangle = entity.getPos().angleTo2d(tpos)
-    var e = 0.
-    if DYNAMIC_Z
-        e = tpos.getHeightMap()
+    let tangle = startPos.angleTo2d(targetPos)
 
     if timeOfFlight < 1.
         timeOfFlight = 1./speed
 
-    let startZVelocity = ((-entity.gravity * timeOfFlight) / 2 - entity.getPos().z/timeOfFlight + e/timeOfFlight)
+    let startZVelocity = ((-gravity * timeOfFlight) / 2 - startPos.z/timeOfFlight + targetPos.z/timeOfFlight)
     return tangle.toVec(speed).withZ(startZVelocity)
 
 /** Initial velocity vector required for a jump from the entity's current position to the target position,
@@ -40,3 +42,40 @@ public function calculateTimedJumpImpulse(Entity entity, vec3 tpos, real timeOfF
 
     let startZVelocity = ((-entity.gravity * timeOfFlight) / 2 - entity.getPos().z/timeOfFlight + e/timeOfFlight)
     return tangle.toVec(speed).withZ(startZVelocity)
+
+
+@Test function testStraightImpulse()
+    testImpulse(vec3(100, 0, 0), 0.15)
+
+@Test function testSkewedImpulse()
+    testImpulse(vec3(100, 50, 0), 0.25)
+
+@Test function testHeightTargetImpulse()
+    testImpulse(vec3(100, 0, 50), 0.2)
+
+@Test function testSkewedHeightTargetImpulse()
+    testImpulse(vec3(100, 50, 50), 0.25)
+
+function testImpulse(vec3 targetPos, real delta)
+    let start = ZERO3
+    let target = targetPos
+
+    var projectile = ZERO3
+    let speed = 10.
+    let gravity = -0.8
+    let timestep = 0.03
+    let timeOfFlight = start.distanceTo2d(target) / speed
+    let ticks = (timeOfFlight / timestep).toInt()
+
+    var velocity = calculateJumpImpulse(start, target, speed, gravity)
+
+    for i = 1 to ticks
+        velocity += vec3(0, 0, gravity * timestep)
+        projectile += velocity * timestep
+
+        print("projectile: " + projectile.toString())
+
+
+    let distance = projectile.distanceTo(target)
+    distance.assertEquals(0, delta)
+
