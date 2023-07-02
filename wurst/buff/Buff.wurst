@@ -59,6 +59,7 @@ public function unit.removeBuff(Buff bff)
 		for b from itr
 			if b == bff
 				itr.remove().terminate()
+		itr.close()
 
 public function unit.removeBuffById(int typeId)
 	if this.hasBuffs()
@@ -66,6 +67,7 @@ public function unit.removeBuffById(int typeId)
 		for b from itr
 			if b.typeId == typeId
 				itr.remove().terminate()
+		itr.close()
 
 public function unit.getBuffs() returns LinkedList<Buff>
 	return buffMap[this.getIndex()]
