@@ -14,8 +14,9 @@ public interface OnReachedListener
 public class HomingProjectile extends Projectile
 	HOMING htype = HOMING.none
 	Entity target = null
-	real homingSpeed = 0.
-	real radii = 0.
+	var homingSpeed = 0.
+	var radii = 0.
+	var dampeningFactor = 0.98
 
 	private OnReachedListener onTargetReached = null
 
@@ -27,15 +28,15 @@ public class HomingProjectile extends Projectile
 		this.htype = htype
 		homingSpeed = homingspeed
 		radii = radius * radius + e.radius * e.radius
+		activate()
 
 	function onTargetReached(OnReachedListener listener)
 		this.onTargetReached = listener
 
 	override function update()
-		super.update()
-
-		let dist = pos.distanceToSq(target.pos + vec3(0, 0, target.radius))
-		let anglexy = pos.angleTo2d(target.pos)
+		let tpos = target.getPos()
+		let dist = pos.distanceToSq(tpos + vec3(0, 0, target.radius))
+		let anglexy = pos.angleTo2d(tpos)
 		if onTargetReached != null and dist < radii
 			onTargetReached.run(target)
 
@@ -44,7 +45,7 @@ public class HomingProjectile extends Projectile
 				case HOMING.none
 					skip
 				case HOMING.attract
-					vel = (target.pos - this.pos).setLength(homingSpeed)
+					vel = (tpos - this.pos).setLength(homingSpeed)
 				case HOMING.angular
 					var df1 = (anglexy - getXYAngle()).radians()
 					let df2 = (PI2 + anglexy.radians()) - getXYAngle().radians()
@@ -84,17 +85,14 @@ public class HomingProjectile extends Projectile
 					vel = newAngle.toVec(getSpeed()).toVec3()
 					setXYAngle(newAngle)
 				case HOMING.forced
-					vec3 tmp = pos.polarProject(getSpeed(), anglexy, angle(0))
+					vel *= dampeningFactor
+					let hforce = ZERO2.polarOffset(anglexy, homingSpeed)
 
-					tmp -= pos
+					vel += hforce
+					if vel.length() > getSpeed()
+						vel.setLength(getSpeed())
 
-					vel += tmp
-
-					pos += vel
-
-					setXY(pos)
-
-					vel -= (vel*homingSpeed)
+			super.update()
 
 	ondestroy
 		if onTargetReached != null
