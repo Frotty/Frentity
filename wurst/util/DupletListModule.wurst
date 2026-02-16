@@ -11,23 +11,26 @@ public module DupletListModule
 	thistype prev
 	thistype next
 	boolean active = true
+	boolean linked = false
 
 	construct()
 		addToActive()
 
 	function deactivate()
-		if active
+		if active and linked
 			active = false
 			removeFromActive()
 			addToInactive()
 
 	function activate()
-		if not active
+		if not active and linked
 			active = true
 			removeFromInactive()
 			addToActive()
 
 	function remove()
+		if not linked
+			return
 		if active
 			active = false
 			removeFromActive()
@@ -44,6 +47,12 @@ public module DupletListModule
 			next.prev = prev	
 		else
 			lastActive = prev
+		if firstActive != null
+			if firstActive == lastActive
+				firstActive.prev = null
+			else
+				firstActive.prev = lastActive
+		linked = false
 		prev = null
 		next = null
 
@@ -57,6 +66,12 @@ public module DupletListModule
 			next.prev = prev	
 		else
 			lastInactive = prev
+		if firstInactive != null
+			if firstInactive == lastInactive
+				firstInactive.prev = null
+			else
+				firstInactive.prev = lastInactive
+		linked = false
 		prev = null
 		next = null
 	
@@ -71,6 +86,7 @@ public module DupletListModule
 			firstActive.prev = this
 		next = null
 		lastActive = this
+		linked = true
 
 	function addToInactive()
 		inactiveSize++
@@ -83,6 +99,7 @@ public module DupletListModule
 			firstInactive.prev = this
 		next = null
 		lastInactive = this
+		linked = true
 
 			
 	ondestroy
@@ -94,17 +111,28 @@ public module DupletListModule
 		
 	static class Iterator
 		DupletListModule.thistype current = firstActive
+		DupletListModule.thistype lastReturned = null
+
+		private function syncCurrent()
+			// Re-anchor from the last returned active node so iteration survives
+			// removals/deactivations of what used to be `current`.
+			if lastReturned != null and lastReturned.active
+				current = lastReturned.next
 
 		function hasNext() returns boolean
+			syncCurrent()
 			return current != null
 	
 		function next() returns DupletListModule.thistype
+			syncCurrent()
 			let res = current
 			current = current.next
+			lastReturned = res
 			return res
-	 		
+ 		
 		function close() 
 			destroy this
 
 		function reset()
 			current = firstActive
+			lastReturned = null

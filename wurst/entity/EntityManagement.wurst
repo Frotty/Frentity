@@ -1,14 +1,13 @@
 package EntityManagement
 import public Entity
 import Buff
-public constant activeItr = Entity.iterator()
-public constant buffItr = Buff.iterator()
 
 function updateActiveEntities()
-	activeItr.reset()
+	let activeItr = Entity.iterator()
 	for e from activeItr
 		if not e.done
 			e.update()
+	activeItr.close()
 
 function updateInactiveEntities()
 	var e = Entity.firstInactive
@@ -17,10 +16,11 @@ function updateInactiveEntities()
 		e = e.next
 
 function updateBuffs()
-	buffItr.reset()
+	let buffItr = Buff.iterator()
 	for b from buffItr
 		if not b.done
 			b.update()
+	buffItr.close()
 
 public function startEntityLoop() returns boolean
 	getTimer().startPeriodic(ANIMATION_PERIOD, function updateActiveEntities)
