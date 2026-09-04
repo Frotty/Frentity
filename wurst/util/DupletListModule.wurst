@@ -8,6 +8,12 @@ public module DupletListModule
 	static thistype lastInactive = null
 	static int activeSize = 0
 	static int inactiveSize = 0
+	/** Iterators currently walking the active list. A node about to leave the list advances any
+		iterator parked on it, so iteration never has to re-read a node it has already handed out.
+		Re-reading is not safe: a destroyed node's id is handed straight back out by the allocator,
+		so the "same" node can be a different, live object by the time the loop looks again. */
+	static Iterator array openIterators
+	static int openIteratorCount = 0
 	thistype prev
 	thistype next
 	boolean active = true
@@ -39,6 +45,10 @@ public module DupletListModule
 
 	function removeFromActive()
 		activeSize--
+		// Step every iterator parked on this node past it, while next is still valid.
+		for i = 0 to openIteratorCount - 1
+			if openIterators[i].current == this
+				openIterators[i].current = next
 		if this != firstActive
 			prev.next = next
 		else
@@ -111,28 +121,112 @@ public module DupletListModule
 		
 	static class Iterator
 		DupletListModule.thistype current = firstActive
-		DupletListModule.thistype lastReturned = null
 
-		private function syncCurrent()
-			// Re-anchor from the last returned active node so iteration survives
-			// removals/deactivations of what used to be `current`.
-			if lastReturned != null and lastReturned.active
-				current = lastReturned.next
+		construct()
+			openIterators[openIteratorCount] = this
+			openIteratorCount++
 
 		function hasNext() returns boolean
-			syncCurrent()
 			return current != null
-	
+
 		function next() returns DupletListModule.thistype
-			syncCurrent()
 			let res = current
 			current = current.next
-			lastReturned = res
 			return res
- 		
-		function close() 
+
+		function close()
 			destroy this
 
 		function reset()
 			current = firstActive
-			lastReturned = null
+
+		ondestroy
+			// Compact the open-iterator list. Iterators are closed in any order, so find this one.
+			var found = false
+			for i = 0 to openIteratorCount - 1
+				if not found and openIterators[i] == this
+					found = true
+					openIteratorCount--
+					openIterators[i] = openIterators[openIteratorCount]
+					openIterators[openIteratorCount] = null
+
+class IterNode
+	use DupletListModule
+	var tag = 0
+
+IterNode secondNode = null
+
+function newNode(int tag) returns IterNode
+	let n = new IterNode()
+	n.tag = tag
+	return n
+
+function clearNodes()
+	let itr = IterNode.iterator()
+	for n from itr
+		destroy n
+	itr.close()
+
+/* An element leaving the list while an iterator is parked on it used to strand that iterator: it
+   handed out the dead node and then stopped on its cleared `next`, skipping every live element
+   after it. Destroying the element the iterator has already cached is the case that hit hardest,
+   because an entity update that terminates itself and one other entity does exactly that. */
+@Test function iteratorSkipsRemovedNodesAndStillReachesTheTail()
+	clearNodes()
+	newNode(1)
+	secondNode = newNode(2)
+	newNode(3)
+
+	var visited = ""
+	let itr = IterNode.iterator()
+	for n from itr
+		visited += n.tag + ","
+		if n.tag == 1
+			destroy n
+			destroy secondNode
+	itr.close()
+
+	visited.assertEquals("1,3,")
+	clearNodes()
+
+/* Instance ids are pooled and handed straight back out, so the node allocated right after a destroy
+   reuses the dead node's id. Iteration must not resolve its position through an id it has already
+   released. */
+@Test function iteratorSurvivesAnIdBeingReusedMidLoop()
+	clearNodes()
+	newNode(1)
+	newNode(2)
+	newNode(3)
+
+	var visited = ""
+	let itr = IterNode.iterator()
+	for n from itr
+		visited += n.tag + ","
+		if n.tag == 1
+			destroy n
+			newNode(4)
+	itr.close()
+
+	// 2 and 3 were already in the list; 4 is appended at the tail and is reached in the same pass.
+	visited.assertEquals("1,2,3,4,")
+	clearNodes()
+
+/* deactivate() unlinks from the active list too, so it has to steer a parked iterator the same way
+   a destroy does. Entity.update() deactivates entities that have come to rest. */
+@Test function iteratorSurvivesDeactivationOfTheCachedNode()
+	clearNodes()
+	newNode(1)
+	secondNode = newNode(2)
+	newNode(3)
+
+	var visited = ""
+	let itr = IterNode.iterator()
+	for n from itr
+		visited += n.tag + ","
+		if n.tag == 1
+			secondNode.deactivate()
+	itr.close()
+
+	visited.assertEquals("1,3,")
+	secondNode.activate()
+	clearNodes()

@@ -13,7 +13,7 @@ public interface OnReachedListener
 
 public class HomingProjectile extends Projectile
 	HOMING htype = HOMING.none
-	Entity target = null
+	var target = NO_ENTITY
 	var homingSpeed = 0.
 	var radii = 0.
 	var dampeningFactor = 0.98
@@ -24,21 +24,29 @@ public class HomingProjectile extends Projectile
 		super(pos, radius, owner, xyAngle, fxpath)
 
 	function setTarget(Entity e, HOMING htype, real homingspeed)
-		target = e
+		target = e.asRef()
 		this.htype = htype
 		homingSpeed = homingspeed
-		radii = radius * radius + e.radius * e.radius
+		// Two spheres touch at (r1 + r2), so the squared threshold is (r1 + r2)^2, not r1^2 + r2^2.
+		radii = (radius + e.radius) * (radius + e.radius)
 		activate()
 
 	function onTargetReached(OnReachedListener listener)
 		this.onTargetReached = listener
 
 	override function update()
-		let tpos = target.getPos()
-		let dist = pos.distanceToSq(tpos + vec3(0, 0, target.radius))
+		// The target can die mid-flight, and its instance id is reused immediately, so home only
+		// while the reference still resolves. Without a target there is nothing to home towards.
+		let homingTarget = target.get()
+		if homingTarget == null
+			super.update()
+			return
+
+		let tpos = homingTarget.getPos()
+		let dist = pos.distanceToSq(tpos + vec3(0, 0, homingTarget.radius))
 		let anglexy = pos.angleTo2d(tpos)
 		if not done and onTargetReached != null and dist < radii
-			onTargetReached.run(target)
+			onTargetReached.run(homingTarget)
 
 		if not done
 			switch htype

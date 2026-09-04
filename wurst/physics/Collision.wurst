@@ -6,7 +6,7 @@ public constant globalWorld = new CollisionWorld(playableMapRect)
 public tuple rectangle(vec2 min, vec2 max)
 
 public function rectangle.intersect(rectangle other) returns boolean
-	return not (other.min.x > this.max.x or other.max.x < this.min.x or other.max.y > this.min.y or other.min.y < this.max.y)
+	return not (other.min.x > this.max.x or other.max.x < this.min.x or other.min.y > this.max.y or other.max.y < this.min.y)
 
 public function rectangle.contains(vec2 point) returns boolean
 	return point.x > this.min.x and point.x < this.max.x and point.y > this.min.y and point.y < this.max.y
@@ -21,7 +21,10 @@ public abstract class CollisionListener
 public class SphereShape implements CollisionShape
 
 	override function intersect(Entity e1, Entity e2) returns boolean
-		return (e1.getPos() + vec3(0, 0, e1.radius / 2) ).distanceToSq(e2.getPos() + vec3(0, 0, e1.radius / 2)) <= e1.radius2 + e2.radius2
+		// Two spheres touch at (r1 + r2), so compare against (r1 + r2)^2, not r1^2 + r2^2. Each
+		// centre is lifted by its own radius, not by e1's.
+		let sumRadius = e1.radius + e2.radius
+		return (e1.getPos() + vec3(0, 0, e1.radius / 2)).distanceToSq(e2.getPos() + vec3(0, 0, e2.radius / 2)) <= sumRadius * sumRadius
 
 public constant SHAPE_SPHERE = new SphereShape()
 
@@ -44,6 +47,7 @@ public function removeCollider(Entity e)
 	if listeners[e castTo int] != null
 		destroy listeners[e castTo int]
 		listeners[e castTo int] = null
+	shapes[e castTo int] = null
 	globalWorld.colliders.remove(e)
 
 CollisionShape array shapes
@@ -58,7 +62,16 @@ public class CollisionWorld
 
 	function update(real _delta)
 		for collider in colliders
-			for collidable in collidables
-				if collider != null and not collider.done and collidable != null and not collidable.done and collider != collidable and shapes[collider castTo int].intersect(collider, collidable)
-					listeners[collider castTo int].onHit(collidable)
-					listeners[collidable castTo int].onHit(collider)
+			let colliderShape = shapes[collider castTo int]
+			if collider != null and not collider.done and colliderShape != null
+				for collidable in collidables
+					// The first onHit can terminate either entity and unregister its listener, so
+					// re-check both before the second call rather than only before the first.
+					if collidable != null and collidable != collider and not collider.done and not collidable.done
+						and colliderShape.intersect(collider, collidable)
+						let colliderListener = listeners[collider castTo int]
+						let collidableListener = listeners[collidable castTo int]
+						if colliderListener != null
+							colliderListener.onHit(collidable)
+						if collidableListener != null and not collider.done and not collidable.done
+							collidableListener.onHit(collider)

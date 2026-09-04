@@ -109,6 +109,11 @@ public class Selector extends UnitEntity
 		owner.selectSingle(actor)
 		owner.panCamToTimed(actor, 0.)
 		actor.setVertexColor(owner.getColor().toColor())
+		// One selector per player: displaying a new one used to leak the previous selector and its
+		// dummy unit.
+		let previous = selectors[owner.getId()]
+		if previous != null
+			previous.terminate()
 		selectors[owner.getId()] = this
 
 		builder.btns.forEach() btn ->
@@ -120,8 +125,12 @@ public class Selector extends UnitEntity
 		let id = GetSpellAbilityId()
 
 		for btn in builder.btns
-			if btn.getAbilId() == id
+			if btn.getAbilId() == id and btn.listener != null
 				btn.listener.onClick(this)
+
+	ondestroy
+		if selectors[owner.getId()] == this
+			selectors[owner.getId()] = null
 
 @compiletime function genObjs()
 	new UnitDefinition(PICK_DUMMY_ID, 'hpea')
