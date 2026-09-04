@@ -1,7 +1,5 @@
 package Pathingmap
 import BitSet
-import Wurstunit
-import MagicFunctions
 import Heightmap
 import TerrainUtils
 import Execute

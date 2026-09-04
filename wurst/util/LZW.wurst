@@ -34,7 +34,7 @@ function encodePositions(LinkedList<int> intList, int dictSize, PayloadCallback 
 	if DEBUG_LEVEL == Loglevel.TRACE
 		var st = ""
 		for s in intList
-			st+= s.toString() + ","
+			st+= s + ","
 		printLog(Loglevel.TRACE, "encoding positions: " + st)
 
 	let encoder = new Encoder(ALLOWED_PLAYER_CHARS)
@@ -64,7 +64,7 @@ function decodePositions(BigString input, PayloadCallback onFinish)
 			nullTimer() ->
 				Log.debug("file valid2")
 				let dictSize = encoder.decode(maxDictSize)
-				Log.debug("dictSize: " + dictSize.toString())
+				Log.debug("dictSize: " + dictSize)
 				let positions = new LinkedList<int>()
 				Log.debug("start decoding pos")
 				doSeq() cb1 ->
@@ -77,7 +77,7 @@ function decodePositions(BigString input, PayloadCallback onFinish)
 						if DEBUG_LEVEL == Loglevel.TRACE
 							var st = ""
 							for s in positions
-								st+= s.toString() + ","
+								st+= s + ","
 							printLog(Loglevel.TRACE,"decoded positions: " + st)
 						onFinish.customData = positions castTo int
 						onFinish.doStep()

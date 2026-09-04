@@ -82,7 +82,7 @@ public class BtnConfig
 	function generateObj()
 		if compiletime
 			abilId = ID_GEN.next()
-			BTN_TO_ID_MAP.saveInt((name + tooltip + x.toString() + y.toString()).getHash(), 0, abilId)
+			BTN_TO_ID_MAP.saveInt((name + tooltip + x + y).getHash(), 0, abilId)
 			new ChannelAbilityPreset(abilId, 1, true)
 			..setName(name)
 			..setTooltipNormal(1, name)
@@ -92,7 +92,7 @@ public class BtnConfig
 
 	function getAbilId() returns int
 		if abilId == 0
-			abilId = BTN_TO_ID_MAP.loadInt((name + tooltip + x.toString() + y.toString()).getHash(), 0)
+			abilId = BTN_TO_ID_MAP.loadInt((name + tooltip + x + y).getHash(), 0)
 		return abilId
 
 public interface BtnListener

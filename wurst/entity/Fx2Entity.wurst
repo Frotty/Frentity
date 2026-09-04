@@ -14,7 +14,7 @@ abstract public class Fx2Entity extends Entity
 		setupFx(xyAngle, sfxpath)
 
 	construct(player owner, vec3 pos, angle xyAngle, string sfxpath)
-		super(owner, pos, radius)
+		super(owner, pos, 0.)
 		setupFx(xyAngle, sfxpath)
 
 	construct(vec3 pos, player owner)

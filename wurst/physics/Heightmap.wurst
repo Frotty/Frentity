@@ -3,14 +3,13 @@ import TerrainUtils
 import HashMap
 import MapBounds
 import Execute
-import Reference
 
 tuple quad(int id, int x, int y, vec2 botLeft, real z1, real z2, real z3, real z4)
 
 quad array quads
 
 public function quad.toString() returns string
-    return "Quad: x: " + this.x.toString() + " y: " + this.y.toString() + " z1: " + this.z1.toString() + " z2: " + this.z2.toString() + " z3: " + this.z3.toString() + " z4: " + this.z4.toString()
+    return "Quad: x: " + this.x + " y: " + this.y + " z1: " + this.z1 + " z2: " + this.z2 + " z3: " + this.z3 + " z4: " + this.z4
 
 public function vec2.getQuad() returns quad
     return quads[(this.x - boundMin.x).toInt() div 128 + (TILES_X * ((this.y - boundMin.y).toInt() div 128))]

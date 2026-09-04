@@ -152,7 +152,7 @@ public class BigString
 
 	function getSubStringData(BigSubString substring) returns string
 		if substring.getStart()+substring.getSingleLength() > length
-			error("string out of bounds: length: " + length.toString() + " s.length: " + substring.getSingleLength().toString() + " s.start: " + substring.getStart().toString())
+			error("string out of bounds: length: " + length + " s.length: " + substring.getSingleLength() + " s.start: " + substring.getStart())
 		if substring.getSingleLength() > BIG_SUBSTRING_LEN
 			error("substring is longer than maxsize")
 		let idx = (substring.getStart() / BIG_SUBSTRING_LEN).toInt()
@@ -185,10 +185,10 @@ public class BigString
 
 	function debugPrint()
 		if DEBUG_LEVEL == Loglevel.TRACE
-			Log.debug("BigString length: " + getLength().toString() + " lines: ")
+			Log.debug("BigString length: " + getLength() + " lines: ")
 			for i = 0 to MAX_SUBSTRINGS-1
 				if substrings[i].length() > 0
-					Log.debug("\n\tLine " + i.toString() + " : " + substrings[i])
+					Log.debug("\n\tLine " + i + " : " + substrings[i])
 				else
 					break
 	ondestroy

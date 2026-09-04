@@ -82,7 +82,7 @@ public class HashReader
     @inline
     function validateType(HashType t)
         if not hasRemainingData(t)
-            print("trying to read " + t.toString() + " at position " + getReadIndex(t).toString() + " out of " + getCount(t).toString())
+            print("trying to read " + t + " at position " + getReadIndex(t) + " out of " + getCount(t))
 
     @inline
     function readInt() returns int
@@ -97,15 +97,15 @@ public class HashReader
 
 @noinline
 function inline_remainingData(HashReader test)
-    print("remaining data (int): " + test.hasRemainingData(HashType.INTEGER).toString())
+    print("remaining data (int): " + test.hasRemainingData(HashType.INTEGER))
 
 @noinline
 function inline_readIndex(HashReader test)
-    print("readIndex (int): " + test.getReadIndex(HashType.INTEGER).toString())
+    print("readIndex (int): " + test.getReadIndex(HashType.INTEGER))
 
 @noinline
 function inline_getCount(HashReader test)
-    print("getCount(int): " + test.getCount(HashType.INTEGER).toString())
+    print("getCount(int): " + test.getCount(HashType.INTEGER))
 
 @noinline
 function inline_validateType(HashReader test)
@@ -114,7 +114,7 @@ function inline_validateType(HashReader test)
 
 @noinline
 function inline_readInt(HashReader test)
-    print("readInt: " + test.readInt().toString())
+    print("readInt: " + test.readInt())
 
 @noinline
 function inlineTests()

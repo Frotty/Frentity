@@ -73,7 +73,7 @@ function testImpulse(vec3 targetPos, real delta)
         velocity += vec3(0, 0, gravity * timestep)
         projectile += velocity * timestep
 
-        print("projectile: " + projectile.toString())
+        print("projectile: " + projectile)
 
 
     let distance = projectile.distanceTo(target)

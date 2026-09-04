@@ -242,7 +242,7 @@ abstract public class UnitEntity extends Entity
 			else
 				actor.setXYZ(pos)
 		else
-			Log.error("out of bounds: " + tpos.toString())
+			Log.error("out of bounds: " + tpos)
 			setPos(ZERO3)
 
 	override function setPos(vec3 tpos)
