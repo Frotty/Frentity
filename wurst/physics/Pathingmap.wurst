@@ -1,46 +1,66 @@
 package Pathingmap
 import BitSet
+import Wurstunit
+import MagicFunctions
 import Heightmap
-import Reference
 import TerrainUtils
 import Execute
 
 public constant INDEX_PATHING = 1
 
+/* Sub-cell storage: one entry per 64x64 quarter of a 128x128 tile.
+
+   The Jass target packs four quarters into one tile slot, because a flat sub-cell array would need
+   TILES_X * TILES_Y * 4 entries and Jass caps an array variable at 32768.
+
+   Lua has no such cap, and there the packing is not free. Wurst lowers a tuple array to one parallel
+   array per field, so it never actually shares a slot, and reading a single field of an element reads
+   EVERY field and hands each one it discards to a helper call - five reads and four calls here to
+   fetch one int. So the Lua target reads a flat array instead, one read, and the tuple is left to the
+   target that needs it. Keep the two in step: every accessor below branches once, at the top. */
 tuple pathing(int id, bitset x1, bitset x2, bitset x3, bitset x4)
 
 pathing array pathings
+bitset array subCells
+
+/* Which quarter of a tile an in-tile offset falls in: 0,1,2,3 in the tuple's own x1,x2,x3,x4 order.
+
+   Both storage layouts select through this one function on purpose. Tests cannot cover the Lua branch
+   below - grill test compiles with isLua false whatever wurst_run.args says, verified with a probe - so
+   the mapping that could actually be got wrong lives on the path the tests DO reach, and the Lua branch
+   adds nothing beyond flat indexing. */
+@inline function laneOf(vec2 normVec) returns int
+    return (normVec.x <= 64. ? 0 : 2) + (normVec.y <= 64. ? 0 : 1)
 
 public function vec2.setPathingMap(bitset val)
     let quad = this.getQuad()
-    let normVec = this - quad.botLeft
-    if normVec.x <= 64.
-        if normVec.y <= 64.
-            pathings[quad.id].x1 = val
-        else
-            pathings[quad.id].x2 = val
+    let lane = laneOf(this - quad.botLeft)
+    if isLua
+        subCells[quad.id * 4 + lane] = val
+    else if lane == 0
+        pathings[quad.id].x1 = val
+    else if lane == 1
+        pathings[quad.id].x2 = val
+    else if lane == 2
+        pathings[quad.id].x3 = val
     else
-        if normVec.y <= 64.
-            pathings[quad.id].x3 = val
-        else
-            pathings[quad.id].x4 = val
+        pathings[quad.id].x4 = val
 
 public function vec2.getPathingMap() returns bitset
     let quad = this.getQuad()
-    let normVec = this - quad.botLeft
-    if normVec.x <= 64.
-        if normVec.y <= 64.
-            return pathings[quad.id].x1
-        else
-            return pathings[quad.id].x2
-    else
-        if normVec.y <= 64.
-            return pathings[quad.id].x3
-        else
-            return pathings[quad.id].x4
+    let lane = laneOf(this - quad.botLeft)
+    if isLua
+        return subCells[quad.id * 4 + lane]
+    if lane == 0
+        return pathings[quad.id].x1
+    if lane == 1
+        return pathings[quad.id].x2
+    if lane == 2
+        return pathings[quad.id].x3
+    return pathings[quad.id].x4
 
 public function vec2.setPathingMap(int index, boolean flag)
-    this.getPathingMap().set(index, flag)
+    this.setPathingMap(this.getPathingMap().set(index, flag))
 
 public function vec2.getPathing1x1() returns boolean
     return this.getPathing1x1(INDEX_PATHING)
@@ -78,15 +98,60 @@ public function vec2.setPathing2x2(int index, boolean flag)
     (this + vec2(32, -32)).setPathing1x1(index, flag)
 
 init
-    let xRef = new Reference(0)
-    while xRef.val < TILES_X
-        execute() ->
-            xRef.val++
-            let x = xRef.val
-            for y = 0 to TILES_Y
-                let path = pathing(x + TILES_X * y, emptyBitset(), emptyBitset(), emptyBitset(), emptyBitset())
-                pathings[path.id] = path
+    /* Only the Jass target prefills. On Lua an unwritten entry reads as 0, which is exactly
+       emptyBitset(), and nothing reads the id field - so the whole chunked pass is dead work there. */
+    if not isLua
+        let xRef = reference(0)
+        while xRef.val < TILES_X
+            execute() ->
+                xRef.val++
+                let x = xRef.val
+                for y = 0 to TILES_Y
+                    let path = pathing(x + TILES_X * y, emptyBitset(), emptyBitset(), emptyBitset(), emptyBitset())
+                    pathings[path.id] = path
 
+        destroy xRef
 
-    destroy xRef
+/* The four quarters of a tile are independent storage. That is the contract the packed (Jass) and flat
+   (Lua) layouts have to agree on, and the one a wrong lane mapping silently breaks - a swapped pair
+   still round-trips through itself, so each quarter is written with its own bit and every quarter is
+   then read back, including the ones that must have stayed clear.
 
+   All four points sit inside the same 128x128 tile, one per quarter. */
+@Test function tileQuartersAreIndependentStorage()
+    let sw = vec2(10., 10.)
+    let nw = vec2(10., 100.)
+    let se = vec2(100., 10.)
+    let ne = vec2(100., 100.)
+
+    sw.setPathing1x1(1, true)
+    nw.setPathing1x1(2, true)
+    se.setPathing1x1(3, true)
+    ne.setPathing1x1(4, true)
+
+    sw.getPathing1x1(1).assertTrue()
+    nw.getPathing1x1(2).assertTrue()
+    se.getPathing1x1(3).assertTrue()
+    ne.getPathing1x1(4).assertTrue()
+
+    // A write to one quarter must not show up in another.
+    sw.getPathing1x1(2).assertFalse()
+    sw.getPathing1x1(3).assertFalse()
+    nw.getPathing1x1(1).assertFalse()
+    ne.getPathing1x1(1).assertFalse()
+
+    /* Independence alone is too weak: permute the lanes consistently and every assertion above still
+       holds, because writes and reads go through the same permutation. Pin each quarter to the field it
+       has always used, reading the tuple directly so the check does not route through laneOf. */
+    let id = vec2(10., 10.).getQuad().id
+    pathings[id].x1.get(1).assertTrue()
+    pathings[id].x2.get(2).assertTrue()
+    pathings[id].x3.get(3).assertTrue()
+    pathings[id].x4.get(4).assertTrue()
+
+/* setPathingMap(int, boolean) used to compute a bitset and drop it - bitset.set is pure - so the write
+   never happened. Nothing called it, which is why it went unnoticed. */
+@Test function setPathingMapByIndexActuallyWrites()
+    let p = vec2(300., 300.)
+    p.setPathingMap(1, true)
+    p.getPathing1x1(1).assertTrue()
