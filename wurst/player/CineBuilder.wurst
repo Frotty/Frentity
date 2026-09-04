@@ -49,7 +49,9 @@ class KeyFrame
 
 public class Cine
 	CineBuilder builder
-	int keyFramePointer = 0
+	/** Playback position per player: one Cine is played for several players at once, so a single
+		shared pointer had them consuming each other's keyframes. */
+	private int array[28] keyFramePointer
 
 	construct(CineBuilder builder)
 		this.builder = builder
@@ -60,12 +62,14 @@ public class Cine
 			ShowInterface(false, 0.)
 			EnableUserControl(false)
 
+		keyFramePointer[target.getId()] = 0
 		playKeyFrame(target)
 
 	function playKeyFrame(player target)
-		if keyFramePointer < builder.keyFrames.size()
-			let keyFrame = builder.keyFrames.get(keyFramePointer)
-			keyFramePointer++
+		let pid = target.getId()
+		if keyFramePointer[pid] < builder.keyFrames.size()
+			let keyFrame = builder.keyFrames.get(keyFramePointer[pid])
+			keyFramePointer[pid]++
 			keyFrame.apply(target)
 			doAfter(keyFrame.duration) ->
 				playKeyFrame(target)

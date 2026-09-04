@@ -42,15 +42,17 @@ public abstract class FixedBuff extends Buff
 		super(dur, buffData)
 
 	override function apply(unit target)
-		this.target = target
-		for bff in target.getBuffs()
-			if bff.typeId == this.typeId
-				this.target = null
-				terminate()
-				return
-		target.addBuff(this)
-		refresh()
-		onApply()
+		if target.isAlive()
+			this.target = target
+			if target.hasBuffs()
+				for bff in target.getBuffs()
+					if bff.typeId == this.typeId
+						this.target = null
+						terminate()
+						return
+			target.addBuff(this)
+			refresh()
+			onApply()
 
 /** Negates a certain amount of damage. If the unit already has this buff,
 the block damage of this buff gets addedto the existing one's */

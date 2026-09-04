@@ -46,20 +46,24 @@ public function vec2.getHeightMap() returns real
 
 init
     let zMap = new HashMap<int, real>
+    /* Read the column before advancing. Incrementing first walked x over 1..TILES_X, which sampled
+       one column off the east edge and left column 0 of every row unwritten - and the out-of-range
+       write for x == TILES_X landed on index TILES_X * (y + 1), i.e. column 0 of the next row. */
     let xRef = new Reference(0)
     while xRef.val < TILES_X
         execute() ->
+            let x = xRef.val
             xRef.val++
             for y = 0 to TILES_Y
-                let tile = tile(xRef.val, y)
+                let tile = tile(x, y)
                 zMap.put(tile.id, tile.toVec2().getTerrainZ())
 
 
     xRef.val = 0
     while xRef.val < TILES_X
         execute() ->
-            xRef.val++
             let x = xRef.val
+            xRef.val++
             for y = 0 to TILES_Y
                 quads[x + TILES_X * y] = quad(x + TILES_X * y, x, y, vec2(boundMin.x + x * 128, boundMin.y + y * 128), zMap.get(tile(x, y).id), zMap.get(tile(x + 1, y).id), zMap.get(tile(x, y + 1).id), zMap.get(tile(x + 1, y + 1).id))
 

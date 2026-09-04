@@ -11,16 +11,23 @@ public function player.getDownKeys() returns keyTuple
 EventListener firstKeyListener = null
 
 public function addKeyListener(EventListener listener) returns EventListener
+	listener.prev = null
+	listener.next = firstKeyListener
 	if firstKeyListener != null
 		firstKeyListener.prev = listener
-		listener.next = firstKeyListener
 
 	firstKeyListener = listener
 	return listener
 
 public function removeKeyListener(EventListener listener)
-	if firstKeyListener == listener
-		firstKeyListener = null
+	// Unlink before destroying. Dropping the head used to discard the whole rest of the chain, and
+	// removing a non-head left the chain pointing at a destroyed listener.
+	if listener.prev != null
+		listener.prev.next = listener.next
+	else if firstKeyListener == listener
+		firstKeyListener = listener.next
+	if listener.next != null
+		listener.next.prev = listener.prev
 	destroy listener
 
 function onKeyEvent()
@@ -52,7 +59,7 @@ function onKeyEvent()
 		listener = listener.next
 
 init
-	for i = 0 to 11
+	for i = 0 to bj_MAX_PLAYERS - 1
 		keyStatuses[i] = keyTuple(false, false, false, false)
 	EventListener.add(EVENT_PLAYER_ARROW_DOWN_DOWN, () -> onKeyEvent())
 	EventListener.add(EVENT_PLAYER_ARROW_DOWN_UP, () -> onKeyEvent())

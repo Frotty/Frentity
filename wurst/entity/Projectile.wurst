@@ -33,7 +33,7 @@ public class Projectile extends Fx2Entity
 	protected var time = 0.
 	private var maxTime = 0.
 
-	private Entity target = null
+	private var target = NO_ENTITY
 	private OnHitListener onHit = null
 	private OnEndListener onEnd = null
 
@@ -55,7 +55,7 @@ public class Projectile extends Fx2Entity
 		this.onEnd = listener
 
 	function setTargetted(Entity target)
-		this.target = target
+		this.target = target.asRef()
 
 	function setKillBelowZ(real zVal)
 		this.killZ = true
@@ -127,8 +127,8 @@ public class Projectile extends Fx2Entity
 			if not done and ranged
 				if (use3DDistance ? startpos.distanceToSq(pos) : startpos.toVec2().distanceToSq(pos.toVec2())) > maxDist
 					terminate()
-			if not done and target != null
-				if pos.toVec2().distanceToSq(target.getPos().toVec2()) < radius2
+			if not done and target.isAlive()
+				if pos.toVec2().distanceToSq(target.get().getPos().toVec2()) < radius2
 					terminate()
 
 	override function terminate()
@@ -138,8 +138,10 @@ public class Projectile extends Fx2Entity
 			super.terminate()
 
 	ondestroy
-		if onEnd != null
-			hitGroup.destr()
-			destroy onEnd
+		// hitGroup belongs to onHit, which acquired it; getGroup() hands out a pooled group, so it
+		// has to go back to the pool with release() rather than being destroyed outright.
 		if onHit != null
+			hitGroup.release()
 			destroy onHit
+		if onEnd != null
+			destroy onEnd

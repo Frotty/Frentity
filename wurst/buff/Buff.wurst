@@ -37,6 +37,7 @@ public function unit.hasBuffs() returns boolean
 public function unit.addBuff(Buff buffObj)
 	if buffObj == null or this == null
 		error("Cannot add null buff or null target")
+		return
 	if not this.hasBuffs()
 		buffMap[this.getIndex()] = new LinkedList<Buff>()..add(buffObj)
 	else
@@ -45,10 +46,11 @@ public function unit.addBuff(Buff buffObj)
 public function unit.hasBuff(int buffTypeId) returns boolean
 	return this.getBuff(buffTypeId) != null
 
-public function unit.getBuff(int buffTypeId) returns Buff
+/** The first buff on this unit whose buff object id matches, or null. */
+public function unit.getBuff(int buffId) returns Buff
 	if this.hasBuffs()
 		for b in this.getBuffs()
-			if b.typeId == buffTypeId
+			if b.buffData.buffId == buffId
 				return b
 	return null
 
@@ -61,11 +63,11 @@ public function unit.removeBuff(Buff bff)
 				itr.remove().terminate()
 		itr.close()
 
-public function unit.removeBuffById(int typeId)
+public function unit.removeBuffById(int buffId)
 	if this.hasBuffs()
 		let itr = this.getBuffs().iterator()
 		for b from itr
-			if b.typeId == typeId
+			if b.buffData.buffId == buffId
 				itr.remove().terminate()
 		itr.close()
 
@@ -75,10 +77,13 @@ public function unit.getBuffs() returns LinkedList<Buff>
 public function unit.clearBuffs()
 	let buffs = this.getBuffs()
 	if buffs != null
-		for bff in buffs
-			bff.terminate()
-		destroy buffs
+		// Detach the list first: terminate() destroys the buff, whose ondestroy unlinks it from
+		// the unit's list. Iterating a list that is being mutated underneath uses LinkedList's
+		// single shared static iterator and skips or repeats entries.
 		buffMap[this.getIndex()] = null
+		while buffs.size() > 0
+			buffs.dequeue().terminate()
+		destroy buffs
 
 public function unit.transferBuffs(unit otherEntity)
 	if otherEntity == null
@@ -90,11 +95,14 @@ public function unit.transferBuffs(unit otherEntity)
 	if buffs == null or buffs.size() == 0
 		return
 
-	for bff in buffs
+	// Same reason as clearBuffs: apply() re-registers the buff on the other unit, which unlinks it
+	// from this one's list.
+	buffMap[this.getIndex()] = null
+	while buffs.size() > 0
+		let bff = buffs.dequeue()
 		if not bff.done
 			bff.apply(otherEntity)
 	destroy buffs
-	buffMap[this.getIndex()] = null
 
 public abstract class Buff
 	use LinkedListModule
@@ -139,8 +147,12 @@ public abstract class Buff
 
 	ondestroy
 		if target != null
-			this.target.removeAbility(this.buffData.buffId)
-			target.removeBuff(this)
+			target.removeAbility(buffData.buffId)
+			// Unlink directly. removeBuff() opens an iterator over the same list and calls
+			// terminate() again, which re-enters destruction from inside destruction.
+			let buffs = target.getBuffs()
+			if buffs != null
+				buffs.remove(this)
 			target.removeAbility(buffData.abilId)
 		target = null
 
@@ -157,15 +169,21 @@ init
 					new TextTagEntity(def.getPos().toVec3(), vec3(GetRandomReal(-2,2),GetRandomReal(-2,2),GetRandomReal(8,10)), getSquare(), 10, .8,
 						colorA(GetRandomInt(150,250),GetRandomInt(125,150),GetRandomInt(125,150), 255))
 		else
+			// Modifiers may terminate their own buff (ShieldBuff does when it is used up), which
+			// unlinks it from the list being walked, so walk a copy.
 			if att.hasBuffs()
-				for bff in att.getBuffs()
+				let attBuffs = att.getBuffs().copy()
+				for bff in attBuffs
 					if not bff.done
 						bff.attackModifier()
+				destroy attBuffs
 
 			if def.hasBuffs()
-				for bff in def.getBuffs()
+				let defBuffs = def.getBuffs().copy()
+				for bff in defBuffs
 					if not bff.done
 						bff.defenseModifier()
+				destroy defBuffs
 
 	// Update the buff display on unit upgrade
 	EventListener.add(EVENT_PLAYER_UNIT_UPGRADE_FINISH) ->
@@ -173,8 +191,11 @@ init
 		if upg.getIndex() > 0
 			doAfter(0.01) ->
 				if upg.hasBuffs()
-					for bff in upg.getBuffs()
-						bff.refresh(true)
+					let buffs = upg.getBuffs().copy()
+					for bff in buffs
+						if not bff.done
+							bff.refresh(true)
+					destroy buffs
 
 	// Remove buffs when a unit dies and all other triggers fired.
 	EventListener.add(EVENT_PLAYER_UNIT_DEATH) ->

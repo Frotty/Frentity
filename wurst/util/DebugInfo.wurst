@@ -31,7 +31,7 @@ public var totalAllocations = 0
 var isFirst = true
 
 init
-	for i = 0 to 11
+	for i = 0 to bj_MAX_PLAYERS - 1
 		CreateTrigger()..registerPlayerChatEvent(players[i], "-debug", true)..addAction() ->
 			if isFirst
 				isFirst = false
@@ -49,9 +49,10 @@ init
 				printTimedToPlayer("Loglevel adjusted to: " + loglvl.getTag(), 10, GetTriggerPlayer())
 
 function startDebug()
+	// Build the board up front: the toggle below runs in the same call and used to find mb null,
+	// so the first -debug did nothing.
+	createMultiboard()
 	CreateTimer().startPeriodic(1) ->
-		if mb == null
-			createMultiboard()
 		seconds++
 		totalEventCallbacks += eventCallbacksPerSecond
 		totalAllocations += allocationsPerSecond

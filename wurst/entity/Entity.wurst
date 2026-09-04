@@ -7,19 +7,11 @@ import public PhysicsConstants
 import public LinkedList
 import public MapBounds
 import initlater DebugInfo
-import initlater Json
 import public FText
 import public ErrorHandling
 import public UnitIndexer
 import public Frentity
 import Heightmap
-
-public constant KEY_X = "x"
-public constant KEY_Y = "y"
-public constant KEY_Z = "z"
-public constant KEY_TYPE = "t"
-
-public vec3 serializeOrigin = ZERO3
 
 UnitEntity array entities
 
@@ -36,21 +28,8 @@ public function item.getEntity() returns Entity
 public function item.setEntity(Entity e)
 	this.setUserData(e castTo int)
 
-public interface Serializable
-	function serialize() returns Json
-	function deserialize(Json json)
-
-	function debugPrint() returns string
-		let s = new BigString()
-		let json = serialize()
-		json.addToBigString(s)
-		destroy json
-		let st =  s.getString(0, BIG_SUBSTRING_LEN)
-		destroy s
-		return st
-
 /** Base Entity Class  */
-public abstract class Entity implements Serializable
+public abstract class Entity
 	use DupletListModule
 	/** 3d position */
 	protected vec3 pos
@@ -75,6 +54,12 @@ public abstract class Entity implements Serializable
 	var sleeps 		= true
 	var idleSeconds	= 0
 
+	/** Bumped on every construction. Instance ids are pooled and handed straight back out on
+		destroy, so an id alone cannot tell a live entity from its replacement - anything holding
+		an Entity across ticks must record the generation alongside it. See EntityRef. */
+	protected var generation = 0
+	static var generationCounter = 0
+
 	construct()
 		setupEntity(ZERO3, ZERO3, DUMMY_PLAYER, 0.)
 
@@ -94,6 +79,8 @@ public abstract class Entity implements Serializable
 		setupEntity(pos, vel, owner, radius)
 
 	function setupEntity(vec3 pos, vec3 vel, player owner, real radius)
+		generationCounter++
+		this.generation = generationCounter
 		this.pos = pos
 		this.vel = vel
 		this.owner = owner
@@ -172,16 +159,23 @@ public abstract class Entity implements Serializable
 			done = true
 			destroy this
 
-	override function serialize() returns Json
-		let json = new Json()
-		getPos()
-		json.addProperty(new Property(KEY_X, (pos.x-serializeOrigin.x).toInt().toString()))
-		json.addProperty(new Property(KEY_Y, (pos.y-serializeOrigin.y).toInt().toString()))
-		json.addProperty(new Property(KEY_Z, (pos.z-serializeOrigin.z).toInt().toString()))
-		return json
 
-	override function deserialize(Json json)
-		// pos = vec3(json.getReal(KEY_X)+serializeOrigin.x, json.getReal(KEY_Y)+serializeOrigin.y, json.getReal(KEY_Z)+serializeOrigin.z)
+/** A reference to an Entity that stays honest across ticks. Instance ids are pooled and reused
+	immediately, so a bare Entity field can silently start pointing at whatever was allocated after
+	its target died; pairing the id with the generation makes the reference read as dead instead. */
+public tuple entityRef(Entity target, int generation)
+
+public constant NO_ENTITY = entityRef(null, 0)
+
+public function Entity.asRef() returns entityRef
+	return this == null ? NO_ENTITY : entityRef(this, this.generation)
+
+public function entityRef.isAlive() returns boolean
+	return this.target != null and not this.target.done and this.target.generation == this.generation
+
+/** The referenced entity, or null once it has been destroyed. */
+public function entityRef.get() returns Entity
+	return this.isAlive() ? this.target : null
 
 
 function unit.getDynamicPos() returns vec3
@@ -207,12 +201,16 @@ abstract public class UnitEntity extends Entity
 	function setupUnitEntity(unit actor)
 		this.actor = actor
 		getPos()
+		// error() only crashes the thread on the Jass target; on Lua it reports and returns. Both
+		// branches below have already destroyed `this`, so they must not fall through to the setup.
 		if not actor.isAlive()
 			terminate()
 			error("Trying to assign entity to unit that is not alive")
+			return
 		else if actor.getEntity() != null
 			terminate()
 			error("Trying to assign entity to unit that already has an entity")
+			return
 
 		actor..setEntity(this)..addAbility(HEIGHT_ENABLER)..removeAbility(HEIGHT_ENABLER)
 		if DYNAMIC_Z
@@ -229,6 +227,7 @@ abstract public class UnitEntity extends Entity
 	function setNewActor(unit u)
 		if u == null or not u.isAlive() or u.getEntity() != null
 			error("invalid actor replacement")
+			return
 		actor.setEntity(null)
 		actor.remove()
 		actor = u
@@ -292,6 +291,7 @@ abstract public class ItemEntity extends Entity
 	function setNewActor(item i)
 		if i == null or not i.isAlive() or i.getEntity() != null
 			error("invalid actor replacement")
+			return
 		actor.setEntity(null)
 		actor.remove()
 		actor = i

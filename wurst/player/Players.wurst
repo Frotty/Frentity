@@ -9,11 +9,11 @@ public constant ALL_PLAYERS = new LinkedList<player>()
 interface OnPlayerLeave
 	function onLeave(player leaver)
 
-OnPlayerLeave onLeaveListener
+constant onLeaveListeners = new LinkedList<OnPlayerLeave>()
 
-/** Set listener for when a player leaves the game */
+/** Add a listener for when a player leaves the game. Listeners are called in registration order. */
 public function onPlayerLeave(OnPlayerLeave onLeave)
-	onLeaveListener = onLeave
+	onLeaveListeners.add(onLeave)
 
 init
 	nullTimer() ->
@@ -22,8 +22,13 @@ init
 				ALL_PLAYERS.add(players[i])
 
 		EventListener.add(EVENT_PLAYER_LEAVE) ->
-			ALL_PLAYERS.remove(GetTriggerPlayer())
-			onLeaveListener.onLeave(GetTriggerPlayer())
+			let leaver = GetTriggerPlayer()
+			ALL_PLAYERS.remove(leaver)
+			for listener in onLeaveListeners
+				listener.onLeave(leaver)
 
-		onPlayerLeave() p ->
-			printTimed(p.getNameColored() + " has left the game", 15.)
+		// Only announce leaves if the map has not said what it wants to do instead. This used to
+		// overwrite the map's own listener, because it runs a tick after the map's init.
+		if onLeaveListeners.isEmpty()
+			onPlayerLeave() p ->
+				printTimed(p.getNameColored() + " has left the game", 15.)
