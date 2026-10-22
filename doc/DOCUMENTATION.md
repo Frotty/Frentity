@@ -158,3 +158,26 @@ We can now apply this buff to any unit for the desired effect. If the spell is a
 ```
 new ShieldKitBuff(400.).apply(data)
 ```
+## Terrain height source and multiplayer
+
+Frentity caches terrain vertices at startup and interpolates them for entity physics and ballistic
+targeting. Caching `GetLocationZ` does not synchronize it: rendered geometry and local deformations
+can produce different heights on different clients.
+
+The default source retains the native terrain query for compatibility. For synchronized gameplay,
+override the source with authored terrain data (or another deterministic heightfield):
+
+```wurst
+package Heightmap_config
+import MyAuthoredTerrain
+
+@config public function sampleHeightmapTerrainZ(vec2 pos) returns real
+    return pos.getAuthoredTerrainZ()
+```
+
+The source must be ready before Heightmap's initialization. Import its owning package from the config
+package so its initialization runs first. It is sampled once per 128-unit terrain vertex; Frentity
+retains its triangular interpolation between vertices. Queries outside world bounds clamp to the
+edge. If synchronized source data changes later, call `rebuildHeightmap()` synchronously on every
+client. A local source or a local rebuild is unsafe for gameplay.
+

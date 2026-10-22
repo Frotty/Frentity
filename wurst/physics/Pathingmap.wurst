@@ -117,10 +117,18 @@ init
 
    All four points sit inside the same 128x128 tile, one per quarter. */
 @Test function tileQuartersAreIndependentStorage()
-    let sw = vec2(10., 10.)
-    let nw = vec2(10., 100.)
-    let se = vec2(100., 10.)
-    let ne = vec2(100., 100.)
+    // Runtime init does not run in the test interpreter. Use the cached quad's actual origin,
+    // including when another heightmap test populated it, rather than assuming an origin of zero.
+    let origin = vec2(10., 10.).getQuad().botLeft
+    let sw = origin + vec2(10., 10.)
+    let nw = origin + vec2(10., 100.)
+    let se = origin + vec2(100., 10.)
+    let ne = origin + vec2(100., 100.)
+
+    sw.setPathingMap(emptyBitset())
+    nw.setPathingMap(emptyBitset())
+    se.setPathingMap(emptyBitset())
+    ne.setPathingMap(emptyBitset())
 
     sw.setPathing1x1(1, true)
     nw.setPathing1x1(2, true)
@@ -141,7 +149,7 @@ init
     /* Independence alone is too weak: permute the lanes consistently and every assertion above still
        holds, because writes and reads go through the same permutation. Pin each quarter to the field it
        has always used, reading the tuple directly so the check does not route through laneOf. */
-    let id = vec2(10., 10.).getQuad().id
+    let id = sw.getQuad().id
     pathings[id].x1.get(1).assertTrue()
     pathings[id].x2.get(2).assertTrue()
     pathings[id].x3.get(3).assertTrue()

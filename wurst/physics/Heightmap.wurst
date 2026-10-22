@@ -8,11 +8,19 @@ tuple quad(int id, int x, int y, vec2 botLeft, real z1, real z2, real z3, real z
 
 quad array quads
 
+/** Source for the cached terrain vertices. The default reads rendered terrain, which can differ
+    between clients. Maps using height-dependent gameplay should override this in Heightmap_config
+    with authored or otherwise synchronized data, available before Heightmap initializes. */
+@configurable public function sampleHeightmapTerrainZ(vec2 pos) returns real
+    return pos.getTerrainZ()
+
 public function quad.toString() returns string
     return "Quad: x: " + this.x + " y: " + this.y + " z1: " + this.z1 + " z2: " + this.z2 + " z3: " + this.z3 + " z4: " + this.z4
 
 public function vec2.getQuad() returns quad
-    return quads[(this.x - boundMin.x).toInt() div 128 + (TILES_X * ((this.y - boundMin.y).toInt() div 128))]
+    let x = max(0, min(TILES_X - 2, (this.x - boundMin.x).floor() div 128))
+    let y = max(0, min(TILES_Y - 2, (this.y - boundMin.y).floor() div 128))
+    return quads[x + TILES_X * y]
 
 public function vec2.withHeightMap() returns vec3
     return this.withHeightMap(0)
@@ -26,7 +34,7 @@ public function vec3.getHeightMap() returns real
 public function vec2.getHeightMap() returns real
     let quad = this.getQuad()
     let localVec = this - quad.botLeft
-    let normVec = vec2(localVec.x / 128, localVec.y / 128)
+    let normVec = vec2(max(0., min(1., localVec.x / 128)), max(0., min(1., localVec.y / 128)))
 
     let determinant = normVec.y - 1. + normVec.x
 
@@ -44,7 +52,8 @@ public function vec2.getHeightMap() returns real
         let weight3 = 1 - weight1 - weight2
         return weight1 * quad.z3 + weight2 * quad.z2 + weight3 * quad.z1
 
-init
+/** Rebuild synchronously after changing synchronized source data. */
+public function rebuildHeightmap()
     let zMap = new HashMap<int, real>
     /* Read the column before advancing. Incrementing first walked x over 1..TILES_X, which sampled
        one column off the east edge and left column 0 of every row unwritten - and the out-of-range
@@ -54,21 +63,33 @@ init
         execute() ->
             let x = xRef.val
             xRef.val++
-            for y = 0 to TILES_Y
+            for y = 0 to TILES_Y - 1
                 let tile = tile(x, y)
-                zMap.put(tile.id, tile.toVec2().getTerrainZ())
+                zMap.put(tile.id, sampleHeightmapTerrainZ(tile.toVec2()))
 
 
     xRef.val = 0
-    while xRef.val < TILES_X
+    while xRef.val < TILES_X - 1
         execute() ->
             let x = xRef.val
             xRef.val++
-            for y = 0 to TILES_Y
+            for y = 0 to TILES_Y - 2
                 quads[x + TILES_X * y] = quad(x + TILES_X * y, x, y, vec2(boundMin.x + x * 128, boundMin.y + y * 128), zMap.get(tile(x, y).id), zMap.get(tile(x + 1, y).id), zMap.get(tile(x, y + 1).id), zMap.get(tile(x + 1, y + 1).id))
 
     destroy zMap
     destroy xRef
+
+init
+    rebuildHeightmap()
+
+@Test function clampsToLastValidCell()
+    let x = TILES_X - 2
+    let y = TILES_Y - 2
+    quads[x + TILES_X * y] = quad(0, x, y, boundMax - vec2(128, 128), 10, 20, 30, 40)
+    boundMax.getHeightMap().assertEquals(40, 0.01)
+    (boundMax + vec2(256, 256)).getHeightMap().assertEquals(40, 0.01)
+    vec2(boundMax.x, boundMax.y - 128).getHeightMap().assertEquals(20, 0.01)
+    vec2(boundMax.x - 128, boundMax.y).getHeightMap().assertEquals(30, 0.01)
 
 @Test function tests()
     // height aligned with diagonal, creating a steep edge
